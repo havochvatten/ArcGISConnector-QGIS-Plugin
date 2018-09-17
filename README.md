@@ -1,11 +1,5 @@
-#ArcGIS REST API Connector" (short name: ArcGISConnector). 
+# ArcGIS Image Service REST API Connector. 
 
-This plugin is in alpha release phase (QGIS experimental). Beta release (still QGIS experimental) is planned as of end of september 2015.
+This plugin is a proof of concept to connect QGIS to an ArcGIS Image Service, the project is a fork of [ArcGIS_REST_API_Connector_Plugin](http://giswiki.hsr.ch/QGIS_ArcGIS_REST_API_Connector_Plugin) by Geometa Lab.
 
-A QGIS-Plugin which reads "Feature Services" - aka vector-based, WFS-alike services - from ArcGIS Online or ArcGIS Server. ArcGIS REST API includes also "Map Services" - aka raster-based WMS/WMTS-alike services - are currently NOT supported (and won't be supported in near future).
-
-Websites:
-
-* [Homepage](http://giswiki.hsr.ch/QGIS_ArcGIS_REST_API_Connector_Plugin)
-
-* [QGIS plugin directory](http://plugins.qgis.org/plugins/connector/)
+It will handle raster images from an ArcGIS Image Service in a basic manner, it is very much an alpha release.
