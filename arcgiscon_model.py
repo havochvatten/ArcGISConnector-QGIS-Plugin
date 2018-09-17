@@ -84,6 +84,10 @@ class EsriVectorQueryFactoy:
 class EsriImageServiceQueryFactory:
 
     @staticmethod
+    def createMetaInformationQuery():
+        return EsriQuery(params={"f":"json"})
+
+    @staticmethod
     def createBaseQuery(extent=None, mapExtent=None, customFilter=None):
         jsonFormat = {"f":"json"}                           
         query = {}            
@@ -232,36 +236,38 @@ class Connection:
        
     def configure(self, validator):
         try:
-            query = EsriVectorQueryFactoy.createMetaInformationQuery()                                     
+            query = EsriImageServiceQueryFactory.createMetaInformationQuery()                                     
             response = self.connect(query)
             if response.status_code != 200: 
                 if "www-authenticate" in response.headers:
                     if "NTLM, Negotiate" in response.headers["www-authenticate"]:
                         self.authMethod = ConnectionAuthType.NTLM
                     else:
-                        self.authMethod = ConnectionAuthType.BasicAuthetication          
+                        self.authMethod = ConnectionAuthType.BasicAuthetication
         except (requests.exceptions.RequestException, ValueError):
             # fail silently
             pass   
                              
     def validate(self, validator):
         try:
-            query = EsriVectorQueryFactoy.createMetaInformationQuery()
+            query = EsriImageServiceQueryFactory.createMetaInformationQuery()
             response = self.connect(query)
             response.raise_for_status()
-            validator.validate(response)              
-            self._updateLayerNameFromServerResponse(response)              
+            validator.validate(response)
+            self._updateLayerNameFromServerResponse(response)
         except Exception:
             raise
     
     def connect(self, query):       
-        auth = None     
+        auth = None
         try: 
             if self.authMethod != ConnectionAuthType.NoAuth and self.username and self.password:
-                auth = self.authMethod
+                QgsMessageLog.logMessage("auth - " + str(self.authMethod) + " " + self.username + " " + self.password) 
                 if self.authMethod == ConnectionAuthType.NTLM:                    
-                    auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)              
-            request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=auth, timeout=10)            
+                    auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
+                if self.authMethod == ConnectionAuthType.BasicAuthetication:
+                    auth = (self.username, self.password) 
+            request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=auth, timeout=180)            
         except requests.ConnectionError:
             raise
         except requests.HTTPError:

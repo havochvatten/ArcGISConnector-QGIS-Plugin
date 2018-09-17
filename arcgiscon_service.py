@@ -23,7 +23,7 @@ A QGIS plugin
 from PyQt4 import QtCore, QtGui
 from qgis.gui import QgsMessageBar
 from qgis.core import QgsMessageLog
-from arcgiscon_model import EsriVectorQueryFactoy, EsriLayerMetaInformation, EsriImageServiceQueryFactory
+from arcgiscon_model import EsriVectorQueryFactoy, EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
 from Queue import Queue
 
 import multiprocessing
@@ -207,9 +207,13 @@ class EsriUpdateService(QtCore.QObject):
             toReturn = workingMap.get()        
         return toReturn
     
-    def _downloadRaster(self, href):
+    def _downloadRaster(self, href, connection):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
-        response = requests.get(href)
+        response = None
+        if connection.authMethod == ConnectionAuthType.BasicAuthetication:
+            response = requests.get(href, auth = (connection.username, connection.password))
+        else:
+            response = requests.get(href)
         fname = href[href.rfind("/")+1:]
         return dict(filename = fname, data = response.content)
     
@@ -222,7 +226,7 @@ class EsriUpdateService(QtCore.QObject):
             if u'href' in base:
                 # Used in image service
                 QgsMessageLog.logMessage("downloading raster from " + base[u'href'])
-                download = self._downloadRaster(base[u'href'])
+                download = self._downloadRaster(base[u'href'], connection)
                 return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'])
 
             for nextResult in sources[1:]:                
