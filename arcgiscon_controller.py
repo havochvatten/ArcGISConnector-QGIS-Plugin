@@ -141,7 +141,7 @@ class ArcGisConNewController(QObject):
 	def onSuccess(self, srcPath, connection):
 		QgsMessageLog.logMessage("OnSuccess")
 		#esriLayer = EsriVectorLayer.create(connection, srcPath)
-		esriLayer = EsriRasterLayer.create(connection, srcPath)	
+		esriLayer = EsriRasterLayer.create(connection, srcPath)
 		for action in self._legendActions:
 			self._iface.legendInterface().addLegendLayerActionForLayer(action, esriLayer.qgsRasterLayer)
 		#QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsVectorLayer)
@@ -161,6 +161,7 @@ class ArcGisConNewController(QObject):
 		self._newDialog.passwordInput.setText("")
 		self._newDialog.connectionErrorLabel.setText("")
 		self._newDialog.extentOnly.setChecked(False)
+		self._newDialog.extentOnly.hide()
 		self._newDialog.layerFilterInput.setText("")
 		self._customFilterJson = None
 		
@@ -193,7 +194,7 @@ class ArcGisConRefreshController(QObject):
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
-		esriLayer.qgsRasterLayer.setExtent(extent)
+		#esriLayer.qgsRasterLayer.setExtent(extent)
 		esriLayer.qgsRasterLayer.triggerRepaint()
 		
 	def onWarning(self, connection, warningMessage):

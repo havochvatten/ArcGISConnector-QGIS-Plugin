@@ -155,7 +155,7 @@ class EsriUpdateService(QtCore.QObject):
                             if(totalRecords > float(maxRecordCount)):
                                 currentJob.onWarning.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Not all features could be retrieved. Please adjust extent or use a filter."))                                               
                             #query = EsriVectorQueryFactoy.createFeaturesQuery(currentJob.connection.bbBox, currentJob.connection.customFiler)
-                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, currentJob.connection.customFiler)
+                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.customFiler)
                             results = [downloadSource((currentJob.connection, query, None))]
                         else:
                             queries = []

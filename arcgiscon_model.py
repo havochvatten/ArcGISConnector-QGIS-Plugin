@@ -83,8 +83,8 @@ class EsriVectorQueryFactoy:
 
 class EsriImageServiceQueryFactory:
 
-    @staticmethod    
-    def createBaseQuery(extent=None, customFilter=None):
+    @staticmethod
+    def createBaseQuery(extent=None, mapExtent=None, customFilter=None):
         jsonFormat = {"f":"json"}                           
         query = {}            
         customFilterKeys = []
@@ -96,12 +96,14 @@ class EsriImageServiceQueryFactory:
             query.update(customFilter)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
+        else:
+            query.update(EsriImageServiceQueryFactory.createExtentParam(mapExtent))
         QgsMessageLog.logMessage(str(query) + " query")
         return query 
 
     @staticmethod
-    def createExportImageQuery(extent=None, customFilter=None):
-        query = EsriImageServiceQueryFactory.createBaseQuery(extent, customFilter)
+    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None):
+        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter)
         return EsriQuery("/ExportImage", query)
 
     @staticmethod
@@ -181,6 +183,7 @@ class EsriLayerMetaInformation:
     maxRecordCount = 0
     supportsPagination = False
     layerType = None
+    extent = None
     
     @staticmethod
     def createFromMetaJson(metaJson):
@@ -190,10 +193,11 @@ class EsriLayerMetaInformation:
             metaInfo.maxRecordCount = int(metaJson[u'maxRecordCount'])
         if "advancedQueryCapabilities" in metaJson and "supportsPagination" in metaJson["advancedQueryCapabilities"] and metaJson["advancedQueryCapabilities"]["supportsPagination"]:
             metaInfo.supportsPagination = metaJson["advancedQueryCapabilities"]["supportsPagination"]
-        if "type" in metaJson:
-            metaInfo.layerType = metaJson["type"]
-        elif "serviceDataType" in metaJson:
-            metaInfo.layerType = metaJson["serviceDataType"] 
+        if "extent" in metaJson:
+            bbox = {'xmin': metaJson["extent"]['xmin'], 'ymin': metaJson["extent"]['ymin'], 'xmax': metaJson["extent"]['xmax'], 'ymax': metaJson["extent"]['ymax']}
+            metaInfo.extent = {'bbox': bbox, 'spatialReference': metaJson["extent"]['spatialReference']}
+        if "serviceDataType" in metaJson:
+            metaInfo.layerType = metaJson["serviceDataType"]
         return metaInfo
         
 
