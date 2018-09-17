@@ -23,7 +23,7 @@ A QGIS plugin
 from PyQt4.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
 from PyQt4.QtGui import QAction, QIcon, QApplication
 
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject, QgsMessageLog
 import resources_rc
 
 from arcgiscon_service import NotificationHandler, EsriUpdateService,\
@@ -86,11 +86,12 @@ class ArcGisConnector:
         self._iface.addPluginToVectorMenu(self._newLayerActionText, self._newLayerAction)
         self._arcGisRefreshLayerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'refresh from source'), self._iface.legendInterface() )
         self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'refresh from source with current extent'), self._iface.legendInterface() )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.VectorLayer, False )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.VectorLayer, False )
+        #self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
+        self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
+        self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisRefreshLayerAction.triggered.connect(self._refreshEsriLayer)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
-            
+
     def _connectToRefreshAction(self):
         for action in self._iface.mapNavToolToolBar().actions():
             if action.objectName() == "mActionDraw":
@@ -104,11 +105,15 @@ class ArcGisConnector:
         qgsLayers = self._iface.legendInterface().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriVectorLayers:  
-                if withCurrentExtent:      
+                if withCurrentExtent:
                     self._refreshController.updateLayerWithNewExtent(self._updateService, self._esriVectorLayers[layer.id()])
                 else:
-                    self._refreshController.updateLayer(self._updateService, self._esriVectorLayers[layer.id()])
-                
+                    pass
+                    #self._refreshController.updateLayer(self._updateService, self._esriVectorLayers[layer.id()])
+
+    def _onExtentsChanged(self):
+        self._refreshEsriLayer(True)
+
     def _onProjectLoad(self): 
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
         if  projectId != "-1":                                

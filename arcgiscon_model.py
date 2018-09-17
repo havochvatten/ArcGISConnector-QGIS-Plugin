@@ -21,6 +21,7 @@ A QGIS plugin
 """
 
 from qgis.core import QgsVectorLayer
+from qgis.core import QgsRasterLayer, QgsMessageLog
 
 import requests
 import requests_ntlm
@@ -36,7 +37,7 @@ class EsriVectorQueryFactoy:
     @staticmethod
     def createTotalFeatureCountQuery(extent=None, customFilter=None):  
         query = EsriVectorQueryFactoy.createBaseQuery(extent, customFilter)
-        query.update({"returnCountOnly":"true"})                               
+        query.update({"returnCountOnly":"true"})
         return EsriQuery("/query", query)
     
     @staticmethod
@@ -49,7 +50,7 @@ class EsriVectorQueryFactoy:
         offset = page * maxRecords
         query = EsriVectorQueryFactoy.createBaseQuery(extent, customFilter)
         query.update({"resultOffset":offset, "resultRecordCount":maxRecords})        
-        return EsriQuery("/query", query) 
+        return EsriQuery("/query", query)
     
     @staticmethod
     def createExtentParam(extent):
@@ -78,7 +79,40 @@ class EsriVectorQueryFactoy:
             query.update(customFilter)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriVectorQueryFactoy.createExtentParam(extent))
-        return query
+        return query 
+
+class EsriImageServiceQueryFactory:
+
+    @staticmethod    
+    def createBaseQuery(extent=None, customFilter=None):
+        jsonFormat = {"f":"json"}                           
+        query = {}            
+        customFilterKeys = []
+        if not customFilter is None:
+            customFilterKeys = [k.lower() for k in customFilter.keys()]
+        if customFilter is None or not "f" in customFilterKeys:
+            query.update(jsonFormat)
+        if customFilter is not None:
+            query.update(customFilter)
+        if extent is not None and (customFilter is None or "geometry" not in customFilter):
+            query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
+        QgsMessageLog.logMessage(str(query) + " query")
+        return query 
+
+    @staticmethod
+    def createExportImageQuery(extent=None, customFilter=None):
+        query = EsriImageServiceQueryFactory.createBaseQuery(extent, customFilter)
+        return EsriQuery("/ExportImage", query)
+
+    @staticmethod
+    def createExtentParam(extent):
+        return {
+                "bbox":json.dumps(extent['bbox']),
+                "format":"tiff",
+                "imageSR":json.dumps(extent['spatialReference'])
+                }
+
+
                 
 class EsriQuery:
     _urlAddon = None
@@ -139,8 +173,8 @@ class EsriConnectionJSONValidatorLayer(EsriConnectionJSONValidator):
         metaInfo = EsriLayerMetaInformation.createFromMetaJson(responseJson)
         if metaInfo.layerType is None:
             raise EsriConnectionJSONValidatorException("The URL points not to a layer.", EsriConnectionJSONValidatorException.NoLayer)
-        if metaInfo.layerType != "Feature Layer":
-            raise EsriConnectionJSONValidatorException("Layer must be of type Feature Layer. {} provided.".format(metaInfo.layerType), EsriConnectionJSONValidatorException.WrongLayerType)
+        if "esriImageServiceDataType" not in metaInfo.layerType:
+            raise EsriConnectionJSONValidatorException("Layer must be of type Image Service. {} provided.".format(metaInfo.layerType), EsriConnectionJSONValidatorException.WrongLayerType)
         
             
 class EsriLayerMetaInformation:
@@ -158,6 +192,8 @@ class EsriLayerMetaInformation:
             metaInfo.supportsPagination = metaJson["advancedQueryCapabilities"]["supportsPagination"]
         if "type" in metaJson:
             metaInfo.layerType = metaJson["type"]
+        elif "serviceDataType" in metaJson:
+            metaInfo.layerType = metaJson["serviceDataType"] 
         return metaInfo
         
 
@@ -341,5 +377,51 @@ class EsriVectorLayer:
         self.qgsVectorLayer.setCustomProperty("arcgiscon_connection_customfilter", customFilter) 
         self.qgsVectorLayer.setDataUrl(self.connection.basicUrl)
         self.qgsVectorLayer.setAbstract(self.connection.createMetaDataAbstract())
-                
+
+class EsriRasterLayer:
+    qgsRasterLayer = None        
+    connection = None
+    
+    @staticmethod
+    def create(connection, srcPath):
+        esriLayer = EsriRasterLayer()
+        esriLayer.connection = connection
+        esriLayer.updateQgsRasterLayer(srcPath)
+        return esriLayer
+    
+    @staticmethod
+    def restoreFromQgsLayer(qgsLayer):
+        esriLayer = EsriRasterLayer()
+        esriLayer.qgsRasterLayer = qgsLayer
+        basicUrl = str(qgsLayer.customProperty("arcgiscon_connection_url"))
+        name = qgsLayer.name()
+        username = str(qgsLayer.customProperty("arcgiscon_connection_username")) 
+        password = str(qgsLayer.customProperty("arcgiscon_connection_password"))
+        authMethod = int(qgsLayer.customProperty("arcgiscon_connection_authmethod"))
+        esriLayer.connection = Connection(basicUrl, name, username, password, authMethod)
+        extent = str(qgsLayer.customProperty("arcgiscon_connection_extent"))
+        if extent != "":
+            esriLayer.connection.updateBoundingBoxByExtent(json.loads(extent))
+        customFilter = str(qgsLayer.customProperty("arcgiscon_connection_customfilter"))
+        if customFilter != "":
+            esriLayer.connection.customFiler = json.loads(customFilter)
+        return esriLayer
+                                                
+    def updateQgsRasterLayer(self, srcPath):
+        QgsMessageLog.logMessage("Updating raster layer")
+        self.qgsRasterLayer = QgsRasterLayer(srcPath, self.connection.name)        
+        self.updateProperties()          
+    
+    def updateProperties(self):
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_url", self.connection.basicUrl)            
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_authmethod", self.connection.authMethod)
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_username", self.connection.username)
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_password", self.connection.password)
+        extent = json.dumps(self.connection.bbBox) if self.connection.bbBox is not None else ""
+#         extent = self.connection.bbBox if self.connection.bbBox is not None else ""
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_extent", extent)
+        customFilter = json.dumps(self.connection.customFiler) if self.connection.customFiler is not None else ""
+        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_customfilter", customFilter) 
+        self.qgsRasterLayer.setDataUrl(self.connection.basicUrl)
+        self.qgsRasterLayer.setAbstract(self.connection.createMetaDataAbstract())
                       

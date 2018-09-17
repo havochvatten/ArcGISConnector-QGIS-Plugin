@@ -19,10 +19,10 @@ email                : geometalab@gmail.com
 *                                                                         *
 ***************************************************************************/
 """
-from qgis.core import QgsMapLayerRegistry
+from qgis.core import QgsMapLayerRegistry, QgsMessageLog
 from PyQt4.QtCore import QObject, QCoreApplication
 from arcgiscon_ui import ArcGisConDialogNew
-from arcgiscon_model import Connection, EsriVectorLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
+from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker
 from Queue import Queue
 
@@ -138,13 +138,16 @@ class ArcGisConNewController(QObject):
 		self._updateService.update(updateWorker)
 		self._newDialog.accept()		
 		
-	def onSuccess(self, srcPath, connection):		
-		esriLayer = EsriVectorLayer.create(connection, srcPath)		
+	def onSuccess(self, srcPath, connection):
+		QgsMessageLog.logMessage("OnSuccess")
+		#esriLayer = EsriVectorLayer.create(connection, srcPath)
+		esriLayer = EsriRasterLayer.create(connection, srcPath)	
 		for action in self._legendActions:
-			self._iface.legendInterface().addLegendLayerActionForLayer(action, esriLayer.qgsVectorLayer)
-		QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsVectorLayer)
-		self._esriVectorLayers[esriLayer.qgsVectorLayer.id()]=esriLayer
-		
+			self._iface.legendInterface().addLegendLayerActionForLayer(action, esriLayer.qgsRasterLayer)
+		#QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsVectorLayer)
+		QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsRasterLayer)
+		self._esriVectorLayers[esriLayer.qgsRasterLayer.id()]=esriLayer
+
 	def onWarning(self, connection, warningMessage):
 		NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)
 			
@@ -183,18 +186,20 @@ class ArcGisConRefreshController(QObject):
 			try:
 				esriLayer.connection.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
 				esriLayer.updateProperties()			
-				worker = EsriUpdateWorker.create(esriLayer.connection, onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(newSrcPath, esriLayer), onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
+				worker = EsriUpdateWorker.create(esriLayer.connection, onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(newSrcPath, esriLayer, mapCanvas.extent()), onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
 				updateService.update(worker)
+				QgsMessageLog.logMessage("Reloaded")
 			except InvalidCrsIdException as e:
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
-	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer):
-		esriLayer.qgsVectorLayer.setDataSource(newSrcPath, esriLayer.qgsVectorLayer.name(),"ogr")
+	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
+		esriLayer.qgsRasterLayer.setExtent(extent)
+		esriLayer.qgsRasterLayer.triggerRepaint()
 		
 	def onWarning(self, connection, warningMessage):
 		NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)		
 																	
-	def onError(self, connection, errorMessage):		
+	def onError(self, connection, errorMessage):
 		NotificationHandler.pushError('['+connection.name+'] :', errorMessage, 5)	
 		
 		
