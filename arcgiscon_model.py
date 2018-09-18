@@ -188,6 +188,7 @@ class EsriLayerMetaInformation:
     supportsPagination = False
     layerType = None
     extent = None
+    rasterFunctions = None
     
     @staticmethod
     def createFromMetaJson(metaJson):
@@ -202,6 +203,8 @@ class EsriLayerMetaInformation:
             metaInfo.extent = {'bbox': bbox, 'spatialReference': metaJson["extent"]['spatialReference']}
         if "serviceDataType" in metaJson:
             metaInfo.layerType = metaJson["serviceDataType"]
+        if u'allowRasterFunction' in metaJson and metaJson[u'allowRasterFunction'] and u'rasterFunctionInfos' in metaJson:
+            metaInfo.rasterFunctions = metaJson[u'rasterFunctionInfos']
         return metaInfo
         
 
@@ -220,6 +223,7 @@ class Connection:
     password = None
     bbBox = None    
     customFiler = None
+    rasterFunctions = None
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
         self.basicUrl = basicUrl
@@ -255,6 +259,8 @@ class Connection:
             response.raise_for_status()
             validator.validate(response)
             self._updateLayerNameFromServerResponse(response)
+            metaInfo = EsriLayerMetaInformation.createFromMetaJson(response.json())
+            self._updateRasterFunctions(metaInfo.rasterFunctions)
         except Exception:
             raise
     
@@ -326,6 +332,9 @@ class Connection:
         except ValueError:
             raise
         
+    def _updateRasterFunctions(self, rasterFunctions):
+        self.rasterFunctions = rasterFunctions
+
     def createMetaDataAbstract(self):
         meta = ""
         if self.bbBox is not None:

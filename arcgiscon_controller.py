@@ -20,7 +20,7 @@ email                : geometalab@gmail.com
 ***************************************************************************/
 """
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
-from PyQt4.QtCore import QObject, QCoreApplication
+from PyQt4.QtCore import QObject, QCoreApplication, Qt
 from arcgiscon_ui import ArcGisConDialogNew
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker
@@ -58,8 +58,9 @@ class ArcGisConNewController(QObject):
 		self._esriVectorLayers = esriVectorLayers
 		self._legendActions = legendActions
 		self._updateService = updateService
-		self._hideAuthSection()		
+		self._hideAuthSection()
 		self._resetInputValues()
+		self._hideRasterSection()
 		self._newDialog.connectButton.setDisabled(True)
 		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.helpLabel.setOpenExternalLinks(True)
@@ -91,6 +92,8 @@ class ArcGisConNewController(QObject):
 			self._connection.validate(EsriConnectionJSONValidatorLayer())			
 			self._newDialog.connectionErrorLabel.setText("")
 			self._newDialog.layerNameInput.setText(self._connection.name)
+			if self._connection.rasterFunctions is not None:
+				self._addRasterFunctions(self._connection.rasterFunctions)
 			self._newDialog.connectButton.setDisabled(False)		
 		except Exception as e:						
 			self._newDialog.connectionErrorLabel.setText(str(e.message))
@@ -114,13 +117,29 @@ class ArcGisConNewController(QObject):
 			self._authSectionIsVisible = True
 		
 	def _hideAuthSection(self):
-			self._newDialog.usernameLabel.hide()
-			self._newDialog.passwordLabel.hide()
-			self._newDialog.usernameInput.hide()
-			self._newDialog.passwordInput.hide()
-			self._newDialog.usernameInput.setText("")
-			self._newDialog.passwordInput.setText("")
-			self._authSectionIsVisible = False 
+		self._newDialog.usernameLabel.hide()
+		self._newDialog.passwordLabel.hide()
+		self._newDialog.usernameInput.hide()
+		self._newDialog.passwordInput.hide()
+		self._newDialog.usernameInput.setText("")
+		self._newDialog.passwordInput.setText("")
+		self._authSectionIsVisible = False
+
+	def _showRasterSection(self):
+		self._newDialog.rasterLabel.show()
+		self._newDialog.rasterComboBox.show()
+
+	def _hideRasterSection(self):
+		self._newDialog.rasterLabel.hide()
+		self._newDialog.rasterComboBox.hide()
+
+	def _addRasterFunctions(self, rasterFunctions):
+		self._newDialog.rasterComboBox.clear()
+		self._newDialog.rasterComboBox.addItem('-- No raster function --')
+		for i in range(len(rasterFunctions)):
+			self._newDialog.rasterComboBox.addItem(rasterFunctions[i]['name'])
+			self._newDialog.rasterComboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
+		self._showRasterSection()
 							
 	def _requestLayerForConnection(self):
 		self._checkCustomFilter()
