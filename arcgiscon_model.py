@@ -262,7 +262,6 @@ class Connection:
         auth = None
         try: 
             if self.authMethod != ConnectionAuthType.NoAuth and self.username and self.password:
-                QgsMessageLog.logMessage("auth - " + str(self.authMethod) + " " + self.username + " " + self.password) 
                 if self.authMethod == ConnectionAuthType.NTLM:                    
                     auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
                 if self.authMethod == ConnectionAuthType.BasicAuthetication:
