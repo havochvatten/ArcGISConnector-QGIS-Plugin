@@ -129,3 +129,7 @@ pip-selfcheck.json
 
 
 # End of https://www.gitignore.io/api/python
+
+arcgisjsonsrc/
+dump/*.json
+test/*.json
