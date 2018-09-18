@@ -134,7 +134,6 @@ class EsriUpdateService(QtCore.QObject):
         
                                                  
     def runUpdateWorker(self):
-        QgsMessageLog.logMessage("update worker ran")
         while (not self.connectionPool.empty() or self.state == EsriUpdateServiceState.Processing) and not self._isKilled:
             try:   
                 if self.state == EsriUpdateServiceState.Idle:
@@ -155,7 +154,7 @@ class EsriUpdateService(QtCore.QObject):
                             if(totalRecords > float(maxRecordCount)):
                                 currentJob.onWarning.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Not all features could be retrieved. Please adjust extent or use a filter."))                                               
                             #query = EsriVectorQueryFactoy.createFeaturesQuery(currentJob.connection.bbBox, currentJob.connection.customFiler)
-                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.customFiler)
+                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.customFiler, currentJob.connection.currentRasterFunction)
                             results = [downloadSource((currentJob.connection, query, None))]
                         else:
                             queries = []

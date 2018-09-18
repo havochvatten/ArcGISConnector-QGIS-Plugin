@@ -88,7 +88,7 @@ class EsriImageServiceQueryFactory:
         return EsriQuery(params={"f":"json"})
 
     @staticmethod
-    def createBaseQuery(extent=None, mapExtent=None, customFilter=None):
+    def createBaseQuery(extent=None, mapExtent=None, customFilter=None, rasterFunction=None):
         jsonFormat = {"f":"json"}                           
         query = {}            
         customFilterKeys = []
@@ -98,6 +98,9 @@ class EsriImageServiceQueryFactory:
             query.update(jsonFormat)
         if customFilter is not None:
             query.update(customFilter)
+        if rasterFunction is not None:
+            rasterJson = {"renderingRule": json.dumps({"rasterFunction": rasterFunction})}
+            query.update(rasterJson)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
         else:
@@ -106,8 +109,8 @@ class EsriImageServiceQueryFactory:
         return query 
 
     @staticmethod
-    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None):
-        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter)
+    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None, rasterFunction=None):
+        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter, rasterFunction)
         return EsriQuery("/ExportImage", query)
 
     @staticmethod
@@ -117,8 +120,6 @@ class EsriImageServiceQueryFactory:
                 "format":"tiff",
                 "imageSR":json.dumps(extent['spatialReference'])
                 }
-
-
                 
 class EsriQuery:
     _urlAddon = None
@@ -224,6 +225,7 @@ class Connection:
     bbBox = None    
     customFiler = None
     rasterFunctions = None
+    currentRasterFunction = None
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
         self.basicUrl = basicUrl
@@ -348,6 +350,9 @@ class Connection:
             return int(authId.split(":")[1])
         except ValueError:
             raise InvalidCrsIdException(authId)
+    
+    def setCurrentRasterFunction(self, index):
+        self.currentRasterFunction = self.rasterFunctions[index]['name']
         
               
 class EsriVectorLayer:

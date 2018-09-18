@@ -48,7 +48,8 @@ class ArcGisConNewController(QObject):
 		self._newDialog.setModal(True)
 		self._newDialog.layerUrlInput.editingFinished.connect(self._initConnection)
 		self._newDialog.usernameInput.editingFinished.connect(self._onAuthInputChange)
-		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)		
+		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)	
+		self._newDialog.rasterComboBox.currentIndexChanged.connect(self._onRasterBoxChange)	
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
 		self._newDialog.connectButton.clicked.connect(self._requestLayerForConnection)	
 		self._newDialog.layerFilterInput.editingFinished.connect(self._checkCustomFilter)
@@ -140,6 +141,9 @@ class ArcGisConNewController(QObject):
 			self._newDialog.rasterComboBox.addItem(rasterFunctions[i]['name'])
 			self._newDialog.rasterComboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 		self._showRasterSection()
+
+	def _onRasterBoxChange(self):
+		self._connection.setCurrentRasterFunction(self._newDialog.rasterComboBox.currentIndex()-1)
 							
 	def _requestLayerForConnection(self):
 		self._checkCustomFilter()
@@ -208,7 +212,6 @@ class ArcGisConRefreshController(QObject):
 				esriLayer.updateProperties()			
 				worker = EsriUpdateWorker.create(esriLayer.connection, onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(newSrcPath, esriLayer, mapCanvas.extent()), onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
 				updateService.update(worker)
-				QgsMessageLog.logMessage("Reloaded")
 			except InvalidCrsIdException as e:
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
