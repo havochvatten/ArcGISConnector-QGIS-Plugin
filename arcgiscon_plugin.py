@@ -112,7 +112,8 @@ class ArcGisConnector:
                     #self._refreshController.updateLayer(self._updateService, self._esriVectorLayers[layer.id()])
 
     def _onExtentsChanged(self):
-        self._refreshEsriLayer(True)
+        if self._iface.mapCanvas().renderFlag():
+            self._refreshEsriLayer(True)
 
     def _onProjectLoad(self): 
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
