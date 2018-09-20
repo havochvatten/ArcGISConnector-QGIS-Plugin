@@ -62,6 +62,7 @@ class ArcGisConNewController(QObject):
 		self._hideAuthSection()
 		self._resetInputValues()
 		self._hideRasterSection()
+		self._hideFilterSection()
 		self._newDialog.connectButton.setDisabled(True)
 		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.helpLabel.setOpenExternalLinks(True)
@@ -79,6 +80,10 @@ class ArcGisConNewController(QObject):
 		else:							
 			self._hideAuthSection()
 			self._checkConnection()
+
+	def _hideFilterSection(self):
+		self._newDialog.layerFilterInput.hide()
+		self._newDialog.filterLabel.hide()
 																						
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())

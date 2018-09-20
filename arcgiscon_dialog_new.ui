@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>481</width>
-    <height>365</height>
+    <height>261</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,7 +17,11 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>ArcGIS REST API Connector</string>
+   <string>ArcGIS ImageServer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/plugins/arcgiscon/arcgis.png</normaloff>:/plugins/arcgiscon/arcgis.png</iconset>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
@@ -25,83 +29,33 @@
      <x>20</x>
      <y>10</y>
      <width>441</width>
-     <height>331</height>
+     <height>229</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="15" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+      <item row="15" column="0" colspan="2">
+       <widget class="QCheckBox" name="extentOnly">
+        <property name="text">
+         <string>Only requests features overlapping the current view extent</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
+       </widget>
       </item>
-      <item row="4" column="2">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="passwordInput">
         <property name="echoMode">
          <enum>QLineEdit::Password</enum>
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
+      <item row="8" column="1">
        <widget class="QLineEdit" name="layerFilterInput"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Layer URL</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="passwordLabel">
-        <property name="text">
-         <string>Password</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="layerUrlInput"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="usernameLabel">
-        <property name="text">
-         <string>Username</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QLineEdit" name="layerNameInput"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Layer Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Filter</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="usernameInput"/>
-      </item>
-      <item row="16" column="0" colspan="3">
-       <widget class="QCheckBox" name="extentOnly">
-        <property name="text">
-         <string>Only requests features overlapping the current view extent</string>
         </property>
        </widget>
       </item>
@@ -112,8 +66,45 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="2">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="layerUrlInput"/>
+      </item>
+      <item row="10" column="1">
        <widget class="QComboBox" name="rasterComboBox"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="passwordLabel">
+        <property name="text">
+         <string>Password</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="usernameLabel">
+        <property name="text">
+         <string>Username</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="layerNameInput"/>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="filterLabel">
+        <property name="text">
+         <string>Filter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Layer Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="usernameInput"/>
       </item>
      </layout>
     </item>
@@ -150,17 +141,17 @@
       </item>
       <item>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="cancelButton">
-          <property name="text">
-           <string>Cancel</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="connectButton">
           <property name="text">
            <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="cancelButton">
+          <property name="text">
+           <string>Cancel</string>
           </property>
          </widget>
         </item>
@@ -181,6 +172,8 @@
   <tabstop>layerFilterInput</tabstop>
   <tabstop>extentOnly</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

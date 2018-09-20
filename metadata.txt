@@ -7,9 +7,9 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=ArcGIS REST API ImageServer Connector
+name=ArcGIS ImageServer Connector
 qgisMinimumVersion=2.0
-description=ArcGIS REST API ImageServer Connector
+description=ArcGIS ImageServer Connector
 about=This plugin allows to connect to ArcGIS REST API ImageServer Services. This plugin is a fork of ArcGIS REST API Services by geometalab.
 version=0.1.0
 author=antmyr
@@ -23,7 +23,7 @@ email=anton.myrholm@havochvatten.se
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=arcgis, image, service, image service
+tags=arcgis, image, service, image service, imageserver
 
 homepage=
 tracker=https://bitbucket.havochvatten.se/projects/POC/repos/ski-qgis-imageserver-plugin/
