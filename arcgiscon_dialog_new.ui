@@ -172,8 +172,6 @@
   <tabstop>layerFilterInput</tabstop>
   <tabstop>extentOnly</tabstop>
  </tabstops>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
