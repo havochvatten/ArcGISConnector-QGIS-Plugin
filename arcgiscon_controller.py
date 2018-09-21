@@ -66,7 +66,7 @@ class ArcGisConNewController(QObject):
 		self._newDialog.connectButton.setDisabled(True)
 		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.helpLabel.setOpenExternalLinks(True)
-		self._newDialog.show()		
+		self._newDialog.show()
 		self._newDialog.exec_()
 		
 	def _initConnection(self):
@@ -119,6 +119,7 @@ class ArcGisConNewController(QObject):
 			self._newDialog.passwordLabel.show()
 			self._newDialog.usernameInput.show()
 			self._newDialog.passwordInput.show()
+			
 			self._newDialog.usernameInput.setFocus()
 			self._authSectionIsVisible = True
 		

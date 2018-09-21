@@ -25,7 +25,6 @@ from PyQt4.QtGui import QAction, QIcon, QApplication
 
 from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject, QgsMessageLog
 import resources_rc
-
 from arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
 from arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController

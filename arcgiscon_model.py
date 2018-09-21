@@ -118,7 +118,12 @@ class EsriImageServiceQueryFactory:
         return {
                 "bbox":json.dumps(extent['bbox']),
                 "format":"tiff",
-                "imageSR":json.dumps(extent['spatialReference'])
+                "compressionQuality": "100",
+                "imageSR":json.dumps(extent['spatialReference']['wkid']),
+                "bboxSR":json.dumps(extent['spatialReference']['wkid']),
+                "time": "null,1532044800000",
+                "size": "1000,1000",
+                "pixelType": "UNKNOWN"
                 }
                 
 class EsriQuery:
@@ -293,6 +298,7 @@ class Connection:
     
     def updateBoundingBoxByRectangle(self, qgsRectangle, authId):          
         spacialReferenceWkid = self.extractWkidFromAuthId(authId)
+        QgsMessageLog.logMessage(str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
         self.bbBox = {
                         "bbox":
                         {
@@ -352,7 +358,8 @@ class Connection:
             raise InvalidCrsIdException(authId)
     
     def setCurrentRasterFunction(self, index):
-        self.currentRasterFunction = self.rasterFunctions[index]['name']
+        if(index >= 0):
+            self.currentRasterFunction = self.rasterFunctions[index]['name']
         
               
 class EsriVectorLayer:
