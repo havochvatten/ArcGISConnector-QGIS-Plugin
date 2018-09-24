@@ -20,7 +20,7 @@
    <string>ArcGIS ImageServer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
+   <iconset>
     <normaloff>:/plugins/arcgiscon/arcgis.png</normaloff>:/plugins/arcgiscon/arcgis.png</iconset>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
@@ -35,42 +35,12 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="15" column="0" colspan="2">
-       <widget class="QCheckBox" name="extentOnly">
-        <property name="text">
-         <string>Only requests features overlapping the current view extent</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="passwordInput">
-        <property name="echoMode">
-         <enum>QLineEdit::Password</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QLineEdit" name="layerFilterInput"/>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Layer URL</string>
         </property>
        </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="rasterLabel">
-        <property name="text">
-         <string>Raster Function</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="layerUrlInput"/>
-      </item>
-      <item row="10" column="1">
-       <widget class="QComboBox" name="rasterComboBox"/>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="passwordLabel">
@@ -89,13 +59,6 @@
       <item row="5" column="1">
        <widget class="QLineEdit" name="layerNameInput"/>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="filterLabel">
-        <property name="text">
-         <string>Filter</string>
-        </property>
-       </widget>
-      </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
@@ -105,6 +68,33 @@
       </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="usernameInput"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="layerUrlInput"/>
+      </item>
+      <item row="9" column="1">
+       <widget class="QComboBox" name="rasterComboBox"/>
+      </item>
+      <item row="14" column="0" colspan="2">
+       <widget class="QCheckBox" name="extentOnly">
+        <property name="text">
+         <string>Only requests features overlapping the current view extent</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="passwordInput">
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="rasterLabel">
+        <property name="text">
+         <string>Raster Function</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -169,7 +159,6 @@
   <tabstop>layerNameInput</tabstop>
   <tabstop>connectButton</tabstop>
   <tabstop>cancelButton</tabstop>
-  <tabstop>layerFilterInput</tabstop>
   <tabstop>extentOnly</tabstop>
  </tabstops>
  <resources/>

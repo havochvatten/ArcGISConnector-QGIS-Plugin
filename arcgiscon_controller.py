@@ -51,8 +51,7 @@ class ArcGisConNewController(QObject):
 		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)	
 		self._newDialog.rasterComboBox.currentIndexChanged.connect(self._onRasterBoxChange)	
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
-		self._newDialog.connectButton.clicked.connect(self._requestLayerForConnection)	
-		self._newDialog.layerFilterInput.editingFinished.connect(self._checkCustomFilter)
+		self._newDialog.connectButton.clicked.connect(self._requestLayerForConnection)
 		self._updateWorkerPool = Queue()				
 			
 	def createNewConnection(self, updateService, esriVectorLayers, legendActions):
@@ -62,7 +61,6 @@ class ArcGisConNewController(QObject):
 		self._hideAuthSection()
 		self._resetInputValues()
 		self._hideRasterSection()
-		self._hideFilterSection()
 		self._newDialog.connectButton.setDisabled(True)
 		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.helpLabel.setOpenExternalLinks(True)
@@ -80,10 +78,6 @@ class ArcGisConNewController(QObject):
 		else:							
 			self._hideAuthSection()
 			self._checkConnection()
-
-	def _hideFilterSection(self):
-		self._newDialog.layerFilterInput.hide()
-		self._newDialog.filterLabel.hide()
 																						
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())
@@ -103,15 +97,6 @@ class ArcGisConNewController(QObject):
 			self._newDialog.connectButton.setDisabled(False)		
 		except Exception as e:						
 			self._newDialog.connectionErrorLabel.setText(str(e.message))
-
-	def _checkCustomFilter(self):
-		filterString = str(self._newDialog.layerFilterInput.text()) 
-		if  filterString != "":			
-			try:
-				self._customFilterJson = json.loads(filterString)
-				self._newDialog.connectionErrorLabel.setText("")
-			except ValueError:
-				self._newDialog.connectionErrorLabel.setText(QCoreApplication.translate('ArcGisConController', 'Invalid filter detected.'))
 
 	def _showAuthSection(self):
 		if not self._authSectionIsVisible:
@@ -168,7 +153,6 @@ class ArcGisConNewController(QObject):
 		self._newDialog.accept()		
 		
 	def onSuccess(self, srcPath, connection):
-		QgsMessageLog.logMessage("OnSuccess")
 		#esriLayer = EsriVectorLayer.create(connection, srcPath)
 		esriLayer = EsriRasterLayer.create(connection, srcPath)
 		for action in self._legendActions:
@@ -191,7 +175,6 @@ class ArcGisConNewController(QObject):
 		self._newDialog.connectionErrorLabel.setText("")
 		self._newDialog.extentOnly.setChecked(False)
 		self._newDialog.extentOnly.hide()
-		self._newDialog.layerFilterInput.setText("")
 		self._customFilterJson = None
 		
 	def _resetConnectionErrorStatus(self):
