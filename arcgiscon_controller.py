@@ -137,7 +137,6 @@ class ArcGisConNewController(QObject):
 		self._connection.setCurrentRasterFunction(self._newDialog.rasterComboBox.currentIndex()-1)
 							
 	def _requestLayerForConnection(self):
-		self._checkCustomFilter()
 		if self._newDialog.extentOnly.isChecked():
 			mapCanvas = self._iface.mapCanvas()
 			try:			

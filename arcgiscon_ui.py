@@ -27,8 +27,15 @@ from PyQt4 import QtGui, uic
 FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'arcgiscon_dialog_new.ui'))
 
+TIME_FORM, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'timeinput_dialog.ui'))
+
 class ArcGisConDialogNew(QtGui.QDialog, FORM_CLASS_NEW):
     def __init__(self, parent=None):        
         super(ArcGisConDialogNew, self).__init__(parent)        
         self.setupUi(self)        
-        
+
+class TimePickerDialog(QtGui.QDialog, TIME_FORM):
+    def __init__(self, parent=None):
+        super(TimePickerDialog, self).__init__(parent)
+        self.setupUi(self) 

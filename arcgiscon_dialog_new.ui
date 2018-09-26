@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>481</width>
-    <height>261</height>
+    <height>296</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -29,7 +29,7 @@
      <x>20</x>
      <y>10</y>
      <width>441</width>
-     <height>229</height>
+     <height>284</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -75,7 +75,7 @@
       <item row="9" column="1">
        <widget class="QComboBox" name="rasterComboBox"/>
       </item>
-      <item row="14" column="0" colspan="2">
+      <item row="17" column="0" colspan="2">
        <widget class="QCheckBox" name="extentOnly">
         <property name="text">
          <string>Only requests features overlapping the current view extent</string>

@@ -195,6 +195,7 @@ class EsriLayerMetaInformation:
     layerType = None
     extent = None
     rasterFunctions = None
+    timeExtent = (None, None)
     
     @staticmethod
     def createFromMetaJson(metaJson):
@@ -211,6 +212,9 @@ class EsriLayerMetaInformation:
             metaInfo.layerType = metaJson["serviceDataType"]
         if u'allowRasterFunction' in metaJson and metaJson[u'allowRasterFunction'] and u'rasterFunctionInfos' in metaJson:
             metaInfo.rasterFunctions = metaJson[u'rasterFunctionInfos']
+        if u'timeInfo' in metaJson:
+            metaInfo.timeExtent = (metaJson['timeInfo']['timeExtent'][0], metaJson['timeInfo']['timeExtent'][1])
+
         return metaInfo
         
 
