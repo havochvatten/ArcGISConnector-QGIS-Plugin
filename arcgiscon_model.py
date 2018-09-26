@@ -231,10 +231,12 @@ class Connection:
     authMethod = None
     username = None
     password = None
-    bbBox = None    
+    bbBox = None
     customFiler = None
     rasterFunctions = None
     currentRasterFunction = None
+    serviceTimeExtent = (None, None)
+    timeExtent = (None, None)
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
         self.basicUrl = basicUrl
@@ -272,6 +274,7 @@ class Connection:
             self._updateLayerNameFromServerResponse(response)
             metaInfo = EsriLayerMetaInformation.createFromMetaJson(response.json())
             self._updateRasterFunctions(metaInfo.rasterFunctions)
+            self._updateTimeExtent(metaInfo.timeExtent)
         except Exception:
             raise
     
@@ -299,7 +302,7 @@ class Connection:
     
     def updateBoundingBoxByExtent(self, extent):
         self.bbBox = extent
-    
+
     def updateBoundingBoxByRectangle(self, qgsRectangle, authId):          
         spacialReferenceWkid = self.extractWkidFromAuthId(authId)
         QgsMessageLog.logMessage(str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
@@ -346,6 +349,9 @@ class Connection:
         
     def _updateRasterFunctions(self, rasterFunctions):
         self.rasterFunctions = rasterFunctions
+    
+    def _updateTimeExtent(self, extent):
+        self.serviceTimeExtent = extent
 
     def createMetaDataAbstract(self):
         meta = ""
@@ -364,6 +370,9 @@ class Connection:
     def setCurrentRasterFunction(self, index):
         if(index >= 0):
             self.currentRasterFunction = self.rasterFunctions[index]['name']
+    
+    def setTimeExtent(self, timeExtent):
+        self.timeExtent = timeExtent
         
               
 class EsriVectorLayer:

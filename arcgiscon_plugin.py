@@ -93,7 +93,7 @@ class ArcGisConnector:
         self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisRefreshLayerAction.triggered.connect(self._refreshEsriLayer)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
-        #self._arcGisTimePickerAction.triggered.connect()
+        self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
 
     def _connectToRefreshAction(self):
         for action in self._iface.mapNavToolToolBar().actions():
@@ -152,6 +152,13 @@ class ArcGisConnector:
                     self._iface.legendInterface().addLegendLayerActionForLayer(self._arcGisRefreshLayerWithNewExtentAction, qgsLayer)
                 except: 
                     raise
+
+    def _chooseTimeExtent(self):
+        qgsLayers = self._iface.legendInterface().selectedLayers()
+        for layer in qgsLayers:
+            if layer.id() in self._esriVectorLayers:
+                selectedLayer = self._esriVectorLayers[layer.id()]
+                self._refreshController.showTimePicker(selectedLayer)
                                                   
     def _updateServiceFinished(self):            
         self._updateService.tearDown()

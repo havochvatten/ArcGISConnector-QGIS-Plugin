@@ -20,11 +20,12 @@ email                : geometalab@gmail.com
 ***************************************************************************/
 """
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
-from PyQt4.QtCore import QObject, QCoreApplication, Qt
-from arcgiscon_ui import ArcGisConDialogNew
+from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate
+from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker
 from Queue import Queue
+import datetime
 
 import json
 
@@ -191,6 +192,24 @@ class ArcGisConRefreshController(QObject):
 		if not esriLayer.connection is None:
 			worker = EsriUpdateWorker.create(esriLayer.connection, onSuccess=None, onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
 			updateService.update(worker)
+
+	def showTimePicker(self, layer):
+		startTimeLimitLong = layer.connection.serviceTimeExtent[0] / 1000L
+		startTimeLimitDate = QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+
+		endTimeLimitLong = layer.connection.serviceTimeExtent[1] / 1000L
+		endTimeLimitDate = QDate.fromString(datetime.datetime.fromtimestamp(endTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+
+		dialog = TimePickerDialog()
+		dialog.setModal(True)
+
+		dialog.endDateInput.setMinimumDate(startTimeLimitDate)
+		dialog.endDateInput.setMaximumDate(endTimeLimitDate)
+		dialog.startDateInput.setMinimumDate(startTimeLimitDate)
+		dialog.startDateInput.setMaximumDate(endTimeLimitDate)
+
+		dialog.show()
+		dialog.exec_()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
 		if not esriLayer.connection is None:			
