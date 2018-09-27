@@ -20,7 +20,7 @@ email                : geometalab@gmail.com
 ***************************************************************************/
 """
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
-from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate
+from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
 from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker
@@ -208,6 +208,11 @@ class ArcGisConRefreshController(QObject):
 		dialog.startDateInput.setMinimumDate(startTimeLimitDate)
 		dialog.startDateInput.setMaximumDate(endTimeLimitDate)
 
+		dialog.startDateCheckBox.stateChanged.connect(lambda state: dialog.startDateInput.setEnabled(not state))
+		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
+
+		dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog.startDateInput.dateTime(), dialog.endDateInput.dateTime()))
+
 		dialog.show()
 		dialog.exec_()
 			
@@ -222,6 +227,12 @@ class ArcGisConRefreshController(QObject):
 			except InvalidCrsIdException as e:
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
+	def updateLayerWithNewTimeExtent(self, layer, startDate, endDate):
+		startDate.setTime(QTime(0,0,0))
+		endDate.setTime(QTime(23,59,59))
+		layer.connection.setTimeExtent((startDate.toMSecsSinceEpoch(), endDate.toMSecsSinceEpoch()))
+		
+	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
 		#esriLayer.qgsRasterLayer.setExtent(extent)
 		esriLayer.qgsRasterLayer.triggerRepaint()

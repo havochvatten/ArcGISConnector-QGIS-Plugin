@@ -372,6 +372,7 @@ class Connection:
             self.currentRasterFunction = self.rasterFunctions[index]['name']
     
     def setTimeExtent(self, timeExtent):
+        QgsMessageLog.logMessage(str(timeExtent) + " is time extent chosen")
         self.timeExtent = timeExtent
         
               
