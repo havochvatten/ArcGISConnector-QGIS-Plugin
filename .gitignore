@@ -133,3 +133,7 @@ pip-selfcheck.json
 arcgisjsonsrc/
 dump/*.json
 test/*.json
+
+# Visual studio
+
+.vscode/*
