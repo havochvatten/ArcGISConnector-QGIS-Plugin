@@ -164,7 +164,7 @@ class ArcGisConnector:
         self._updateService.tearDown()
         #move back to main GUI thread
         self._updateService.moveToThread(QApplication.instance().thread())
-                  
+
     def _onLayerRemoved(self, layerId):
         if layerId in self._esriVectorLayers:
             del self._esriVectorLayers[layerId]

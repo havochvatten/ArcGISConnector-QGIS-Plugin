@@ -211,7 +211,7 @@ class ArcGisConRefreshController(QObject):
 		dialog.startDateCheckBox.stateChanged.connect(lambda state: dialog.startDateInput.setEnabled(not state))
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
-		dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog.startDateInput.dateTime(), dialog.endDateInput.dateTime()))
+		dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog))
 
 		dialog.show()
 		dialog.exec_()
@@ -227,10 +227,20 @@ class ArcGisConRefreshController(QObject):
 			except InvalidCrsIdException as e:
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
-	def updateLayerWithNewTimeExtent(self, layer, startDate, endDate):
-		startDate.setTime(QTime(0,0,0))
-		endDate.setTime(QTime(23,59,59))
-		layer.connection.setTimeExtent((startDate.toMSecsSinceEpoch(), endDate.toMSecsSinceEpoch()))
+	def updateLayerWithNewTimeExtent(self, layer, dialog):
+		startDate = endDate = "null"
+
+		if not dialog.startDateCheckBox.isChecked():
+			startDate = dialog.startDateInput.dateTime()
+			startDate.setTime(QTime(0,0,0))
+			startDate = startDate.toMSecsSinceEpoch()
+
+		if not dialog.endDateCheckBox.isChecked():
+			endDate = dialog.endDateInput.dateTime()
+			endDate.setTime(QTime(23,59,59))
+			endDate = endDate.toMSecsSinceEpoch()
+		
+		layer.connection.setTimeExtent((startDate, endDate))
 		
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):

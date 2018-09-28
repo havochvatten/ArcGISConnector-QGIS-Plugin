@@ -65,7 +65,7 @@ class EsriVectorQueryFactoy:
         allObjects = {"where":"objectid=objectid"}
         allFields = {"outfields":"*"}
         jsonFormat = {"f":"json"}                           
-        query = {}            
+        query = {}         
         customFilterKeys = []
         if not customFilter is None:
             customFilterKeys = [k.lower() for k in customFilter.keys()]
@@ -79,7 +79,7 @@ class EsriVectorQueryFactoy:
             query.update(customFilter)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriVectorQueryFactoy.createExtentParam(extent))
-        return query 
+        return query
 
 class EsriImageServiceQueryFactory:
 
@@ -88,7 +88,7 @@ class EsriImageServiceQueryFactory:
         return EsriQuery(params={"f":"json"})
 
     @staticmethod
-    def createBaseQuery(extent=None, mapExtent=None, customFilter=None, rasterFunction=None):
+    def createBaseQuery(extent=None, mapExtent=None, customFilter=None, rasterFunction=None, timeExtent=(None,None)):
         jsonFormat = {"f":"json"}                           
         query = {}            
         customFilterKeys = []
@@ -101,6 +101,9 @@ class EsriImageServiceQueryFactory:
         if rasterFunction is not None:
             rasterJson = {"renderingRule": json.dumps({"rasterFunction": rasterFunction})}
             query.update(rasterJson)
+        if timeExtent != (None, None):
+            timeExtentJson = {"time" : str(timeExtent[0]) + "," + str(timeExtent[1])}
+            query.update(timeExtentJson)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
         else:
@@ -109,8 +112,8 @@ class EsriImageServiceQueryFactory:
         return query 
 
     @staticmethod
-    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None, rasterFunction=None):
-        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter, rasterFunction)
+    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None, rasterFunction=None, timeExtent=(None,None)):
+        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter, rasterFunction, timeExtent)
         return EsriQuery("/ExportImage", query)
 
     @staticmethod
@@ -121,7 +124,6 @@ class EsriImageServiceQueryFactory:
                 "compressionQuality": "100",
                 "imageSR":json.dumps(extent['spatialReference']['wkid']),
                 "bboxSR":json.dumps(extent['spatialReference']['wkid']),
-                "time": "null,1532044800000",
                 "size": "1000,1000",
                 "pixelType": "UNKNOWN"
                 }
@@ -372,7 +374,6 @@ class Connection:
             self.currentRasterFunction = self.rasterFunctions[index]['name']
     
     def setTimeExtent(self, timeExtent):
-        QgsMessageLog.logMessage(str(timeExtent) + " is time extent chosen")
         self.timeExtent = timeExtent
         
               
