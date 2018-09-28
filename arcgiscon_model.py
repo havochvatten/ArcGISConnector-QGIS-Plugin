@@ -238,7 +238,8 @@ class Connection:
     rasterFunctions = None
     currentRasterFunction = None
     serviceTimeExtent = (None, None)
-    timeExtent = (None, None)
+    timeExtent = (None, None) 
+    conId = None
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
         self.basicUrl = basicUrl
@@ -246,6 +247,7 @@ class Connection:
         self.username = username
         self.password = password
         self.authMethod = authMethod
+        self.conId = id(self)
         
     @staticmethod
     def createAndConfigureConnection(basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth, validator=EsriConnectionJSONValidatorLayer()):

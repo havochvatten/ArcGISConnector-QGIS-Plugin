@@ -213,7 +213,8 @@ class EsriUpdateService(QtCore.QObject):
             response = requests.get(href, auth = (connection.username, connection.password))
         else:
             response = requests.get(href)
-        fname = href[href.rfind("/")+1:]
+        connectionName_clean = filter(lambda ch: ch not in " ?.!/;:", connection.name)
+        fname = connectionName_clean + "_" + str(connection.conId)
         return dict(filename = fname, data = response.content)
     
     def _processSources(self, sources, connection):        
@@ -292,7 +293,7 @@ class EsriUpdateService(QtCore.QObject):
     
 class FileSystemService:
     
-    arcGisJsonSrc = os.path.join(os.path.dirname(__file__),"arcgisjsonsrc")    
+    arcGisJsonSrc = os.path.join(os.path.dirname(__file__),"imageSrc")    
     tmpFolderName = "tmp"
     
     def storeJsonInTmpFolder(self, jsonFile, jsonFileName):
@@ -305,7 +306,7 @@ class FileSystemService:
     def storeBinaryInTmpFolder(self, binaryFile, binaryFileName):
         tmpPath = os.path.join(self.arcGisJsonSrc, self.tmpFolderName)
         self._createFolderIfNotExists(tmpPath)
-        filePath = os.path.join(tmpPath, "arcgisimageservice_tmp.tif") # Temporary solution
+        filePath = os.path.join(tmpPath, binaryFileName + ".tif")
         self._storeBinary(binaryFile, filePath)
         return filePath
     
