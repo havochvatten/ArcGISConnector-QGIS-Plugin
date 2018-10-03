@@ -82,9 +82,10 @@ class ArcGisConNewController(QObject):
 			self._checkConnection()
 	
 	def _onConnectClick(self):
-		if len(self._newDialog.layerNameInput.text()) == 0:
-			self._initConnection()
-		self._requestLayerForConnection()
+		if len(self._newDialog.layerUrlInput.text()) > 0:
+			if len(self._newDialog.layerNameInput.text()) == 0:
+				self._initConnection()
+			self._requestLayerForConnection()
 																						
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())
