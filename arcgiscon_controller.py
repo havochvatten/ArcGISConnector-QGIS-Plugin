@@ -21,6 +21,7 @@ email                : geometalab@gmail.com
 """
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
 from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
+from PyQt4 import QtGui
 from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker
@@ -212,9 +213,14 @@ class ArcGisConRefreshController(QObject):
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
 		dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog))
+		dialog.buttonBox.button(QtGui.QDialogButtonBox.RestoreDefaults).clicked.connect(lambda: self.onTimePickerRestoreClick(layer, dialog))
 
 		dialog.show()
 		dialog.exec_()
+
+	def onTimePickerRestoreClick(self, layer, dialog):
+		layer.connection.setTimeExtent((None,None))
+		dialog.close()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
 		if not esriLayer.connection is None:			
