@@ -53,7 +53,7 @@ class ArcGisConNewController(QObject):
 		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)	
 		self._newDialog.rasterComboBox.currentIndexChanged.connect(self._onRasterBoxChange)	
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
-		self._newDialog.connectButton.clicked.connect(self._requestLayerForConnection)
+		self._newDialog.connectButton.clicked.connect(self._onConnectClick)
 		self._updateWorkerPool = Queue()				
 			
 	def createNewConnection(self, updateService, esriVectorLayers, legendActions):
@@ -63,7 +63,7 @@ class ArcGisConNewController(QObject):
 		self._hideAuthSection()
 		self._resetInputValues()
 		self._hideRasterSection()
-		self._newDialog.connectButton.setDisabled(True)
+		#self._newDialog.connectButton.setDisabled(True)
 		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.helpLabel.setOpenExternalLinks(True)
 		self._newDialog.show()
@@ -72,7 +72,7 @@ class ArcGisConNewController(QObject):
 	def _initConnection(self):
 		url = str(self._newDialog.layerUrlInput.text().strip()) 		
 		name = self._newDialog.layerNameInput.text()		
-		self._newDialog.connectButton.setDisabled(True)		
+		#self._newDialog.connectButton.setDisabled(True)		
 		self._connection = Connection.createAndConfigureConnection(url, name)					
 		if self._connection.needsAuth():
 			self._newDialog.connectionErrorLabel.setText("")						
@@ -80,6 +80,11 @@ class ArcGisConNewController(QObject):
 		else:							
 			self._hideAuthSection()
 			self._checkConnection()
+	
+	def _onConnectClick(self):
+		if len(self._newDialog.layerNameInput.text()) == 0:
+			self._initConnection()
+		self._requestLayerForConnection()
 																						
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())
