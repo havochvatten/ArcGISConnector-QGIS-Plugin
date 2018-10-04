@@ -102,7 +102,10 @@ class EsriImageServiceQueryFactory:
             rasterJson = {"renderingRule": json.dumps({"rasterFunction": rasterFunction})}
             query.update(rasterJson)
         if timeExtent != (None, None):
-            timeExtentJson = {"time" : str(timeExtent[0]) + "," + str(timeExtent[1])}
+            if isinstance(timeExtent, tuple):
+                timeExtentJson = {"time" : str(timeExtent[0]) + "," + str(timeExtent[1])}
+            else:
+                timeExtentJson = {"time" : str(timeExtent)}
             query.update(timeExtentJson)
         if extent is not None and (customFilter is None or "geometry" not in customFilter):
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
