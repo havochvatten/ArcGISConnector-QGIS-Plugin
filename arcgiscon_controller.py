@@ -245,7 +245,6 @@ class ArcGisConRefreshController(QObject):
 	def updateLayerWithNewTimeExtent(self, layer, dialog):
 		
 		if dialog.tabWidget.currentWidget() == dialog.instantTab:
-			QgsMessageLog.logMessage("Success log")
 			timeExtent = dialog.startDateInput.dateTime().toMSecsSinceEpoch()
 		else:
 			startDate = endDate = "null"

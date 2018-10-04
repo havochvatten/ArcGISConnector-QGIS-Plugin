@@ -159,7 +159,10 @@ class ArcGisConnector:
             if layer.id() in self._esriVectorLayers:
                 selectedLayer = self._esriVectorLayers[layer.id()]
                 self._refreshController.showTimePicker(selectedLayer)
-                                                  
+        
+        # After time picker window has been closed
+        self._refreshEsriLayer(True)
+                                      
     def _updateServiceFinished(self):            
         self._updateService.tearDown()
         #move back to main GUI thread
