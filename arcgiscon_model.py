@@ -310,7 +310,7 @@ class Connection:
     def updateBoundingBoxByExtent(self, extent):
         self.bbBox = extent
 
-    def updateBoundingBoxByRectangle(self, qgsRectangle, authId):          
+    def updateBoundingBoxByRectangle(self, qgsRectangle, authId):
         spacialReferenceWkid = self.extractWkidFromAuthId(authId)
         QgsMessageLog.logMessage(str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
         self.bbBox = {
@@ -380,7 +380,7 @@ class Connection:
     
     def setTimeExtent(self, timeExtent):
         self.timeExtent = timeExtent
-        
+      
               
 class EsriVectorLayer:
     qgsVectorLayer = None        
@@ -458,7 +458,6 @@ class EsriRasterLayer:
         return esriLayer
                                                 
     def updateQgsRasterLayer(self, srcPath):
-        QgsMessageLog.logMessage("Updating raster layer")
         self.qgsRasterLayer = QgsRasterLayer(srcPath, self.connection.name)        
         self.updateProperties()          
     

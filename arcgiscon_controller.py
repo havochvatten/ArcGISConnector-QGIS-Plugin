@@ -167,6 +167,7 @@ class ArcGisConNewController(QObject):
 		#QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsVectorLayer)
 		QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsRasterLayer)
 		self._esriVectorLayers[esriLayer.qgsRasterLayer.id()]=esriLayer
+		self._connection.renderLocked = True
 
 	def onWarning(self, connection, warningMessage):
 		NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)
@@ -232,7 +233,12 @@ class ArcGisConRefreshController(QObject):
 		dialog.close()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
-		if not esriLayer.connection is None:			
+		if not esriLayer.connection is None:
+
+			if esriLayer.connection.renderLocked:
+				esriLayer.connection.renderLocked = False
+				return
+
 			mapCanvas = self._iface.mapCanvas()
 			try:
 				esriLayer.connection.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
@@ -262,7 +268,6 @@ class ArcGisConRefreshController(QObject):
 		
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
-		#esriLayer.qgsRasterLayer.setExtent(extent)
 		esriLayer.qgsRasterLayer.triggerRepaint()
 		
 	def onWarning(self, connection, warningMessage):
