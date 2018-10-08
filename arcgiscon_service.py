@@ -24,8 +24,8 @@ from PyQt4 import QtCore, QtGui
 from qgis.gui import QgsMessageBar
 from qgis.core import QgsMessageLog
 from arcgiscon_model import EsriVectorQueryFactoy, EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
-from Queue import Queue
 
+import time
 import multiprocessing
 import math
 import json
@@ -70,7 +70,11 @@ class EsriUpdateServiceState:
     Down, Idle, Processing, TearingDown = range(4)
 
 
-class EsriUpdateService(QtCore.QObject):    
+class EsriUpdateService(QtCore.QObject):   
+    #Constant values, do not mutate.
+    REFRESH_WAIT_TIME = .600
+
+    #-------------------------------
     connectionPool = None    
     _thread = None
     _iface = None
@@ -91,7 +95,7 @@ class EsriUpdateService(QtCore.QObject):
         self._isKilled = False
         self._iface = iface
         self.state = EsriUpdateServiceState.Down
-        self.connectionPool = Queue()
+        self.connectionPool = []
         
     @staticmethod
     def createService(iface):
@@ -104,7 +108,7 @@ class EsriUpdateService(QtCore.QObject):
     def update(self, worker):        
         while (self.state == EsriUpdateServiceState.TearingDown):
             time.sleep(0.1)
-        self.connectionPool.put(worker)
+        self.connectionPool.append(worker)
         if self.isDown():
             self.start()
     
@@ -134,11 +138,15 @@ class EsriUpdateService(QtCore.QObject):
         
                                                  
     def runUpdateWorker(self):
-        while (not self.connectionPool.empty() or self.state == EsriUpdateServiceState.Processing) and not self._isKilled:
+        while (not len(self.connectionPool) <= 0 or self.state == EsriUpdateServiceState.Processing) and not self._isKilled:
             try:   
                 if self.state == EsriUpdateServiceState.Idle:
                     self.state = EsriUpdateServiceState.Processing
-                    currentJob = self.connectionPool.get()
+                    #Wait briefly before receiving the refresh, to avoid double work.
+                    time.sleep(self.REFRESH_WAIT_TIME)
+                    currentJob = self.connectionPool.pop()
+                    del self.connectionPool[:]
+
                     #totalRecords = self._getTotalRecords(currentJob.connection) # Do fix this
                     totalRecords = 1
                     if totalRecords > 0: 
