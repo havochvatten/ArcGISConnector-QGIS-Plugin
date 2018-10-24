@@ -24,9 +24,10 @@ from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
 from PyQt4 import QtGui
 from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
-from arcgiscon_service import NotificationHandler, EsriUpdateWorker
+from arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
 from Queue import Queue
 import datetime
+
 
 import json
 
@@ -42,6 +43,7 @@ class ArcGisConNewController(QObject):
 	_updateService = None	
 	_authSectionIsVisible = False	
 	_customFilterJson = None
+	_credentials = None
 	
 	def __init__(self, iface):
 		QObject.__init__(self)
@@ -51,7 +53,8 @@ class ArcGisConNewController(QObject):
 		self._newDialog.layerUrlInput.editingFinished.connect(self._initConnection)
 		self._newDialog.usernameInput.editingFinished.connect(self._onAuthInputChange)
 		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)	
-		self._newDialog.rasterComboBox.currentIndexChanged.connect(self._onRasterBoxChange)	
+		self._newDialog.rasterComboBox.currentIndexChanged.connect(self._onRasterBoxChange)
+		self._newDialog.authCheckBox.stateChanged.connect(lambda state: self._onAuthCheckBoxChanged(state))
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
 		self._newDialog.connectButton.clicked.connect(self._onConnectClick)
 		self._updateWorkerPool = Queue()				
@@ -60,12 +63,22 @@ class ArcGisConNewController(QObject):
 		self._esriVectorLayers = esriVectorLayers
 		self._legendActions = legendActions
 		self._updateService = updateService
-		self._hideAuthSection()
-		self._resetInputValues()
-		self._hideRasterSection()
-		#self._newDialog.connectButton.setDisabled(True)
-		self._newDialog.layerUrlInput.setFocus()
-		self._newDialog.helpLabel.setOpenExternalLinks(True)
+
+		self._loadSavedCredentials()
+
+		if self._credentials == None:
+			self._newDialog.authCheckBox.setChecked(False)
+			self._hideAuthSection()
+			self._resetInputValues()
+			self._hideRasterSection()
+			#self._newDialog.connectButton.setDisabled(True)
+			self._newDialog.layerUrlInput.setFocus()
+		else:
+			self._newDialog.layerUrlInput.setText(self._credentials['url'])
+			self._newDialog.usernameInput.setText(self._credentials['username'])
+			self._newDialog.passwordInput.setText(self._credentials['password'])
+			self._newDialog.authCheckBox.setChecked(True)
+
 		self._newDialog.show()
 		self._newDialog.exec_()
 		
@@ -80,6 +93,22 @@ class ArcGisConNewController(QObject):
 		else:							
 			self._hideAuthSection()
 			self._checkConnection()
+
+	def _onAuthCheckBoxChanged(self, state):
+		if state:
+			self._saveCurrentCredentials()
+		else:
+			FileSystemService().clearSavedCredentials()
+
+	def _saveCurrentCredentials(self):
+		self._credentials = {}
+		self._credentials['url'] = self._newDialog.layerUrlInput.text() 
+		self._credentials['username'] = self._newDialog.usernameInput.text() 
+		self._credentials['password'] = self._newDialog.passwordInput.text()
+		FileSystemService().saveCredentials(self._credentials)
+
+	def _loadSavedCredentials(self):
+		self._credentials = FileSystemService().loadSavedCredentials()
 	
 	def _onConnectClick(self):
 		if len(self._newDialog.layerUrlInput.text()) > 0:
