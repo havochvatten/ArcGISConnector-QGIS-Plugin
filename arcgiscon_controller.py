@@ -70,15 +70,17 @@ class ArcGisConNewController(QObject):
 			self._newDialog.authCheckBox.setChecked(False)
 			self._hideAuthSection()
 			self._resetInputValues()
-			self._hideRasterSection()
-			#self._newDialog.connectButton.setDisabled(True)
-			self._newDialog.layerUrlInput.setFocus()
 		else:
 			self._newDialog.layerUrlInput.setText(self._credentials['url'])
-			self._newDialog.usernameInput.setText(self._credentials['username'])
-			self._newDialog.passwordInput.setText(self._credentials['password'])
+			if len(self._credentials['username']) > 0 or len(self._credentials['password']) > 0:
+				self._newDialog.usernameInput.setText(self._credentials['username'])
+				self._newDialog.passwordInput.setText(self._credentials['password'])
+			else:
+				self._hideAuthSection()
 			self._newDialog.authCheckBox.setChecked(True)
 
+		self._hideRasterSection()
+		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.show()
 		self._newDialog.exec_()
 		
