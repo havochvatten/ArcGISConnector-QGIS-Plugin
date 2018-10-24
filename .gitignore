@@ -133,6 +133,7 @@ pip-selfcheck.json
 imageSrc/
 dump/*.json
 test/*.json
+credentials.json
 
 # Visual studio
 
