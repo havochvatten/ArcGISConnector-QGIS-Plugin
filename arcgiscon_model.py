@@ -88,48 +88,41 @@ class EsriImageServiceQueryFactory:
         return EsriQuery(params={"f":"json"})
 
     @staticmethod
-    def createBaseQuery(extent=None, mapExtent=None, customFilter=None, rasterFunction=None, timeExtent=(None,None)):
-        jsonFormat = {"f":"json"}                           
-        query = {}            
-        customFilterKeys = []
-        if not customFilter is None:
-            customFilterKeys = [k.lower() for k in customFilter.keys()]
-        if customFilter is None or not "f" in customFilterKeys:
-            query.update(jsonFormat)
-        if customFilter is not None:
-            query.update(customFilter)
-        if rasterFunction is not None:
-            rasterJson = {"renderingRule": json.dumps({"rasterFunction": rasterFunction})}
+    def createBaseQuery(extent=None, mapExtent=None, settings={}):
+        query = {"f":"json"}
+        if 'renderingRule' in settings:
+            rasterJson = settings['renderingRule']
             query.update(rasterJson)
-        if timeExtent != (None, None):
+        QgsMessageLog.logMessage("1")
+        if 'timeExtent' in settings:
+            timeExtent = settings['timeExtent']
             if isinstance(timeExtent, tuple):
                 timeExtentJson = {"time" : str(timeExtent[0]) + "," + str(timeExtent[1])}
             else:
                 timeExtentJson = {"time" : str(timeExtent)}
             query.update(timeExtentJson)
-        if extent is not None and (customFilter is None or "geometry" not in customFilter):
+        if extent is not None:
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
         else:
             query.update(EsriImageServiceQueryFactory.createExtentParam(mapExtent))
-        QgsMessageLog.logMessage(str(query) + " query")
         return query 
 
     @staticmethod
-    def createExportImageQuery(extent=None, mapExtent=None,  customFilter=None, rasterFunction=None, timeExtent=(None,None)):
-        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, customFilter, rasterFunction, timeExtent)
+    def createExportImageQuery(extent=None, mapExtent=None, settings={}):
+        query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, settings)
         return EsriQuery("/ExportImage", query)
 
     @staticmethod
     def createExtentParam(extent):
         return {
-                "bbox":json.dumps(extent['bbox']),
-                "format":"tiff",
-                "compressionQuality": "100",
-                "imageSR":json.dumps(extent['spatialReference']['wkid']),
-                "bboxSR":json.dumps(extent['spatialReference']['wkid']),
-                "size": "1000,1000",
-                "pixelType": "UNKNOWN"
-                }
+            "bbox": json.dumps(extent['bbox']),
+            "format": "tiff",
+            "compressionQuality": "100",
+            "imageSR": json.dumps(extent['spatialReference']['wkid']),
+            "bboxSR": json.dumps(extent['spatialReference']['wkid']),
+            "size": "1000,1000",
+            "pixelType": "UNKNOWN"
+        }
                 
 class EsriQuery:
     _urlAddon = None
@@ -237,11 +230,9 @@ class Connection:
     username = None
     password = None
     bbBox = None
-    customFiler = None
     rasterFunctions = None
-    currentRasterFunction = None
     serviceTimeExtent = (None, None)
-    timeExtent = (None, None) 
+    settings = {}
     conId = None
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
@@ -342,8 +333,6 @@ class Connection:
         identifier = self.basicUrl
         if self.bbBox is not None:
             identifier += json.dumps(self.bbBox)
-        if self.customFiler is not None:
-            identifier += json.dumps(self.customFiler)
         return identifier
                                             
     def _updateLayerNameFromServerResponse(self, response):
@@ -364,8 +353,6 @@ class Connection:
         meta = ""
         if self.bbBox is not None:
             meta += "bbox: "+json.dumps(self.bbBox)+"\n\n"
-        if self.customFiler is not None:
-            meta += "filter:"+json.dumps(self.customFiler)
         return meta
     
     def extractWkidFromAuthId(self, authId):
@@ -376,14 +363,22 @@ class Connection:
     
     def setCurrentRasterFunction(self, index):
         if(index >= 0):
-            self.currentRasterFunction = self.rasterFunctions[index]['name']
+            self.settings.update(
+                {
+                    "renderingRule": {
+                        "rasterFunction": self.rasterFunctions[index]['name']
+                    }
+                }
+            )
     
     def setTimeExtent(self, timeExtent):
-        self.timeExtent = timeExtent
+        self.settings.update(
+            {'timeExtent' : timeExtent}
+        )
       
               
 class EsriVectorLayer:
-    qgsVectorLayer = None        
+    qgsVectorLayer = None
     connection = None
     
     @staticmethod
@@ -406,9 +401,6 @@ class EsriVectorLayer:
         extent = str(qgsLayer.customProperty("arcgiscon_connection_extent"))
         if extent != "":
             esriLayer.connection.updateBoundingBoxByExtent(json.loads(extent))
-        customFilter = str(qgsLayer.customProperty("arcgiscon_connection_customfilter"))
-        if customFilter != "":
-            esriLayer.connection.customFiler = json.loads(customFilter)
         return esriLayer
                                                 
     def updateQgsVectorLayer(self, srcPath):
@@ -423,8 +415,6 @@ class EsriVectorLayer:
         extent = json.dumps(self.connection.bbBox) if self.connection.bbBox is not None else ""
 #         extent = self.connection.bbBox if self.connection.bbBox is not None else ""
         self.qgsVectorLayer.setCustomProperty("arcgiscon_connection_extent", extent)
-        customFilter = json.dumps(self.connection.customFiler) if self.connection.customFiler is not None else ""
-        self.qgsVectorLayer.setCustomProperty("arcgiscon_connection_customfilter", customFilter) 
         self.qgsVectorLayer.setDataUrl(self.connection.basicUrl)
         self.qgsVectorLayer.setAbstract(self.connection.createMetaDataAbstract())
 
@@ -452,9 +442,6 @@ class EsriRasterLayer:
         extent = str(qgsLayer.customProperty("arcgiscon_connection_extent"))
         if extent != "":
             esriLayer.connection.updateBoundingBoxByExtent(json.loads(extent))
-        customFilter = str(qgsLayer.customProperty("arcgiscon_connection_customfilter"))
-        if customFilter != "":
-            esriLayer.connection.customFiler = json.loads(customFilter)
         return esriLayer
                                                 
     def updateQgsRasterLayer(self, srcPath):
@@ -469,8 +456,6 @@ class EsriRasterLayer:
         extent = json.dumps(self.connection.bbBox) if self.connection.bbBox is not None else ""
 #         extent = self.connection.bbBox if self.connection.bbBox is not None else ""
         self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_extent", extent)
-        customFilter = json.dumps(self.connection.customFiler) if self.connection.customFiler is not None else ""
-        self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_customfilter", customFilter) 
         self.qgsRasterLayer.setDataUrl(self.connection.basicUrl)
         self.qgsRasterLayer.setAbstract(self.connection.createMetaDataAbstract())
                       

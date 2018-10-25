@@ -183,8 +183,6 @@ class ArcGisConNewController(QObject):
 			except InvalidCrsIdException as e:
 				self._newDialog.connectionErrorLabel.setText(QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))				
 				return
-		if not self._customFilterJson is None: 
-			self._connection.customFiler = self._customFilterJson
 		self._connection.name = self._newDialog.layerNameInput.text()
 		updateWorker = EsriUpdateWorker.create(self._connection, onSuccess=lambda srcPath: self.onSuccess(srcPath, self._connection), onWarning=lambda warningMsg: self.onWarning(self._connection, warningMsg), onError=lambda errorMsg: self.onError(self._connection, errorMsg))							
 		self._updateService.update(updateWorker)
@@ -317,9 +315,11 @@ class ConnectionSettingsController(QObject):
 		self._iface = iface
 		self._settingsDialog = SettingsDialog()
 		self._settingsDialog.setModal(True)
-		self._setDefaultSettings()
 
 	def showSettingsDialog(self, layer):
+		self._connection = layer.connection
+		self._settings = self._connection.settings
+
 		self._settingsDialog.show()
 		self._settingsDialog.exec_()
 

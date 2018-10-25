@@ -160,14 +160,13 @@ class EsriUpdateService(QtCore.QObject):
                         if pages == 1 or not metaInfo.supportsPagination:
                             #if server doesn't support pagination and there are more features than we can retrieve within one single server call, warn user.                             
                             if(totalRecords > float(maxRecordCount)):
-                                currentJob.onWarning.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Not all features could be retrieved. Please adjust extent or use a filter."))                                               
-                            #query = EsriVectorQueryFactoy.createFeaturesQuery(currentJob.connection.bbBox, currentJob.connection.customFiler)
-                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.customFiler, currentJob.connection.currentRasterFunction, currentJob.connection.timeExtent)
+                                currentJob.onWarning.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Not all features could be retrieved. Please adjust extent or use a filter."))
+                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.settings)
                             results = [downloadSource((currentJob.connection, query, None))]
                         else:
                             queries = []
                             for page in range(0,pages):            
-                                queries.append(EsriVectorQueryFactoy.createPagedFeaturesQuery(page, maxRecordCount, currentJob.connection.bbBox, currentJob.connection.customFiler))                                                                        
+                                queries.append(EsriVectorQueryFactoy.createPagedFeaturesQuery(page, maxRecordCount, currentJob.connection.bbBox, None))                                                                        
                             results = self._downloadSources(queries, currentJob.connection)
                         self.progress.emit(90)                        
                         if results is not None and not self._isKilled:
@@ -265,7 +264,7 @@ class EsriUpdateService(QtCore.QObject):
         
     def _getTotalRecords(self, connection):                                
         totalRecords = 0
-        query = EsriVectorQueryFactoy.createTotalFeatureCountQuery(connection.bbBox, connection.customFiler)
+        query = EsriVectorQueryFactoy.createTotalFeatureCountQuery(connection.bbBox, None)
         metaJson = connection.getJson(query)                        
         if u'count' in metaJson:                
             totalRecords = int(metaJson[u'count'])
