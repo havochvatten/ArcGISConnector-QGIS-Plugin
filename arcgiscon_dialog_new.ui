@@ -35,17 +35,17 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Layer URL</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="passwordLabel">
         <property name="text">
          <string>Password</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Layer URL</string>
         </property>
        </widget>
       </item>
@@ -56,16 +56,13 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="2">
-       <widget class="QComboBox" name="rasterComboBox"/>
-      </item>
       <item row="6" column="2">
        <widget class="QLineEdit" name="layerNameInput"/>
       </item>
       <item row="0" column="2">
        <widget class="QLineEdit" name="layerUrlInput"/>
       </item>
-      <item row="21" column="0" colspan="3">
+      <item row="20" column="0" colspan="3">
        <widget class="QCheckBox" name="extentOnly">
         <property name="text">
          <string>Only requests features overlapping the current view extent</string>
@@ -79,6 +76,19 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="2">
+       <widget class="QLineEdit" name="usernameInput"/>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="rasterLabel">
+        <property name="text">
+         <string>Raster Function</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2">
+       <widget class="QComboBox" name="rasterComboBox"/>
+      </item>
       <item row="5" column="2">
        <widget class="QCheckBox" name="authCheckBox">
         <property name="text">
@@ -86,27 +96,10 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="rasterLabel">
-        <property name="text">
-         <string>Raster Function</string>
-        </property>
-       </widget>
-      </item>
       <item row="6" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Layer Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="usernameInput"/>
-      </item>
-      <item row="7" column="2">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
