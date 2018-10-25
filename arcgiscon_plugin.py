@@ -27,7 +27,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject, QgsMessageLo
 import resources_rc
 from arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
-from arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController
+from arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController, ConnectionSettingsController
 from arcgiscon_model import EsriVectorLayer
 from uuid import uuid4
 import os.path
@@ -48,6 +48,7 @@ class ArcGisConnector:
     _esriVectorLayers = None
     _updateService = None
     _qSettings = None
+    _settingsController = None
     
     def __init__(self, iface):            
         self._iface = iface        
@@ -68,7 +69,8 @@ class ArcGisConnector:
         self._updateService = EsriUpdateService.createService(iface)
         self._updateService.finished.connect(self._updateServiceFinished)      
         self._newController = ArcGisConNewController(iface)
-        self._refreshController = ArcGisConRefreshController(iface)                         
+        self._refreshController = ArcGisConRefreshController(iface)
+        self._settingsController = ConnectionSettingsController(iface)
         QgsMapLayerRegistry.instance().layerRemoved.connect(self._onLayerRemoved)
         QgsProject.instance().writeProject.connect(self._onProjectInitialWrite)
         QgsProject.instance().projectSaved.connect(self._onProjectSaved)
@@ -78,7 +80,7 @@ class ArcGisConnector:
         newLayerActionIcon = QIcon(':/plugins/arcgiscon/arcgis.png')
         self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'arcgiscon')
         self._newLayerAction = QAction(newLayerActionIcon, self._newLayerActionText, self._iface.mainWindow())
-        self._newLayerAction.triggered.connect(lambda: self._newController.createNewConnection(self._updateService, self._esriVectorLayers, [self._arcGisRefreshLayerAction,self._arcGisRefreshLayerWithNewExtentAction, self._arcGisTimePickerAction]))
+        self._newLayerAction.triggered.connect(lambda: self._newController.createNewConnection(self._updateService, self._esriVectorLayers, [self._arcGisRefreshLayerAction,self._arcGisRefreshLayerWithNewExtentAction, self._arcGisTimePickerAction, self._arcGisSettingsAction]))
         try:
             self._iface.layerToolBar().addAction(self._newLayerAction)
         except:
@@ -87,13 +89,18 @@ class ArcGisConnector:
         self._arcGisRefreshLayerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'refresh from source'), self._iface.legendInterface() )
         self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'refresh from source with current extent'), self._iface.legendInterface() )
         self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'), self._iface.legendInterface() )
+        self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS Layer settings..'), self._iface.legendInterface() )
+
         #self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
         self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
+        self._iface.legendInterface().addLegendLayerAction(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id2", QgsMapLayer.RasterLayer, False )
+        self._iface.legendInterface().addLegendLayerAction(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id3", QgsMapLayer.RasterLayer, False )
+
         self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisRefreshLayerAction.triggered.connect(self._refreshEsriLayer)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
         self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
+        self._arcGisSettingsAction.triggered.connect(self._showSettingsDialog)
 
     def _connectToRefreshAction(self):
         for action in self._iface.mapNavToolToolBar().actions():
@@ -162,6 +169,13 @@ class ArcGisConnector:
         
         # After time picker window has been closed
         self._refreshEsriLayer(True)
+
+    def _showSettingsDialog(self):
+        qgsLayers = self._iface.legendInterface().selectedLayers()
+        for layer in qgsLayers:
+            if layer.id() in self._esriVectorLayers:
+                selectedLayer = self._esriVectorLayers[layer.id()]
+                self._settingsController.showSettingsDialog(selectedLayer)
                                       
     def _updateServiceFinished(self):            
         self._updateService.tearDown()

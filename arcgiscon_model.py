@@ -314,18 +314,18 @@ class Connection:
         spacialReferenceWkid = self.extractWkidFromAuthId(authId)
         QgsMessageLog.logMessage(str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
         self.bbBox = {
-                        "bbox":
-                        {
-                            "xmin":qgsRectangle.xMinimum(),
-                            "ymin":qgsRectangle.yMinimum(),
-                            "xmax":qgsRectangle.xMaximum(),
-                            "ymax":qgsRectangle.yMaximum()
-                        },
-                        "spatialReference": 
-                        {
-                            "wkid":spacialReferenceWkid
-                        }
-                      }
+            "bbox":
+            {
+                "xmin": qgsRectangle.xMinimum(),
+                "ymin": qgsRectangle.yMinimum(),
+                "xmax": qgsRectangle.xMaximum(),
+                "ymax": qgsRectangle.yMaximum()
+            },
+            "spatialReference":
+            {
+                "wkid": spacialReferenceWkid
+            }
+        }
 
         
     def clearBoundingBox(self):

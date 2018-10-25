@@ -22,7 +22,7 @@ email                : geometalab@gmail.com
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
 from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
 from PyQt4 import QtGui
-from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog
+from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
 from Queue import Queue
@@ -218,7 +218,6 @@ class ArcGisConNewController(QObject):
 		
 	def _resetConnectionErrorStatus(self):
 		self._newDialog.connectionErrorLabel.setText("")
-
 		
 class ArcGisConRefreshController(QObject):
 	_iface = None
@@ -307,5 +306,33 @@ class ArcGisConRefreshController(QObject):
 	def onError(self, connection, errorMessage):
 		NotificationHandler.pushError('['+connection.name+'] :', errorMessage, 5)	
 		
-		
-		
+class ConnectionSettingsController(QObject):
+	_iface = None
+	_settingsDialog = None
+	_connection = None
+	_settings = {}
+
+	def __init__(self, iface):
+		QObject.__init__(self)
+		self._iface = iface
+		self._settingsDialog = SettingsDialog()
+		self._settingsDialog.setModal(True)
+		self._setDefaultSettings()
+
+	def showSettingsDialog(self, layer):
+		self._settingsDialog.show()
+		self._settingsDialog.exec_()
+
+	def _setDefaultSettings(self):
+		_settings = {
+			"renderingRule" : {
+				"type" : None
+			},
+			"mosaicRule" : {
+				"type" : None
+			}
+		}
+
+	
+	
+

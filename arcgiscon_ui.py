@@ -30,6 +30,9 @@ FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
 TIME_FORM, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'timeinput_dialog.ui'))
 
+SETTINGS_FORM, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'settings.ui'))
+
 class ArcGisConDialogNew(QtGui.QDialog, FORM_CLASS_NEW):
     def __init__(self, parent=None):        
         super(ArcGisConDialogNew, self).__init__(parent)        
@@ -38,4 +41,9 @@ class ArcGisConDialogNew(QtGui.QDialog, FORM_CLASS_NEW):
 class TimePickerDialog(QtGui.QDialog, TIME_FORM):
     def __init__(self, parent=None):
         super(TimePickerDialog, self).__init__(parent)
+        self.setupUi(self)
+
+class SettingsDialog(QtGui.QDialog, SETTINGS_FORM):
+    def __init__(self, parent=None):
+        super(SettingsDialog, self).__init__(parent)
         self.setupUi(self) 
