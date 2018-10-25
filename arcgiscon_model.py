@@ -93,7 +93,6 @@ class EsriImageServiceQueryFactory:
         if 'renderingRule' in settings:
             rasterJson = settings['renderingRule']
             query.update(rasterJson)
-        QgsMessageLog.logMessage("1")
         if 'timeExtent' in settings:
             timeExtent = settings['timeExtent']
             if isinstance(timeExtent, tuple):

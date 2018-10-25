@@ -320,8 +320,56 @@ class ConnectionSettingsController(QObject):
 		self._connection = layer.connection
 		self._settings = self._connection.settings
 
+		self._initRenderingRuleTab()
+		self._initMosaicRuleTab()
+
 		self._settingsDialog.show()
 		self._settingsDialog.exec_()
+
+	def _initRenderingRuleTab(self):
+
+		self._settingsDialog.radioButtonTemplate.toggled.connect(
+			lambda buttonValue: self._renderingButtonChecked("radioButtonTemplate") if buttonValue else None)
+		self._settingsDialog.radioButtonCustom.toggled.connect(
+			lambda buttonValue: self._renderingButtonChecked("radioButtonCustom") if buttonValue else None)
+		self._settingsDialog.radioButtonNone.toggled.connect(
+			lambda buttonValue: self._renderingButtonChecked("radioButtonNone") if buttonValue else None)
+
+		self._settingsDialog.comboBox.clear()
+		rasterFunctions = self._connection.rasterFunctions
+		for i in range(len(rasterFunctions)):
+			self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
+			self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
+		self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
+
+		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule']:
+			self._settingsDialog.radioButtonTemplate.click()
+		else:
+			self._settingsDialog.radioButtonNone.click()
+
+	def _onTemplateComboBoxChange(self):
+		index = self._settingsDialog.comboBox.currentIndex()
+		descriptionText = self._connection.rasterFunctions[index]['description']
+		helpText = self._connection.rasterFunctions[index]['help']
+		self._settingsDialog.templateTextEdit.clear()
+		self._settingsDialog.templateTextEdit.appendPlainText('Description: ' + descriptionText + "\n" + 'Help: ' + helpText)
+
+	def _renderingButtonChecked(self, button):
+		if button == "radioButtonTemplate":
+			self._settingsDialog.comboBox.setEnabled(True)
+			self._settingsDialog.templateTextEdit.setEnabled(True)
+			self._settingsDialog.customTextEdit.setEnabled(False)
+		if button == "radioButtonCustom":
+			self._settingsDialog.comboBox.setEnabled(False)
+			self._settingsDialog.templateTextEdit.setEnabled(False)
+			self._settingsDialog.customTextEdit.setEnabled(True)
+		if button == "radioButtonNone":
+			self._settingsDialog.comboBox.setEnabled(False)
+			self._settingsDialog.templateTextEdit.setEnabled(False)
+			self._settingsDialog.customTextEdit.setEnabled(False)
+
+	def _initMosaicRuleTab(self):
+		pass
 
 	def _setDefaultSettings(self):
 		_settings = {
