@@ -366,9 +366,9 @@ class Connection:
         if index >= 0 and self.rasterFunctions is not None:
             self.settings.update(
                 {
-                    "renderingRule": {
-                        "rasterFunction": self.rasterFunctions[index]['name']
-                    }
+                    "renderingRule": json.dumps({
+                        "rasterFunction": self.rasterFunctions[index]["name"]
+                    })
                 }
             )
     
