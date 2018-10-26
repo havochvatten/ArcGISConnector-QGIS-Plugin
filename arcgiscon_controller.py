@@ -338,7 +338,7 @@ class ConnectionSettingsController(QObject):
 		self._initMosaicRuleTab()
 
 		self._settingsDialog.buttonBox.accepted.connect(self._updateSettings)
-
+		self._settingsDialog.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self._updateSettings)
 
 		self._settingsDialog.show()
 		self._settingsDialog.exec_()
@@ -364,6 +364,7 @@ class ConnectionSettingsController(QObject):
 
 		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule']:
 			self._settingsDialog.radioButtonTemplate.click()
+			self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(self._settings['renderingRule']['rasterFunction']))
 		else:
 			self._settingsDialog.radioButtonNone.click()
 
