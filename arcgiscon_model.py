@@ -90,9 +90,10 @@ class EsriImageServiceQueryFactory:
     @staticmethod
     def createBaseQuery(extent=None, mapExtent=None, settings={}):
         query = {"f":"json"}
+        QgsMessageLog.logMessage("settings - " + str(settings))
         if 'renderingRule' in settings:
-            rasterJson = settings['renderingRule']
-            query.update(rasterJson)
+            rasterJson = json.dumps(settings['renderingRule'])
+            query.update({'renderingRule' : rasterJson})
         if 'timeExtent' in settings:
             timeExtent = settings['timeExtent']
             if isinstance(timeExtent, tuple):
@@ -104,6 +105,7 @@ class EsriImageServiceQueryFactory:
             query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
         else:
             query.update(EsriImageServiceQueryFactory.createExtentParam(mapExtent))
+        QgsMessageLog.logMessage(str(query) + " query")
         return query 
 
     @staticmethod
@@ -361,7 +363,7 @@ class Connection:
             raise InvalidCrsIdException(authId)
     
     def setCurrentRasterFunction(self, index):
-        if(index >= 0):
+        if index >= 0 and self.rasterFunctions is not None:
             self.settings.update(
                 {
                     "renderingRule": {

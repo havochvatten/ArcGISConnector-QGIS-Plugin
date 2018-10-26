@@ -26,7 +26,7 @@ from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
 from arcgiscon_model import Connection, EsriVectorLayer, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
 from Queue import Queue
-import datetime
+import datetime, time
 
 
 import json
@@ -60,6 +60,7 @@ class ArcGisConNewController(QObject):
 		self._updateWorkerPool = Queue()				
 			
 	def createNewConnection(self, updateService, esriVectorLayers, legendActions):
+		self._connection = None
 		self._esriVectorLayers = esriVectorLayers
 		self._legendActions = legendActions
 		self._updateService = updateService
@@ -78,11 +79,25 @@ class ArcGisConNewController(QObject):
 			else:
 				self._hideAuthSection()
 			self._newDialog.authCheckBox.setChecked(True)
-
-		self._hideRasterSection()
-		self._newDialog.layerUrlInput.setFocus()
 		self._newDialog.show()
+		if self._connection != None:
+			self._checkConnection()
+			if self._connection.rasterFunctions == None:
+				self._hideRasterSection()
+		else:
+			self._initConnectionRaw()
 		self._newDialog.exec_()
+
+	def _initConnectionRaw(self):
+		url = str(self._newDialog.layerUrlInput.text().strip()) 		
+		name = self._newDialog.layerNameInput.text()	
+		self._connection = Connection.createAndConfigureConnection(url, name)
+		username = str(self._newDialog.usernameInput.text())
+		password = str(self._newDialog.passwordInput.text())
+		if self._connection is not None and username != "" and password != "":
+			self._connection.username = username
+			self._connection.password = password
+		self._checkConnection()
 		
 	def _initConnection(self):
 		url = str(self._newDialog.layerUrlInput.text().strip()) 		
@@ -131,7 +146,7 @@ class ArcGisConNewController(QObject):
 			self._connection.validate(EsriConnectionJSONValidatorLayer())			
 			self._newDialog.connectionErrorLabel.setText("")
 			self._newDialog.layerNameInput.setText(self._connection.name)
-			if self._connection.rasterFunctions is not None:
+			if self._connection.rasterFunctions != None:
 				self._addRasterFunctions(self._connection.rasterFunctions)
 			self._newDialog.connectButton.setDisabled(False)		
 		except Exception as e:						
@@ -246,7 +261,6 @@ class ArcGisConRefreshController(QObject):
 		dialog.instantDateInput.setMinimumDate(startTimeLimitDate)
 		dialog.instantDateInput.setMaximumDate(endTimeLimitDate)
 
-
 		dialog.startDateCheckBox.stateChanged.connect(lambda state: dialog.startDateInput.setEnabled(not state))
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
@@ -323,8 +337,14 @@ class ConnectionSettingsController(QObject):
 		self._initRenderingRuleTab()
 		self._initMosaicRuleTab()
 
+		self._settingsDialog.buttonBox.accepted.connect(self._updateSettings)
+
+
 		self._settingsDialog.show()
 		self._settingsDialog.exec_()
+
+	def _updateSettings(self):
+		QgsMessageLog.logMessage("update settings")
 
 	def _initRenderingRuleTab(self):
 
