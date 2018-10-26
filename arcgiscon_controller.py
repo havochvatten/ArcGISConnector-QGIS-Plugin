@@ -323,6 +323,8 @@ class ConnectionSettingsController(QObject):
 	_settingsDialog = None
 	_connection = None
 	_settings = {}
+	_renderingMode = None
+	_lastCustomText = None
 
 	def __init__(self, iface):
 		QObject.__init__(self)
@@ -344,7 +346,18 @@ class ConnectionSettingsController(QObject):
 		self._settingsDialog.exec_()
 
 	def _updateSettings(self):
+		if self._renderingMode == "template":
+			self._connection.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
+		elif self._renderingMode == "custom":
+			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
+			self._connection.updateSettings({
+				'renderingRule' : ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
+			})
+		else:
+			if 'renderingRule' in self._connection.settings:
+				self._connection.settings.pop('renderingRule')
 		QgsMessageLog.logMessage("update settings")
+		QgsMessageLog.logMessage(str(self._connection.settings))
 
 	def _initRenderingRuleTab(self):
 
@@ -362,10 +375,16 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 		self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
 
-		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule']:
+		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule'] and len(self._settings['renderingRule']) == 1:
+			self._renderingMode = "template"
 			self._settingsDialog.radioButtonTemplate.click()
 			self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(self._settings['renderingRule']['rasterFunction']))
+		elif 'renderingRule' in self._settings and len(self._settings['renderingRule']) > 0:
+			self._renderingMode = "custom"
+			self._settingsDialog.radioButtonCustom.click()
+			self._settingsDialog.customTextEdit.setPlainText(self._lastCustomText)
 		else:
+			self._renderingMode = "none"
 			self._settingsDialog.radioButtonNone.click()
 
 	def _onTemplateComboBoxChange(self):
@@ -377,14 +396,17 @@ class ConnectionSettingsController(QObject):
 
 	def _renderingButtonChecked(self, button):
 		if button == "radioButtonTemplate":
+			self._renderingMode = "template"
 			self._settingsDialog.comboBox.setEnabled(True)
 			self._settingsDialog.templateTextEdit.setEnabled(True)
 			self._settingsDialog.customTextEdit.setEnabled(False)
 		if button == "radioButtonCustom":
+			self._renderingMode = "custom"
 			self._settingsDialog.comboBox.setEnabled(False)
 			self._settingsDialog.templateTextEdit.setEnabled(False)
 			self._settingsDialog.customTextEdit.setEnabled(True)
 		if button == "radioButtonNone":
+			self._renderingMode = "none"
 			self._settingsDialog.comboBox.setEnabled(False)
 			self._settingsDialog.templateTextEdit.setEnabled(False)
 			self._settingsDialog.customTextEdit.setEnabled(False)

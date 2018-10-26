@@ -92,7 +92,7 @@ class EsriImageServiceQueryFactory:
         query = {"f":"json"}
         QgsMessageLog.logMessage("settings - " + str(settings))
         if 'renderingRule' in settings:
-            rasterJson = json.dumps(settings['renderingRule'])
+            rasterJson = settings['renderingRule']
             query.update({'renderingRule' : rasterJson})
         if 'timeExtent' in settings:
             timeExtent = settings['timeExtent']
@@ -371,6 +371,9 @@ class Connection:
                     }
                 }
             )
+    
+    def updateSettings(self, newSettings):
+        self.settings.update(newSettings)
     
     def setTimeExtent(self, timeExtent):
         self.settings.update(
