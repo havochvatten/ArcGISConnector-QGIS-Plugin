@@ -65,6 +65,7 @@ class ArcGisConNewController(QObject):
 		self._legendActions = legendActions
 		self._updateService = updateService
 
+		self._hideRasterSection()
 		self._loadSavedCredentials()
 
 		if self._credentials == None:
@@ -82,8 +83,6 @@ class ArcGisConNewController(QObject):
 		self._newDialog.show()
 		if self._connection != None:
 			self._checkConnection()
-			if self._connection.rasterFunctions == None:
-				self._hideRasterSection()
 		else:
 			self._initConnectionRaw()
 		self._newDialog.exec_()
@@ -132,6 +131,8 @@ class ArcGisConNewController(QObject):
 			if len(self._newDialog.layerNameInput.text()) == 0:
 				self._initConnection()
 			self._requestLayerForConnection()
+		if self._newDialog.authCheckBox.isChecked():
+			self._saveCurrentCredentials()
 																						
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())
@@ -148,7 +149,9 @@ class ArcGisConNewController(QObject):
 			self._newDialog.layerNameInput.setText(self._connection.name)
 			if self._connection.rasterFunctions != None:
 				self._addRasterFunctions(self._connection.rasterFunctions)
-			self._newDialog.connectButton.setDisabled(False)		
+			else:
+				self._hideRasterSection()
+			self._newDialog.connectButton.setDisabled(False)
 		except Exception as e:						
 			self._newDialog.connectionErrorLabel.setText(str(e.message))
 
