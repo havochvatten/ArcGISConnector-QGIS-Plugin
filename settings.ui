@@ -178,10 +178,10 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="3" column="2">
-          <widget class="QPlainTextEdit" name="plainTextEdit_3"/>
+          <widget class="QPlainTextEdit" name="mosaicTextEdit"/>
          </item>
          <item row="2" column="2">
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="mosaicCheckBox">
            <property name="text">
             <string>Use mosaic rule</string>
            </property>

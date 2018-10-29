@@ -323,8 +323,12 @@ class ConnectionSettingsController(QObject):
 	_settingsDialog = None
 	_connection = None
 	_settings = {}
+
 	_renderingMode = None
+	_mosaicMode = None
+
 	_lastCustomText = None
+	_lastMosaicText = None
 
 	def __init__(self, iface):
 		QObject.__init__(self)
@@ -356,6 +360,16 @@ class ConnectionSettingsController(QObject):
 		else:
 			if 'renderingRule' in self._connection.settings:
 				self._connection.settings.pop('renderingRule')
+
+		if self._mosaicMode == True:
+			self._lastMosaicText = self._settingsDialog.mosaicTextEdit.toPlainText()
+			self._connection.updateSettings({
+				'mosaicRule' : ' '.join(self._settingsDialog.mosaicTextEdit.toPlainText().split())
+			})
+		else:
+			if 'mosaicRule' in self._connection.settings:
+				self._connection.settings.pop('mosaicRule')
+		
 		QgsMessageLog.logMessage("update settings")
 		QgsMessageLog.logMessage(str(self._connection.settings))
 
@@ -370,16 +384,19 @@ class ConnectionSettingsController(QObject):
 
 		self._settingsDialog.comboBox.clear()
 		rasterFunctions = self._connection.rasterFunctions
-		for i in range(len(rasterFunctions)):
-			self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
-			self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
-		self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
+		if rasterFunctions != None:
+			for i in range(len(rasterFunctions)):
+				self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
+				self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
+			self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
 
-		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule'] and len(self._settings['renderingRule']) == 1:
+		#QgsMessageLog.logMessage(str(self._settings) + " " + str('rasterFunction' in self._settings['renderingRule']) + " " + str(len(self._settings['renderingRule']) == 1))
+		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule'] and len(json.loads(self._settings['renderingRule'])) == 1:
 			self._renderingMode = "template"
 			self._settingsDialog.radioButtonTemplate.click()
-			self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(self._settings['renderingRule']['rasterFunction']))
-		elif 'renderingRule' in self._settings and len(self._settings['renderingRule']) > 0:
+			self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
+			self._onTemplateComboBoxChange()
+		elif 'renderingRule' in self._settings:
 			self._renderingMode = "custom"
 			self._settingsDialog.radioButtonCustom.click()
 			self._settingsDialog.customTextEdit.setPlainText(self._lastCustomText)
@@ -412,18 +429,11 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.customTextEdit.setEnabled(False)
 
 	def _initMosaicRuleTab(self):
-		pass
+		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
+		if self._mosaicMode == None or self._mosaicMode == False:
+			self._settingsDialog.mosaicTextEdit.setEnabled(False)
+		self._settingsDialog.mosaicTextEdit.setPlainText(self._lastMosaicText)
 
-	def _setDefaultSettings(self):
-		_settings = {
-			"renderingRule" : {
-				"type" : None
-			},
-			"mosaicRule" : {
-				"type" : None
-			}
-		}
-
-	
-	
-
+	def _mosaicCheckBoxChanged(self, value):
+		self._mosaicMode = bool(value)
+		self._settingsDialog.mosaicTextEdit.setEnabled(value)

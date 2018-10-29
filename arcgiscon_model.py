@@ -284,7 +284,7 @@ class Connection:
                 if self.authMethod == ConnectionAuthType.NTLM:                    
                     auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
                 if self.authMethod == ConnectionAuthType.BasicAuthetication:
-                    auth = (self.username, self.password) 
+                    auth = (self.username, self.password)
             request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=auth, timeout=180)            
         except requests.ConnectionError:
             raise
