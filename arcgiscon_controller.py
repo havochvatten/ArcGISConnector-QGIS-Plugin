@@ -333,6 +333,14 @@ class ConnectionSettingsController(QObject):
 	_lastCustomText = None
 	_lastMosaicText = None
 
+	_nextSettings = {}
+
+	IMAGE_FORMATS = ['', 'tiff', 'jpgpng', 'png', 'png8', 'png24', 'jpg', 'bmp', 'gif', 'png32', 'bip', 'bsq', 'lerc']
+	PIXEL_TYPES = ['', 'UNKNOWN','C128', 'C64', 'F32', 'F64', 'S16', 'S32', 'S8', 'U1', 'U16', 'U2', 'U32', 'U4', 'U8', 'UNKNOWN']
+	NO_DATA_INTERPRETATIONS = ['', 'esriNoDataMatchAny', 'esriNoDataMatchAll']
+	INTERPOLATIONS = ['', 'RSP_BilinearInterpolation', 'RSP_CubicConvolution', 'RSP_Majority', 'RSP_NearestNeighbor']
+	
+
 	def __init__(self, iface):
 		QObject.__init__(self)
 		self._iface = iface
@@ -343,6 +351,7 @@ class ConnectionSettingsController(QObject):
 		self._connection = layer.connection
 		self._settings = self._connection.settings
 
+		self._initGeneralTab()
 		self._initRenderingRuleTab()
 		self._initMosaicRuleTab()
 
@@ -353,6 +362,9 @@ class ConnectionSettingsController(QObject):
 		self._settingsDialog.exec_()
 
 	def _updateSettings(self):
+		self._onSizeEditChange()
+		self._connection.settings = self._nextSettings
+
 		if self._renderingMode == "template":
 			self._connection.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
 		elif self._renderingMode == "custom":
@@ -372,9 +384,71 @@ class ConnectionSettingsController(QObject):
 		else:
 			if 'mosaicRule' in self._connection.settings:
 				self._connection.settings.pop('mosaicRule')
-		
-		QgsMessageLog.logMessage("update settings")
 		QgsMessageLog.logMessage(str(self._connection.settings))
+
+	def _initGeneralTab(self):
+
+		size = ['400','400']
+		if 'size' in self._connection.settings:
+			size = self._connection.settings['size'].split(',')
+		self._settingsDialog.sizeXEdit.setText(size[0])
+		self._settingsDialog.sizeYEdit.setText(size[1])
+
+		for imageFormat in self.IMAGE_FORMATS:
+			self._settingsDialog.imageFormatComboBox.addItem(imageFormat)
+		
+		for pixelType in self.PIXEL_TYPES:
+			self._settingsDialog.pixelTypeComboBox.addItem(pixelType)
+		
+		for noDataInter in self.NO_DATA_INTERPRETATIONS:
+			self._settingsDialog.noDataInterpretationComboBox.addItem(noDataInter)
+
+		for interpolation in self.INTERPOLATIONS:
+			self._settingsDialog.interpolationComboBox.addItem(interpolation)
+
+		if 'noData' in self._connection.settings:
+			self._settingsDialog.noDataEdit.setText(self._connection.settings['noData'])
+		
+		if 'compression' in self._connection.settings:
+			self._settingsDialog.compressionEdit.setText(self._connection.settings['compression'])
+		
+		if 'compressionQuality' in self._connection.settings:
+			self._settingsDialog.compressionQualityEdit.setText(self._connection.settings['compressionQuality'])
+		
+		if 'bandIds' in self._connection.settings:
+			self._settingsDialog.bandIdEdit.setText(self._connection.settings['bandIds'])
+
+		self._settingsDialog.imageFormatComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.imageFormatComboBox, index, 'imageFormat'))
+		self._settingsDialog.pixelTypeComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.pixelTypeComboBox, index, 'pixelType'))
+		self._settingsDialog.noDataInterpretationComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.noDataInterpretationComboBox, index, 'noDataInterpretation'))
+		self._settingsDialog.interpolationComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.interpolationComboBox, index, 'interpolation'))
+	
+		self._settingsDialog.noDataEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'noData'))
+		self._settingsDialog.compressionEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compression'))
+		self._settingsDialog.compressionQualityEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compressionQuality'))
+		self._settingsDialog.bandIdEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'bandIds'))
+
+		self._settingsDialog.sizeXEdit.textEdited.connect(self._onSizeEditChange)
+		self._settingsDialog.sizeYEdit.textEdited.connect(self._onSizeEditChange)
+
+
+	def _onSizeEditChange(self):
+		if len(self._settingsDialog.sizeXEdit.text()) > 0 and len(self._settingsDialog.sizeYEdit.text()) > 0:
+			self._nextSettings['size'] = self._settingsDialog.sizeXEdit.text() + ',' + self._settingsDialog.sizeYEdit.text()
+		elif len(self._settingsDialog.sizeXEdit.text()) == 0 and len(self._settingsDialog.sizeYEdit.text()) == 0 and 'size' in self._nextSettings:
+			self._nextSettings.pop('size')
+
+	def _onGeneralComboBoxChange(self, comboBox, index, setting):
+		if len(comboBox.itemText(index)) > 0:
+			self._nextSettings[setting] = comboBox.itemText(index)
+		elif setting in self._nextSettings:
+			self._nextSettings.pop(setting)
+
+	def _onGeneralEditChange(self, text, setting):
+		if len(text) > 0:
+			self._nextSettings[setting] = text
+		elif setting in self._nextSettings:
+			self._nextSettings.pop(setting)
 
 	def _initRenderingRuleTab(self):
 
