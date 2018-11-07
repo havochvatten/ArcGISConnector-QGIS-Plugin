@@ -125,7 +125,7 @@ class EsriImageServiceQueryFactory:
             "bbox": json.dumps(extent['bbox']),
             "format": "tiff",
             "imageSR": json.dumps(extent['spatialReference']['wkid']),
-            "bboxSR": json.dumps(extent['spatialReference']['wkid']),
+            "bboxSR": json.dumps(extent['spatialReference']['wkid'])
         }
                 
 class EsriQuery:
