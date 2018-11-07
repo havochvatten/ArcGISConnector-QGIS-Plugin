@@ -444,7 +444,7 @@ class ConnectionSettingsController(QObject):
 		self._settingsDialog.compressionEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compression'))
 		self._settingsDialog.compressionQualityEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compressionQuality'))
 		self._settingsDialog.bandIdEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'bandIds'))
-
+		
 		self._settingsDialog.sizeXEdit.textEdited.connect(self._onSizeEditChange)
 		self._settingsDialog.sizeYEdit.textEdited.connect(self._onSizeEditChange)
 

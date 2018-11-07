@@ -89,8 +89,15 @@ class EsriImageServiceQueryFactory:
 
     @staticmethod
     def createBaseQuery(extent=None, mapExtent=None, settings={}):
-        query = {"f":"json"}
+        SETTINGS_LIST = ['size', 'imageFormat', 'pixelType', 'noDataInterpretation', 'interpolation', 
+        'noData', 'compression', 'compressionQuality', 'bandIds' ]
         QgsMessageLog.logMessage("settings - " + str(settings))
+
+        query = {"f":"json"}
+        if extent is not None:
+            query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
+        else:
+            query.update(EsriImageServiceQueryFactory.createExtentParam(mapExtent))
         if 'renderingRule' in settings:
             rasterJson = settings['renderingRule']
             query.update({'renderingRule' : rasterJson})
@@ -101,10 +108,9 @@ class EsriImageServiceQueryFactory:
             else:
                 timeExtentJson = {"time" : str(timeExtent)}
             query.update(timeExtentJson)
-        if extent is not None:
-            query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
-        else:
-            query.update(EsriImageServiceQueryFactory.createExtentParam(mapExtent))
+        for setting in SETTINGS_LIST:
+            if setting in settings:
+                query.update({setting: settings[setting]})
         QgsMessageLog.logMessage(str(query) + " query")
         return query 
 
@@ -118,11 +124,8 @@ class EsriImageServiceQueryFactory:
         return {
             "bbox": json.dumps(extent['bbox']),
             "format": "tiff",
-            "compressionQuality": "100",
             "imageSR": json.dumps(extent['spatialReference']['wkid']),
             "bboxSR": json.dumps(extent['spatialReference']['wkid']),
-            "size": "1000,1000",
-            "pixelType": "UNKNOWN"
         }
                 
 class EsriQuery:
