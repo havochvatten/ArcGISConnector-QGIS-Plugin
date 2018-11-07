@@ -348,6 +348,7 @@ class ConnectionSettingsController(QObject):
 		self._settingsDialog.setModal(True)
 
 	def showSettingsDialog(self, layer):
+		self._settingsDialog = SettingsDialog()
 		self._connection = layer.connection
 		self._settings = self._connection.settings
 
@@ -406,6 +407,22 @@ class ConnectionSettingsController(QObject):
 		for interpolation in self.INTERPOLATIONS:
 			self._settingsDialog.interpolationComboBox.addItem(interpolation)
 
+		if 'imageFormat' in self._connection.settings:
+			index = self._settingsDialog.imageFormatComboBox.findText(self._connection.settings['imageFormat'])
+			self._settingsDialog.imageFormatComboBox.setCurrentIndex(index)
+
+		if 'pixelType' in self._connection.settings:
+			index = self._settingsDialog.pixelTypeComboBox.findText(self._connection.settings['pixelType'])
+			self._settingsDialog.pixelTypeComboBox.setCurrentIndex(index)
+
+		if 'noDataInterpretation' in self._connection.settings:
+			index = self._settingsDialog.noDataInterpretationComboBox.findText(self._connection.settings['noDataInterpretation'])
+			self._settingsDialog.noDataInterpretationComboBox.setCurrentIndex(index)
+
+		if 'interpolation' in self._connection.settings:
+			index = self._settingsDialog.interpolationComboBox.findText(self._connection.settings['interpolation'])
+			self._settingsDialog.interpolationComboBox.setCurrentIndex(index)
+
 		if 'noData' in self._connection.settings:
 			self._settingsDialog.noDataEdit.setText(self._connection.settings['noData'])
 		
@@ -417,7 +434,7 @@ class ConnectionSettingsController(QObject):
 		
 		if 'bandIds' in self._connection.settings:
 			self._settingsDialog.bandIdEdit.setText(self._connection.settings['bandIds'])
-
+	
 		self._settingsDialog.imageFormatComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.imageFormatComboBox, index, 'imageFormat'))
 		self._settingsDialog.pixelTypeComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.pixelTypeComboBox, index, 'pixelType'))
 		self._settingsDialog.noDataInterpretationComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.noDataInterpretationComboBox, index, 'noDataInterpretation'))
