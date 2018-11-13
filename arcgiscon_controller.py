@@ -389,7 +389,7 @@ class ConnectionSettingsController(QObject):
 
 	def _initGeneralTab(self):
 
-		size = ['400','400']
+		size = ['800','800']
 		if 'size' in self._connection.settings:
 			size = self._connection.settings['size'].split(',')
 		self._settingsDialog.sizeXEdit.setText(size[0])
