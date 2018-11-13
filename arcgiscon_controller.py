@@ -296,7 +296,8 @@ class ArcGisConRefreshController(QObject):
 	def updateLayerWithNewTimeExtent(self, layer, dialog):
 		
 		if dialog.tabWidget.currentWidget() == dialog.instantTab:
-			timeExtent = dialog.startDateInput.dateTime().toMSecsSinceEpoch()
+			instantDate = dialog.instantDateInput.dateTime()
+			timeExtent = instantDate.toMSecsSinceEpoch()
 		else:
 			startDate = endDate = "null"
 			if not dialog.startDateCheckBox.isChecked():
