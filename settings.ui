@@ -261,7 +261,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Default: 400x400</string>
+            <string>Default: 800x800</string>
            </property>
           </widget>
          </item>

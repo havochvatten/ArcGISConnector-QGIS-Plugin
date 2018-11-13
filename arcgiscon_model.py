@@ -122,6 +122,7 @@ class EsriImageServiceQueryFactory:
     @staticmethod
     def createExtentParam(extent):
         return {
+            "size": "800,800",
             "bbox": json.dumps(extent['bbox']),
             "format": "tiff",
             "imageSR": json.dumps(extent['spatialReference']['wkid']),
