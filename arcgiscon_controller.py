@@ -524,10 +524,12 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.customTextEdit.setEnabled(False)
 
 	def _initMosaicRuleTab(self):
-		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
 		if self._mosaicMode == None or self._mosaicMode == False:
 			self._settingsDialog.mosaicTextEdit.setEnabled(False)
+		else:
+			self._settingsDialog.mosaicCheckBox.setChecked(True)
 		self._settingsDialog.mosaicTextEdit.setPlainText(self._lastMosaicText)
+		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
 
 	def _mosaicCheckBoxChanged(self, value):
 		self._mosaicMode = bool(value)
