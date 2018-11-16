@@ -373,6 +373,9 @@ class FileSystemService:
             credentials['password'] = base64.b64encode(credentials['password'])
             json.dump(credentials, outfile)
 
+    def saveImageAs(self, srcPath, dstPath):
+        shutil.copy2(srcPath, dstPath)
+
     def _storeJson(self, jsonFile, filePath):                
         with open(filePath, 'w+') as outfile:
             json.dump(jsonFile, outfile)

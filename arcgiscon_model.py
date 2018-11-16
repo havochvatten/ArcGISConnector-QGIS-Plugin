@@ -239,6 +239,7 @@ class Connection:
     serviceTimeExtent = (None, None)
     settings = {}
     conId = None
+    srcPath = None
     
     def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
         self.basicUrl = basicUrl

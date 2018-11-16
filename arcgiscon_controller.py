@@ -214,6 +214,7 @@ class ArcGisConNewController(QObject):
 		#QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsVectorLayer)
 		QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsRasterLayer)
 		self._esriVectorLayers[esriLayer.qgsRasterLayer.id()]=esriLayer
+		self._connection.srcPath = srcPath
 		self._connection.renderLocked = True
 
 	def onWarning(self, connection, warningMessage):
