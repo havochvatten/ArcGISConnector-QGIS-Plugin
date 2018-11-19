@@ -116,6 +116,7 @@ class ArcGisConnector:
             self._refreshController.updateLayer(self._updateService, layer)
     
     def _refreshEsriLayer(self, withCurrentExtent=False):
+        QgsMessageLog.logMessage('called')
         qgsLayers = self._iface.legendInterface().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriVectorLayers:  
@@ -186,7 +187,8 @@ class ArcGisConnector:
         for layer in qgsLayers:
             if layer.id() in self._esriVectorLayers:
                 selectedLayer = self._esriVectorLayers[layer.id()]
-                self._settingsController.showSettingsDialog(selectedLayer)
+                self._settingsController.showSettingsDialog(selectedLayer, lambda: self._refreshEsriLayer(True))
+        
                                       
     def _updateServiceFinished(self):            
         self._updateService.tearDown()

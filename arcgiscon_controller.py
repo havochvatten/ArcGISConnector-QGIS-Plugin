@@ -349,7 +349,7 @@ class ConnectionSettingsController(QObject):
 		self._settingsDialog = SettingsDialog()
 		self._settingsDialog.setModal(True)
 
-	def showSettingsDialog(self, layer):
+	def showSettingsDialog(self, layer, updateCallBack):
 		self._settingsDialog = SettingsDialog()
 		self._connection = layer.connection
 		self._settings = self._connection.settings
@@ -359,7 +359,9 @@ class ConnectionSettingsController(QObject):
 		self._initMosaicRuleTab()
 
 		self._settingsDialog.buttonBox.accepted.connect(self._updateSettings)
+		self._settingsDialog.buttonBox.accepted.connect(updateCallBack)
 		self._settingsDialog.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self._updateSettings)
+		self._settingsDialog.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(updateCallBack)
 
 		self._settingsDialog.show()
 		self._settingsDialog.exec_()
