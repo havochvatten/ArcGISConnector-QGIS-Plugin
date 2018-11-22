@@ -89,7 +89,7 @@ class ArcGisConnector:
             self._iface.layerToolBar().addAction(self._newLayerAction)
         except:
             self._iface.addToolBarIcon(self._newLayerAction)   
-        self._iface.addPluginToVectorMenu(self._newLayerActionText, self._newLayerAction)
+        self._iface.addPluginToRasterMenu(self._newLayerActionText, self._newLayerAction)
         self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Refresh layer with current extent'), self._iface.legendInterface() )
         self._arcGisSaveImageAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Save layer image as..'), self._iface.legendInterface() )
         self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'), self._iface.legendInterface() )
