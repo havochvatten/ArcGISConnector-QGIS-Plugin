@@ -23,8 +23,7 @@ A QGIS plugin
 from PyQt4 import QtCore, QtGui
 from qgis.gui import QgsMessageBar
 from qgis.core import QgsMessageLog
-from arcgiscon_model import EsriVectorQueryFactoy, EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
-
+from arcgiscon_model import EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
 import time
 import multiprocessing
 import math
@@ -35,25 +34,65 @@ import sys
 import shutil
 import requests
 import base64
+import datetime
+
 
 def downloadSource(args):  
     ':type connection:Connection'
     ':type query:EsriQuery'
     connection, query, resultQueue = args
+    QgsMessageLog.logMessage(str(connection.auth) + " " + str(connection.username) + " " + str(connection.password))
     resultJson = connection.getJson(query)
     if resultQueue is not None:      
         resultQueue.put(1)
     return resultJson  
 
 
+# A class for managing downloads from different dates.
+# Currently uses the date closest to the high limit.
+# Update limHigh to an earlier time to query earlier dates.
+class TimeCatcher:
+    #Limits are stored in Epoch time.
+    limLow = None
+    limHigh = None
+    
+    def __init__(self, limLow, limHigh):
+        self.limLow = limLow
+        self.limHigh = limHigh
+
+	# Returns a QDate with the current date.
+    def _currentTime(self):
+        epochTime = QtCore.QDateTime.currentMSecsSinceEpoch()
+        return epochTime
+
+    def updateHigh(self, epochTime):
+        self.limHigh = epochTime
+
+    def update(self, oldHigh):
+        if oldHigh is None or oldHigh <= self.limLow:
+            QgsMessageLog.logMessage("update: old high: " + str(oldHigh) + "update: limlow " + str(self.limLow))
+            return None
+        
+        self.limHigh = oldHigh - 86400000 
+        return self.limHigh
+
+
+
+    # Updates the high limit with current time. 
+    def updateWithCurrentTime(self):
+        self.limHigh = self._currentTime()
+
+
+
 class EsriUpdateWorker(QtCore.QObject):
-    def __init__(self, connection):
+    def __init__(self, connection, imageSpec):
         QtCore.QObject.__init__(self)
         self.connection = connection
+        self.imageSpec = imageSpec
     
     @staticmethod
-    def create(connection, onSuccess=None, onWarning=None, onError=None):
-        worker = EsriUpdateWorker(connection)
+    def create(connection, imageSpec, onSuccess=None, onWarning=None, onError=None):
+        worker = EsriUpdateWorker(connection, imageSpec)
         if onSuccess is not None:
             worker.onSuccess.connect(onSuccess)
         if onWarning is not None:
@@ -102,6 +141,7 @@ class EsriUpdateService(QtCore.QObject):
         service = EsriUpdateService(iface)            
         return service
     
+
     def updateProjectId(self, projectId):
         self._projectId = projectId
     
@@ -135,49 +175,40 @@ class EsriUpdateService(QtCore.QObject):
         self._thread.wait()
         self._thread = None                
         self.state = EsriUpdateServiceState.Down
-        
-                                                 
+
     def runUpdateWorker(self):
         while (not len(self.connectionPool) <= 0 or self.state == EsriUpdateServiceState.Processing) and not self._isKilled:
             try:   
                 if self.state == EsriUpdateServiceState.Idle:
                     self.state = EsriUpdateServiceState.Processing
-                    #Wait briefly before receiving the refresh, to avoid double work.
+                    
+                    # Wait briefly before receiving the refresh, to avoid double work.
                     time.sleep(self.REFRESH_WAIT_TIME)
                     currentJob = self.connectionPool.pop()
                     del self.connectionPool[:]
+                       
+                    self.progress.emit(10)
+                    results = []
 
-                    #totalRecords = self._getTotalRecords(currentJob.connection) # Do fix this
-                    totalRecords = 1
-                    if totalRecords > 0: 
-                        query = EsriVectorQueryFactoy.createMetaInformationQuery()
-                        metaJson = currentJob.connection.getJson(query)
-                        metaInfo = EsriLayerMetaInformation.createFromMetaJson(metaJson)                        
-                        maxRecordCount = metaInfo.maxRecordCount if 0 < metaInfo.maxRecordCount < self._maxRecordCount else self._maxRecordCount                                                                                                                                                       
-                        pages = int(math.ceil(float(totalRecords) / float(maxRecordCount)))
-                        self.progress.emit(10)
-                        results = []
-                        if pages == 1 or not metaInfo.supportsPagination:
-                            #if server doesn't support pagination and there are more features than we can retrieve within one single server call, warn user.                             
-                            if(totalRecords > float(maxRecordCount)):
-                                currentJob.onWarning.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Not all features could be retrieved. Please adjust extent or use a filter."))
-                            query = EsriImageServiceQueryFactory.createExportImageQuery(currentJob.connection.bbBox, metaInfo.extent, currentJob.connection.settings)
-                            results = [downloadSource((currentJob.connection, query, None))]
-                        else:
-                            queries = []
-                            for page in range(0,pages):            
-                                queries.append(EsriVectorQueryFactoy.createPagedFeaturesQuery(page, maxRecordCount, currentJob.connection.bbBox, None))                                                                        
-                            results = self._downloadSources(queries, currentJob.connection)
-                        self.progress.emit(90)                        
-                        if results is not None and not self._isKilled:
-                            filePath = self._processSources(results, currentJob.connection)
-                            currentJob.onSuccess.emit(filePath)
-                        self.progress.emit(100)    
-                        self.state = EsriUpdateServiceState.Idle 
-                        self._isKilled = False
-                    else:
-                        currentJob.onError.emit(QtCore.QCoreApplication.translate('ArcGisConService', "Layer has no features (with the current extent). Nothing has been updated."))                                                          
-                        self.state = EsriUpdateServiceState.Idle                                        
+                    extent = currentJob.imageSpec.metaInfo.extent
+                    settings = currentJob.imageSpec.settings
+                    FORMAT_TIFF = "tiff"
+                    settings.format = FORMAT_TIFF
+                    query = EsriImageServiceQueryFactory.createExportImageQuery(
+                    extent,
+                    extent,
+                    settings.getDict() 
+                    )
+                    results = [downloadSource((currentJob.connection, query, None))]
+                    QgsMessageLog.logMessage(str(results))
+                    self.progress.emit(90)                        
+                    if results is not None and not self._isKilled:
+                        filePath = self._processSources(results, currentJob.connection)
+                        currentJob.onSuccess.emit(filePath)
+                    self.progress.emit(100)    
+                    self.state = EsriUpdateServiceState.Idle 
+                    self._isKilled = False
+
             except Exception as e:      
                 currentJob.onError.emit(str(e))
                 self.state = EsriUpdateServiceState.Idle
@@ -212,7 +243,25 @@ class EsriUpdateService(QtCore.QObject):
         if not self._isKilled:
             toReturn = workingMap.get()        
         return toReturn
-    
+
+    def downloadServerData(self, connection):
+        #query = EsriImageServiceQueryFactory.createServerItemsQuery(connection)
+        #return downloadSource((connection, query ,None))
+        pass
+
+    # Downloads thumbnail and returns its filepath.
+    # TODO: Will have a separate url for the specific image server when there are more than one!
+    def downloadThumbnail(self, connection, imageSpecification):
+        format = "png"
+        #size = str(imageSpecification.settings.size[0]) + "," + str(imageSpecification.settings.size[1])
+        pixelType = "UNKNOWN"
+        query = EsriImageServiceQueryFactory.createThumbnailQuery(
+            imageSpecification.metaInfo.extent,
+            imageSpecification.settings.getDict())
+        json = downloadSource((connection, query, None))
+        download = self._downloadRaster(json[u'href'], connection)
+        return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], format)
+
     def _downloadRaster(self, href, connection):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
         response = None
@@ -224,7 +273,7 @@ class EsriUpdateService(QtCore.QObject):
         fname = connectionName_clean + "_" + str(connection.conId)
         return dict(filename = fname, data = response.content)
     
-    def _processSources(self, sources, connection):        
+    def _processSources(self, sources, connection):     
         combined = {}
         progressStepFactor = 10.0 / len(sources)
         if len(sources) > 0:
@@ -234,7 +283,7 @@ class EsriUpdateService(QtCore.QObject):
                 # Used in image service
                 QgsMessageLog.logMessage("downloading raster from " + base[u'href'])
                 download = self._downloadRaster(base[u'href'], connection)
-                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'])
+                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], "tiff")
 
             for nextResult in sources[1:]:                
                 if self._isKilled:
@@ -252,24 +301,7 @@ class EsriUpdateService(QtCore.QObject):
             else:
                 filePath = FileSystemService().storeJsonInTmpFolder(combined, connection.createSourceFileName())
             return filePath            
-                   
-    def _getMaxRecordCount(self, connection):
-        maxRecordCount = self._maxRecordCount
-        query = EsriVectorQueryFactoy.createMetaInformationQuery()
-        metaJson = connection.getJson(query)   
-        if u'maxRecordCount' in metaJson:
-            count = int(metaJson[u'maxRecordCount'])                                    
-            maxRecordCount = count if 0 < count < self._maxRecordCount else maxRecordCount        
-        return maxRecordCount
-        
-    def _getTotalRecords(self, connection):                                
-        totalRecords = 0
-        query = EsriVectorQueryFactoy.createTotalFeatureCountQuery(connection.bbBox, None)
-        metaJson = connection.getJson(query)                        
-        if u'count' in metaJson:                
-            totalRecords = int(metaJson[u'count'])
-        return totalRecords
-    
+
     def _createMessageBarWidget(self):
         messageBar = self._iface.messageBar().createMessage(QtCore.QCoreApplication.translate('ArcGisConService', 'processing arcgis data...'),)
         progressBar = QtGui.QProgressBar()
@@ -303,7 +335,13 @@ class FileSystemService:
     arcGisJsonSrc = os.path.join(os.path.dirname(__file__),"imageSrc")
     credentialsFile =  os.path.join(os.path.dirname(__file__),"credentials.json")
     tmpFolderName = "tmp"
-    
+
+    def openFile(self, src):
+        file = open(src,"rt")
+        text = file.read()
+        file.close()
+        return text
+
     def storeJsonInTmpFolder(self, jsonFile, jsonFileName):
         tmpPath = os.path.join(self.arcGisJsonSrc, self.tmpFolderName)
         self._createFolderIfNotExists(tmpPath)
@@ -311,10 +349,10 @@ class FileSystemService:
         self._storeJson(jsonFile, filePath)
         return filePath
 
-    def storeBinaryInTmpFolder(self, binaryFile, binaryFileName):
+    def storeBinaryInTmpFolder(self, binaryFile, binaryFileName, fileFormat):
         tmpPath = os.path.join(self.arcGisJsonSrc, self.tmpFolderName)
         self._createFolderIfNotExists(tmpPath)
-        filePath = os.path.join(tmpPath, binaryFileName + ".tif")
+        filePath = os.path.join(tmpPath, binaryFileName + "." + fileFormat)
         self._storeBinary(binaryFile, filePath)
         return filePath
     

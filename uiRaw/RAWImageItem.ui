@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>407</width>
+    <height>333</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {background: #fff;}</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QWidget" name="imageItemWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>204</width>
+       <height>204</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>204</width>
+       <height>254</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+  	border-radius: 0.0em;
+	border: 2px solid #e0e0e0;
+	background: #fff;
+	max-width: 200px;
+	max-height: 250px;
+	min-width: 200px;
+	min-height: 200px;
+	align-horizontal: left;
+	align-vertical: top;
+}
+
+QWidget:disabled {
+    border-color: #6F6F6F;
+}
+
+QWidget:hover{
+    border-color: #D5E0D6;
+}
+
+QWidget:focus{
+	background: #B8E6BC;
+}</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="thumbnailLabel">
+        <property name="baseSize">
+         <size>
+          <width>250</width>
+          <height>251</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+	/*border-image: url(:/plugins/arcgiscon/placeholderMapLight.png) 0 0 0 0 cover cover;*/
+	border: transparent;
+	background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,   stop:0 rgba(240,240,240,255), stop:1 rgba(240,240,240,255));
+	border-radius: 0.0em;
+	max-height: 200px;
+	max-width: 200px;
+
+}</string>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="indent">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="imageDateLabel">
+        <property name="minimumSize">
+         <size>
+          <width>104</width>
+          <height>29</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>214</width>
+          <height>264</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Myriad Pro</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+    font-size: 10pt;
+	font-family: &quot;Myriad Pro&quot;;
+	padding:2px 7px;
+	color: #5a5a5a;
+	margin-top: 10px;
+    qproperty-alignment: AlignCenter;
+  	border-radius: 0em;
+	border: transparent;
+	min-width: 90px;
+	min-height: 15px;
+	
+}</string>
+        </property>
+        <property name="text">
+         <string>2018-11-02</string>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,26 @@
+Kända problem och buggar:
+
+- Stänga av utan att ladda projekt kraschar
+Har inte med unload() att göra, tror jag? Laddar man in ett lager och tar bort det kraschar det inte..
+Originalpluginet kraschar inte, vet inte om det har med resurshantering att göra, hittar inget..
+
+- Ladda sparat projekt fungerar inte
+En del arbete med att sätta upp korrekt anslutning osv behövs, just nu försöker den bara ladda in befintlig json.
+
+- Upplösningen på första bilden blir sämre pga bounding box byts
+Typ temporärt löst ibland, tror jag? Låste första rendern efter man laddat bilden, och eftersom att den alltid byter så avbryts det :)
+
+Andra todos:
+- Ta bort hjälpknappen
+- Kom ihåg senaste anslutningar
+- Kom ihåg autentiseringsuppgifter
+
+
+Kodstäd:
+- Ta bort allt vektorrelaterat
+- Ta bort allt filterrelaterat
+- Rensa upp i workersystemet, se över progress osv
+
+
+Alma todos
+- när man sparar, se till att den sparar tif fil, inte en thumbnail. (eg. fråga Anton hur det är nu.)

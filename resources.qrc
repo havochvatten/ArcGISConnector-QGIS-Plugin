@@ -1,5 +1,8 @@
 <RCC>
-    <qresource prefix="/plugins/arcgiscon" >
-        <file>arcgis.png</file>
-    </qresource>
+  <qresource prefix="/plugins/arcgiscon">
+    <file>magnifying-glass.png</file>
+    <file>placeholderMapLight.png</file>
+    <file>tick.png</file>
+    <file>arcgis.png</file>
+  </qresource>
 </RCC>

@@ -1,0 +1,23 @@
+QPushButton:pressed {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,   stop:0 rgba(60, 186, 162, 255), stop:1 rgba(98, 211, 162, 255))
+}
+
+QPushButton {
+    background-color: #C4C4C4; border: 0px solid black;
+    border-radius: 3px;
+	margin: 0px;
+    padding: 15px;
+	color: #FFF;
+	width: 300px;
+    font-size: 12pt;
+	font-family: "Myriad Pro";
+	font-weight: bold;
+}
+
+QPushButton:disabled {
+    background-color: #6F6F6F
+}
+
+QPushButton:hover, .QPushButton:focus {
+    background-color: #D4D4D4;
+}

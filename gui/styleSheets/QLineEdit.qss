@@ -1,0 +1,18 @@
+
+QLineEdit{
+  border: transparent;
+  padding: 10px;
+  font-size: 1.2em;
+  border-radius: 0.2em;
+  border: 0.1em solid #ababab;
+}
+
+
+QLineEdit:disabled{
+  background: #f0f0f0;
+}
+
+
+QLineEdit:focus{
+  border: 0.1em solid #65C46D;
+}

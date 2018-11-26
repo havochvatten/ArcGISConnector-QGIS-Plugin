@@ -1,0 +1,52 @@
+QCheckBox{
+	color: #5f5f5f;
+	spacing: 5px;
+}
+
+QCheckBox::indicator{
+	width: 18px;
+	height: 18px;
+	border-radius: 0.2em;
+	border: 0.1em solid #65C46D;
+	background: #FFFFFF;
+}
+
+QCheckBox::indicator:checked{
+	background: #65C46D;
+	image: url(:/icons/icons/tick.png);
+	icon-size: 8px 8px;
+
+}
+
+QCheckBox::indicator:unchecked{
+	border-radius: 0.2em;
+	border: 0.1em solid #65C46D;
+	background: #FFFFFF;
+}
+
+QCheckBox::indicator:unchecked:hover {
+	border: 0.1em solid #6BDD74;
+}
+
+QCheckBox::indicator:unchecked:pressed {
+
+
+}
+
+
+QCheckBox::indicator:checked:hover {
+ 	background-color: #6BDD74;
+	border: 0.1em solid #6BDD74;
+}
+
+QCheckBox::indicator:checked:pressed {
+
+}
+
+QCheckBox::indicator:indeterminate:hover {
+
+}
+
+QCheckBox::indicator:indeterminate:pressed {
+
+}
