@@ -269,6 +269,22 @@ class Settings:
 	mosaicRule = None
 	time = None
 
+	def copy(self):
+		settingsCopy = Settings()
+		settingsCopy.size = self.size 
+		settingsCopy.format = self.format 
+		settingsCopy.pixelType = self.pixelType 
+		settingsCopy.noDataInterpretation = self.noDataInterpretation 
+		settingsCopy.interpolation = self.interpolation 
+		settingsCopy.noData = self.noData 
+		settingsCopy.compression = self.compression
+		settingsCopy.compressionQuality = self.compressionQuality
+		settingsCopy.bandIds = self.bandIds
+		settingsCopy.renderingRule = self.renderingRule
+		settingsCopy.mosaicRule = self.mosaicRule			
+		settingsCopy.time = self.time	
+		return settingsCopy
+
 	# A list of the raster functions available.
 	rasterFunctions = {}
 
@@ -318,6 +334,7 @@ class ImageSpecification:
 	rasterFunctions = None
 	currentRasterFunction = None
 	metaInfo = None
+	# Width and heigh only used for thumbnails. Will not be automatically updated.
 	width = None
 	height = None
 	settings = Settings()
@@ -376,6 +393,20 @@ class ImageSpecification:
 		self.settings.size = str(int(width)) + "," + str(int(height))
 		self.width = int(width)
 		self.height = int(height)
+	
+	def copy(self):
+		imageCopy = ImageSpecification()
+		imageCopy.aspectRatio = self.aspectRatio
+		imageCopy.customFilter = self.customFilter
+		imageCopy.rasterFunctions = self.rasterFunctions
+		imageCopy.currentRasterFunction = self.currentRasterFunction
+		imageCopy.metaInfo = self.metaInfo
+		imageCopy.width = self.width
+		imageCopy.height = self.height
+		imageCopy.settings = Settings()
+		settings = settings.copy()
+		return imageCopy
+
 
 	# Parameters: Extent object. Bounding box IS an extent it would seem.
 	def updateBoundingBoxByExtent(self, extent):
