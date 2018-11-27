@@ -512,8 +512,9 @@ class Connection:
 
 	def connect(self, query):       
 		try: 
-			QgsMessageLog.logMessage("Query in connect: " + str(self.username) + " " + str(self.password))
-			if self.authMethod != ConnectionAuthType.NoAuth and self.username and self.password:
+			QgsMessageLog.logMessage("Authentication in connect: " + str(self.username) + " " + str(self.password))
+			QgsMessageLog.logMessage("Auth method: " + str(self.authMethod))
+			if self.authMethod != ConnectionAuthType.NoAuth:
 				QgsMessageLog.logMessage("Pass and user : " + str(self.username) + " " + str(self.password))
 				if self.authMethod == ConnectionAuthType.NTLM:                    
 					self.auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)

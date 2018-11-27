@@ -116,7 +116,8 @@ class ArcGisConNewController(QObject):
 			# TODO: The layer name code will go somewhere else:
 			# #name = self._newDialog.layerNameInput.text()		
 			self._connection = Connection.createAndConfigureConnection(url, "")	
-			self._newDialog.connectionErrorLabel.setText("")								
+			self._newDialog.connectionErrorLabel.setText("")
+			QgsMessageLog.logMessage("Auth method in init: " + str(self._connection.authMethod))								
 			if not self._connection.needsAuth():							
 				self._disableAuthSection()
 				self._checkConnection()

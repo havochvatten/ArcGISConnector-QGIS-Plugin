@@ -44,7 +44,7 @@ class LayerDialogController(QObject):
 		self.layerDialogUI.scrolledDown.connect(self.onScrolledDown)
 
 
-    # Add handler to our events
+	# Add handler to our events
 	def addEventHandler(self, handler):
 		self.event += handler
 
@@ -60,6 +60,9 @@ class LayerDialogController(QObject):
 	def showView(self, connection, updateService, rasterLayers, legendActions):
 		self.timeCatcher = TimeCatcher(connection.serviceTimeExtent[0],connection.serviceTimeExtent[1])
 		self.connection = connection
+		QgsMessageLog.logMessage("Auth in showView: " + str(connection.auth)) 
+		QgsMessageLog.logMessage("username in showView: " + str(connection.username)) 
+		QgsMessageLog.logMessage("password in showView: " + str(connection.password))
 		self.updateService = updateService
 		self.rasterLayers = rasterLayers
 		self.legendActions = legendActions
@@ -86,7 +89,6 @@ class LayerDialogController(QObject):
 			col = x % self.MAX_COLUMN_AMOUNT
 			layout.addWidget(self.imageItems[x], row, col)
 
-
 	def populateImageItems(self, amount):
 		FORMAT_PNG = "png"
 		FORMAT_TIFF = "tiff"
@@ -96,8 +98,6 @@ class LayerDialogController(QObject):
 		imageCount = 0
 		# Place ImageItems on the dialog.
 		while (imageCount < amount):
-
-
 			# TODO: Only make *One* meta information query that holds for all images.
 			imageSpec = self.connection.newImageSpecification(
 				MAX_ITEM_WIDTH,
@@ -105,13 +105,9 @@ class LayerDialogController(QObject):
 				self.timeCatcher.limLow,
 				self.timeCatcher.limHigh,
 				FORMAT_PNG)
-
 			if not imageSpec:
 				return
-
-
 			filePath = self.updateService.downloadThumbnail(self.connection, imageSpec)
-			
 			if filePath:		
 		
 				pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
@@ -150,7 +146,6 @@ class LayerDialogController(QObject):
 
 	def configureThumbnailEvents(self, item, imageSpec):
 		item.clicked.connect(lambda: self.onNewLayerClick(imageSpec))
-
 
 	def onNewLayerClick(self, imageSpec):
 	
