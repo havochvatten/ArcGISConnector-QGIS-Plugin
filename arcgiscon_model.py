@@ -511,7 +511,8 @@ class Connection:
 		self.password = password
 
 	def createMetaInfo(self):
-		query = EsriImageServiceQueryFactory.createMetaInformationQuery()   
+		self.configureAuthMethod()
+		query = EsriImageServiceQueryFactory.createMetaInformationQuery() 
 		try:
 			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)
 			metaJson = request.json()
@@ -540,17 +541,20 @@ class Connection:
 			limHigh,
 			format)
 		return imageSpec
-
-	def connect(self, query):       
-		try: 
-			QgsMessageLog.logMessage("Authentication in connect: " + str(self.username) + " " + str(self.password))
-			QgsMessageLog.logMessage("Auth method: " + str(self.authMethod))
-			if self.authMethod != ConnectionAuthType.NoAuth:
+	
+	def configureAuthMethod(self):
+		if self.authMethod != ConnectionAuthType.NoAuth:
 				QgsMessageLog.logMessage("Pass and user : " + str(self.username) + " " + str(self.password))
 				if self.authMethod == ConnectionAuthType.NTLM:                    
 					self.auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
 				if self.authMethod == ConnectionAuthType.BasicAuthetication:
 					self.auth = (self.username, self.password) 
+	
+	def connect(self, query):       
+		try: 
+			QgsMessageLog.logMessage("Authentication in connect: " + str(self.username) + " " + str(self.password))
+			QgsMessageLog.logMessage("Auth method: " + str(self.authMethod))
+			self.configureAuthMethod()
 			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)            
 		except requests.ConnectionError:
 			raise

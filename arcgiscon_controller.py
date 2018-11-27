@@ -52,7 +52,7 @@ class ArcGisConNewController(QObject):
 		self._newDialog = ArcGisConDialogNew()	
 		self._newDialog.setModal(True)
 		self._newDialog.layerUrlInput.editingFinished.connect(self._onUrlEdit)
-		self._newDialog.usernameInput.editingFinished.connect(self._onAuthInputChange)
+		self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)
 		self._newDialog.rememberCheckbox.stateChanged.connect(lambda state: self._onAuthCheckBoxChanged(state))
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
 		self._newDialog.connectButton.clicked.connect(self._onConnectClick)
@@ -67,7 +67,6 @@ class ArcGisConNewController(QObject):
 		self._resetInputValues()
 		self._enableAuthSection()
 		self._loadSavedCredentials()
-
 		if self._credentials == None:
 			self._newDialog.rememberCheckbox.setChecked(False)
 			#self._disableAuthSection()
@@ -99,7 +98,6 @@ class ArcGisConNewController(QObject):
 
 	def _loadSavedCredentials(self):
 		self._credentials = FileSystemService().loadSavedCredentials()
-
 	
 	def _enableAuthSection(self):
 		self._newDialog.usernameInput.setDisabled(False)
@@ -116,8 +114,7 @@ class ArcGisConNewController(QObject):
 			# TODO: The layer name code will go somewhere else:
 			# #name = self._newDialog.layerNameInput.text()		
 			self._connection = Connection.createAndConfigureConnection(url, "")	
-			self._newDialog.connectionErrorLabel.setText("")
-			QgsMessageLog.logMessage("Auth method in init: " + str(self._connection.authMethod))								
+			self._newDialog.connectionErrorLabel.setText("")							
 			if not self._connection.needsAuth():							
 				self._disableAuthSection()
 				self._checkConnection()
@@ -131,7 +128,7 @@ class ArcGisConNewController(QObject):
 		if self._connection.needsAuth():
 			username = self._newDialog.usernameInput.text()
 			password = self._newDialog.passwordInput.text()
-			self._connection.updateAuth(self._credentials['username'], self._credentials['password']) 
+			self._connection.updateAuth(username, password) 
 
 			if not username or not password:
 				self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
