@@ -126,8 +126,6 @@ class ArcGisConNewController(QObject):
 		if self._connection.needsAuth():
 			username = self._newDialog.usernameInput.text()
 			password = self._newDialog.passwordInput.text()
-			QgsMessageLog.logMessage("Credentials: " + str(username) + ", " + str(password)) 
-			QgsMessageLog.logMessage("needs auth with credetials:" + str(self._credentials['username']) + ", " + str(self._credentials['password']))
 			self._connection.updateAuth(self._credentials['username'], self._credentials['password']) 
 
 			if not username or not password:
@@ -296,6 +294,8 @@ class ConnectionSettingsController(QObject):
 	_settingsDialog = None
 	_connection = None
 	_settings = {}
+	_settingsObject = None
+	_layer = None
 
 	_renderingMode = None
 	_mosaicMode = None
@@ -305,7 +305,6 @@ class ConnectionSettingsController(QObject):
 
 	_nextSettings = {}
 
-	
 
 	def __init__(self, iface):
 		QObject.__init__(self)
@@ -315,7 +314,9 @@ class ConnectionSettingsController(QObject):
 
 	def showSettingsDialog(self, layer, updateCallBack):
 		self._settingsDialog = SettingsDialog()
-		self._settings = layer.imageSpec.settings
+		self._layer = layer
+		self._settingsObject = layer.imageSpec.settings
+		self._settings = layer.imageSpec.settings.getDict()
 
 		self._initGeneralTab()
 		self._initRenderingRuleTab()
@@ -331,47 +332,42 @@ class ConnectionSettingsController(QObject):
 
 	def _updateSettings(self):
 		self._onSizeEditChange()
-		self._settings = self._nextSettings
 
 		if self._renderingMode == "template":
 			self._connection.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
 		elif self._renderingMode == "custom":
 			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
-			self._connection.updateSettings({
-				'renderingRule' : ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
-			})
+			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
 		else:
 			if 'renderingRule' in self._settings:
 				self._settings.pop('renderingRule')
 
 		if self._mosaicMode == True:
 			self._lastMosaicText = self._settingsDialog.mosaicTextEdit.toPlainText()
-			self._connection.updateSettings({
-				'mosaicRule' : ' '.join(self._settingsDialog.mosaicTextEdit.toPlainText().split())
-			})
+			self._settings['mosaicRule'] = ' '.join(self._settingsDialog.mosaicTextEdit.toPlainText().split())
 		else:
 			if 'mosaicRule' in self._settings:
-				self._settings.pop('mosaicRule')
-		QgsMessageLog.logMessage(str(self._settings))
+				self._settings['mosaicRule'] = None
+		self._settingsObject.updateValues(self._settings)
 
 	def _initGeneralTab(self):
-		QgsMessageLog.logMessage("Settings in init general tab: " + str(self._settings))
 		size = ['800','800']
 		if 'size' in self._settings:
 			size = self._settings['size'].split(',')
+		
 		self._settingsDialog.sizeXEdit.setText(size[0])
 		self._settingsDialog.sizeYEdit.setText(size[1])
 
-		for imageFormat in self.IMAGE_FORMATS:
+		for imageFormat in self._settingsObject.IMAGE_FORMATS:
 			self._settingsDialog.imageFormatComboBox.addItem(imageFormat)
 		
-		for pixelType in self.PIXEL_TYPES:
+		for pixelType in self._settingsObject.PIXEL_TYPES:
 			self._settingsDialog.pixelTypeComboBox.addItem(pixelType)
 		
-		for noDataInter in self.NO_DATA_INTERPRETATIONS:
+		for noDataInter in self._settingsObject.NO_DATA_INTERPRETATIONS:
 			self._settingsDialog.noDataInterpretationComboBox.addItem(noDataInter)
 
-		for interpolation in self.INTERPOLATIONS:
+		for interpolation in self._settingsObject.INTERPOLATIONS:
 			self._settingsDialog.interpolationComboBox.addItem(interpolation)
 
 		if 'format' in self._settings:
@@ -444,19 +440,23 @@ class ConnectionSettingsController(QObject):
 			lambda buttonValue: self._renderingButtonChecked("radioButtonNone") if buttonValue else None)
 
 		self._settingsDialog.comboBox.clear()
-		rasterFunctions = self._connection.rasterFunctions
+		rasterFunctions = self._layer.imageSpec.rasterFunctions
 		if rasterFunctions != None:
 			for i in range(len(rasterFunctions)):
 				self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
 				self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 			self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
 
-		#QgsMessageLog.logMessage(str(self._settings) + " " + str('rasterFunction' in self._settings['renderingRule']) + " " + str(len(self._settings['renderingRule']) == 1))
-		if 'renderingRule' in self._settings and 'rasterFunction' in self._settings['renderingRule'] and len(json.loads(self._settings['renderingRule'])) == 1:
-			self._renderingMode = "template"
-			self._settingsDialog.radioButtonTemplate.click()
-			self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
-			self._onTemplateComboBoxChange()
+		ruleInSettings = self._settings['renderingRule']
+		if ruleInSettings:
+			rasterFunctionInSettings = 'rasterFunction' in self._settings['renderingRule']
+			singularRenderRule = len(json.loads(self._settings['renderingRule'])) == 1
+			if rasterFunctionInSettings and singularRenderingRule:
+				self._renderingMode = "template"
+				self._settingsDialog.radioButtonTemplate.click()
+				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
+				self._onTemplateComboBoxChange()
+
 		elif 'renderingRule' in self._settings:
 			self._renderingMode = "custom"
 			self._settingsDialog.radioButtonCustom.click()

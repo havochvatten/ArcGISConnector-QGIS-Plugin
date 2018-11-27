@@ -274,41 +274,18 @@ class Settings:
 
 	#Takes a Dict
 	def updateValues(self, nextSettings):
-		if 'size' in nextSettings:
-			self.size =  nextSettings['size']
-
-		if 'format' in nextSettings:
-			self.format = nextSettings['format']
-		
-		if 'pixelType' in nextSettings:
-			self.pixelType = nextSettings['pixelType']
-		
-		if 'noDataInterpretation' in nextSettings:
-			self.noDataInterpretation = nextSettings['noDataInterpretation']
-		
-		if 'interpolation' in nextSettings:	
-			self.interpolation = nextSettings['interpolation']
-		
-		if 'noData' in nextSettings:	
-			self.noData = extSettings['noData']
-		
-		if 'compression' in nextSettings:	
-			self.compression = nextSettings['compression']
-		
-		if 'compressionQuality' in nextSettings:	
-			self.compressionQuality = nextSettings['compressionQuality']
-		
-		if 'bandIds' in nextSettings:	
-			self.bandIds = nextSettings['bandIds']
-		
-		if 'renderingRule' in nextSettings:	
-			self.renderingRule = nextSettings['renderingRule']
-		
-		if 'mosaicRule' in nextSettings:	
-			self.mosaicRule = nextSettings['mosaicRule']			
-		
-		if 'time' in nextSettings:	
-			self.time = nextSettings['time']	
+		self.size = nextSettings['size']
+		self.format = nextSettings['format']
+		self.pixelType = nextSettings['pixelType']
+		self.noDataInterpretation = nextSettings['noDataInterpretation']
+		self.interpolation = nextSettings['interpolation']
+		self.noData = nextSettings['noData']
+		self.compression = nextSettings['compression']
+		self.compressionQuality = nextSettings['compressionQuality']
+		self.bandIds = nextSettings['bandIds']
+		self.renderingRule = nextSettings['renderingRule']
+		self.mosaicRule = nextSettings['mosaicRule']			
+		self.time = nextSettings['time']	
 
 	def getDict(self):
 		return {
