@@ -51,7 +51,7 @@ class ArcGisConNewController(QObject):
 		self._iface = iface				
 		self._newDialog = ArcGisConDialogNew()	
 		self._newDialog.setModal(True)
-		self._newDialog.layerUrlInput.editingFinished.connect(self._initConnection)
+		self._newDialog.layerUrlInput.editingFinished.connect(self._onUrlEdit)
 		self._newDialog.usernameInput.editingFinished.connect(self._onAuthInputChange)
 		self._newDialog.rememberCheckbox.stateChanged.connect(lambda state: self._onAuthCheckBoxChanged(state))
 		self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
@@ -106,6 +106,10 @@ class ArcGisConNewController(QObject):
 		self._newDialog.passwordInput.setDisabled(False)
 		self._newDialog.rememberCheckbox.setDisabled(False)	
 	
+	def _onUrlEdit(self):
+		self._enableAuthSection()
+		self._initConnection()
+
 	def _initConnection(self):
 		url = str(self._newDialog.layerUrlInput.text().strip()) 	
 		if (url):	
@@ -302,8 +306,6 @@ class ConnectionSettingsController(QObject):
 
 	_lastCustomText = None
 	_lastMosaicText = None
-
-
 
 	def __init__(self, iface):
 		QObject.__init__(self)
