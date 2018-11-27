@@ -103,7 +103,6 @@ class ArcGisConnector:
         self._connectionController.addEventHandler(self.handleLogin)
         
     def handleLogin(self, sender, connection): 
-        connection.createMetaInfo()
         self._layerDialogController.showView(connection,
             self._updateService,
             self._esriRasterLayers,
@@ -160,7 +159,6 @@ class ArcGisConnector:
             self._refreshController.updateLayer(self._updateService, layer)
     
     def _refreshEsriLayer(self, withCurrentExtent=False):
-        #QgsMessageLog.logMessage('called')
         qgsLayers = self._iface.legendInterface().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:  
