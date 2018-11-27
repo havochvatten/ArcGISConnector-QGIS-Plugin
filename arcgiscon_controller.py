@@ -303,7 +303,6 @@ class ConnectionSettingsController(QObject):
 	_lastCustomText = None
 	_lastMosaicText = None
 
-	_nextSettings = {}
 
 
 	def __init__(self, iface):
@@ -414,21 +413,21 @@ class ConnectionSettingsController(QObject):
 
 	def _onSizeEditChange(self):
 		if len(self._settingsDialog.sizeXEdit.text()) > 0 and len(self._settingsDialog.sizeYEdit.text()) > 0:
-			self._nextSettings['size'] = self._settingsDialog.sizeXEdit.text() + ',' + self._settingsDialog.sizeYEdit.text()
-		elif len(self._settingsDialog.sizeXEdit.text()) == 0 and len(self._settingsDialog.sizeYEdit.text()) == 0 and 'size' in self._nextSettings:
-			self._nextSettings.pop('size')
+			self._settings['size'] = self._settingsDialog.sizeXEdit.text() + ',' + self._settingsDialog.sizeYEdit.text()
+		elif len(self._settingsDialog.sizeXEdit.text()) == 0 and len(self._settingsDialog.sizeYEdit.text()) == 0 and 'size' in self._settings:
+			self._settings.pop('size')
 
 	def _onGeneralComboBoxChange(self, comboBox, index, setting):
 		if len(comboBox.itemText(index)) > 0:
-			self._nextSettings[setting] = comboBox.itemText(index)
-		elif setting in self._nextSettings:
-			self._nextSettings.pop(setting)
+			self._settings[setting] = comboBox.itemText(index)
+		elif setting in self._settings:
+			self._settings.pop(setting)
 
 	def _onGeneralEditChange(self, text, setting):
 		if len(text) > 0:
-			self._nextSettings[setting] = text
-		elif setting in self._nextSettings:
-			self._nextSettings.pop(setting)
+			self._settings[setting] = text
+		elif setting in self._settings:
+			self._settings.pop(setting)
 
 	def _initRenderingRuleTab(self):
 
