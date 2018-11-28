@@ -92,7 +92,6 @@ class EsriImageServiceQueryFactory:
 	@staticmethod
 	def createBaseQuery(extent=None, mapExtent=None, settings = {}):
 		
-		QgsMessageLog.logMessage("Inside base query " +  str(settings))
 		query = {"f":"json"}
 		if extent is not None:
 			query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
@@ -101,9 +100,12 @@ class EsriImageServiceQueryFactory:
 		if 'renderingRule' in settings:
 			rasterJson = settings['renderingRule']
 			query.update({'renderingRule' : rasterJson})
-		if 'timeExtent' in settings:
-			timeExtent = settings['timeExtent']
-		QgsMessageLog.logMessage("format : " + str(settings["format"])) 
+		if 'time' in settings:
+			if len(settings['time']) > 1:
+				timeExtent = str(settings['time'][0]) + "," + str(settings['time'][1])
+			else:
+				timeExtent = str(settings['time'][0])
+			query.update({'time': timeExtent})
 
 		SETTINGS_LIST = [
 			'size',
@@ -123,9 +125,7 @@ class EsriImageServiceQueryFactory:
 
 	@staticmethod
 	def createExportImageQuery(extent=None, mapExtent=None, settings={}):
-		QgsMessageLog.logMessage("Inside export query " +  str(settings))
 		query = EsriImageServiceQueryFactory.createBaseQuery(extent, mapExtent, settings)
-		QgsMessageLog.logMessage("Query in progress for Exporting image: " + str(query))
 		return EsriQuery("/ExportImage", query)
 
 	@staticmethod
@@ -403,8 +403,7 @@ class ImageSpecification:
 		imageCopy.metaInfo = self.metaInfo
 		imageCopy.width = self.width
 		imageCopy.height = self.height
-		imageCopy.settings = Settings()
-		settings = settings.copy()
+		imageCopy.settings = self.settings.copy()
 		return imageCopy
 
 
@@ -517,11 +516,17 @@ class Connection:
 			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)
 			metaJson = request.json()
 			metaInfo = EsriLayerMetaInformation.createFromMetaJson(metaJson)
+			self._updateTimeExtent(metaInfo.timeExtent)
 			return metaInfo
 
 		except ValueError as e:
 			QgsMessageLog.logMessage("error in createMetaInfo:  " + str(e))	
 			return False
+
+	def newImageFromSpec(self, spec, limLow, limHigh):
+		newSpec = spec.copy()
+		newSpec.setTime(limLow,limHigh)
+		return newSpec
 
 	#  Creates and returns an ImageSpecification object.
 	#  Requires that the correct auth is set, otherwise fails.
@@ -544,7 +549,6 @@ class Connection:
 	
 	def configureAuthMethod(self):
 		if self.authMethod != ConnectionAuthType.NoAuth:
-				QgsMessageLog.logMessage("Pass and user : " + str(self.username) + " " + str(self.password))
 				if self.authMethod == ConnectionAuthType.NTLM:                    
 					self.auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
 				if self.authMethod == ConnectionAuthType.BasicAuthetication:
@@ -552,8 +556,6 @@ class Connection:
 	
 	def connect(self, query):       
 		try: 
-			QgsMessageLog.logMessage("Authentication in connect: " + str(self.username) + " " + str(self.password))
-			QgsMessageLog.logMessage("Auth method: " + str(self.authMethod))
 			self.configureAuthMethod()
 			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)            
 		except requests.ConnectionError:
@@ -574,7 +576,6 @@ class Connection:
 
 	def updateBoundingBoxByRectangle(self, qgsRectangle, authId):
 		spacialReferenceWkid = self.extractWkidFromAuthId(authId)
-		QgsMessageLog.logMessage(str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
 		self.bbBox = {
 			"bbox":
 			{

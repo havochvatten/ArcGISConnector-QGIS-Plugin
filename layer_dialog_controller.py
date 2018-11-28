@@ -58,11 +58,10 @@ class LayerDialogController(QObject):
 
 
 	def showView(self, connection, updateService, rasterLayers, legendActions):
-		self.timeCatcher = TimeCatcher(connection.serviceTimeExtent[0],connection.serviceTimeExtent[1])
 		self.connection = connection
-		QgsMessageLog.logMessage("Auth in showView: " + str(connection.auth)) 
-		QgsMessageLog.logMessage("username in showView: " + str(connection.username)) 
-		QgsMessageLog.logMessage("password in showView: " + str(connection.password))
+		# Create meta info (TODO? won't happen earlier currently).
+		self.connection.createMetaInfo() 
+		self.timeCatcher = TimeCatcher(self.connection.serviceTimeExtent[0], self.connection.serviceTimeExtent[1])
 		self.updateService = updateService
 		self.rasterLayers = rasterLayers
 		self.legendActions = legendActions
@@ -70,24 +69,15 @@ class LayerDialogController(QObject):
 		self.renderThumbnails()
 		self.layerDialogUI.show()
 
-	def scaleImage(self, filePath, width, height, scalar):
-		pix = QPixmap(filePath)
-		pix =  pix.scaled(width * scalar , height * scalar, Qt.KeepAspectRatio)
-		return pix
-	def fillGrid(self):
-		layout = self.grid.layout()
-		for x in range(len(self.imageItems)):
-			row = x / self.MAX_COLUMN_AMOUNT
-			col = x % self.MAX_COLUMN_AMOUNT
-			layout.addWidget(self.imageItems[x], row, col)
-		
-	def updateGrid(self):
-		layout = self.grid.layout()
-		newImages = len(self.imageItems) - layout.count()
-		for x in range(newImages):
-			row = x / self.MAX_COLUMN_AMOUNT
-			col = x % self.MAX_COLUMN_AMOUNT
-			layout.addWidget(self.imageItems[x], row, col)
+
+	def renderThumbnails(self): 
+		IMAGE_AMOUNT_START = 6
+		# TODO: Regulate when to fill the grid, signals like window resize or 
+		# scroll.
+		serverItemsInfo = self.updateService.downloadServerData(self.connection)
+		self.populateImageItems(IMAGE_AMOUNT_START)
+		self.fillGrid()
+
 
 	def populateImageItems(self, amount):
 		FORMAT_PNG = "png"
@@ -96,20 +86,25 @@ class LayerDialogController(QObject):
 		MAX_ITEM_HEIGHT = 400
 		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
 		imageCount = 0
-		# Place ImageItems on the dialog.
-		while (imageCount < amount):
-			# TODO: Only make *One* meta information query that holds for all images.
-			imageSpec = self.connection.newImageSpecification(
+		baseSpec = imageSpec = self.connection.newImageSpecification(
 				MAX_ITEM_WIDTH,
 				MAX_ITEM_HEIGHT,
 				self.timeCatcher.limLow,
 				self.timeCatcher.limHigh,
 				FORMAT_PNG)
+		# Place ImageItems on the dialog.
+		while (imageCount < amount):
+			# TODO: Only make *One* meta information query that holds for all images.
+			
+			imageSpec  = self.connection.newImageFromSpec(
+				baseSpec,	
+				self.timeCatcher.limLow,
+				self.timeCatcher.limHigh) 
 			if not imageSpec:
 				return
+
 			filePath = self.updateService.downloadThumbnail(self.connection, imageSpec)
 			if filePath:		
-		
 				pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
 				item = ImageItemWidget(self.grid, pixmap.width(), pixmap.height())
 								
@@ -132,24 +127,37 @@ class LayerDialogController(QObject):
 					return
 
 
-	def renderThumbnails(self): 
-		IMAGE_AMOUNT_START = 6
-		# TODO: Regulate when to fill the grid, signals like window resize or 
-		# scroll.
+	def scaleImage(self, filePath, width, height, scalar):
+		pix = QPixmap(filePath)
+		pix =  pix.scaled(width * scalar , height * scalar, Qt.KeepAspectRatio)
+		return pix
 
-		serverItemsInfo = self.updateService.downloadServerData(self.connection)
-		
-		QgsMessageLog.logMessage("Server items info: " + str(serverItemsInfo))
-		self.populateImageItems(IMAGE_AMOUNT_START)
-		self.fillGrid()
+
+	def fillGrid(self):
+		layout = self.grid.layout()
+		for x in range(len(self.imageItems)):
+			row = x / self.MAX_COLUMN_AMOUNT
+			col = x % self.MAX_COLUMN_AMOUNT
+			layout.addWidget(self.imageItems[x], row, col)
 	
+		
+	def updateGrid(self):
+		layout = self.grid.layout()
+		newImages = len(self.imageItems) - layout.count()
+		for x in range(newImages):
+			row = x / self.MAX_COLUMN_AMOUNT
+			col = x % self.MAX_COLUMN_AMOUNT
+			layout.addWidget(self.imageItems[x], row, col)
+
 
 	def configureThumbnailEvents(self, item, imageSpec):
 		item.clicked.connect(lambda: self.onNewLayerClick(imageSpec))
 
+
 	def onNewLayerClick(self, imageSpec):
 	
 		self.requestLayerForConnection(imageSpec)
+
 
 	def requestLayerForConnection(self, imageSpec):
 	 	updateWorker = EsriUpdateWorker.create(

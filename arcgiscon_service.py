@@ -41,7 +41,6 @@ def downloadSource(args):
     ':type connection:Connection'
     ':type query:EsriQuery'
     connection, query, resultQueue = args
-    QgsMessageLog.logMessage(str(connection.auth) + " " + str(connection.username) + " " + str(connection.password))
     resultJson = connection.getJson(query)
     if resultQueue is not None:      
         resultQueue.put(1)
@@ -70,7 +69,6 @@ class TimeCatcher:
 
     def update(self, oldHigh):
         if oldHigh is None or oldHigh <= self.limLow:
-            QgsMessageLog.logMessage("update: old high: " + str(oldHigh) + "update: limlow " + str(self.limLow))
             return None
         
         self.limHigh = oldHigh - 86400000 
@@ -281,7 +279,6 @@ class EsriUpdateService(QtCore.QObject):
             step = 1
             if u'href' in base:
                 # Used in image service
-                QgsMessageLog.logMessage("downloading raster from " + base[u'href'])
                 download = self._downloadRaster(base[u'href'], connection)
                 return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], "tiff")
 
