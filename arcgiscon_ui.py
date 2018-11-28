@@ -87,8 +87,9 @@ class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
             # remove it from the gui
             widgetToRemove.setParent(None)
 
+
     def closeEvent(self, event):
-        self.clearLayout(self.imageGridWidget.layout())
+        self.clearLayout(self.scrollArea.widget().layout())
         super(LayerDialog, self).closeEvent(event)
 
 class ImageLabel(QtGui.QLabel):

@@ -65,7 +65,6 @@ class LayerDialogController(QObject):
 		self.updateService = updateService
 		self.rasterLayers = rasterLayers
 		self.legendActions = legendActions
-
 		self.renderThumbnails()
 		self.layerDialogUI.show()
 
@@ -161,9 +160,7 @@ class LayerDialogController(QObject):
 
 	def requestLayerForConnection(self, imageSpec):
 		LAYER_IMAGE_SIZE = [800, 800]
-		if self.connection.name == "": 
-			self.connection.updateNamefromUrl()
-
+		self.connection.updateNamefromUrl()
 		imageSpec.setSize(LAYER_IMAGE_SIZE)
 	 	updateWorker = EsriUpdateWorker.create(
 			 self.connection, imageSpec,
@@ -172,11 +169,18 @@ class LayerDialogController(QObject):
 			 onError=lambda errorMsg: self.onError(errorMsg))	
 
 	 	self.updateService.update(updateWorker)	
-		self.layerDialogUI.accept()
-		self.layerDialogUI.clearLayout(self.layerDialogUI.scrollArea.widget().layout())
+		self.cleanAndClose()
+		
+		
 
+	def cleanAndClose(self):
+		del self.imageItems[:]
+		self.layerDialogUI.close()
 
 	def onSuccess(self, srcPath, imageSpec):
+		#Remove thumbnails.
+
+		#self.layerDialog.clear()
 		rasterLayer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
 		for action in self.legendActions:
 			self.iface.legendInterface().addLegendLayerActionForLayer(action, rasterLayer.qgsRasterLayer)

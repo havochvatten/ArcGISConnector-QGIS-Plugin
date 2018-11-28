@@ -607,7 +607,6 @@ class Connection:
 	
 	def getJson(self, query):
 		connected = self.connect(query)
-		QgsMessageLog.logMessage(str(connected))
 		return connected.json()
 									
 	def createSourceFileName(self):        

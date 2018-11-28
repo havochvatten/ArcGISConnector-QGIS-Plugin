@@ -77,7 +77,6 @@ class ArcGisConNewController(QObject):
 				self._newDialog.usernameInput.setText(self._credentials['username'])
 				self._newDialog.passwordInput.setText(self._credentials['password'])
 			self._newDialog.rememberCheckbox.setChecked(True)
-			self._initConnection()
 
 		self._newDialog.layerUrlInput.setFocus()
 
@@ -113,7 +112,6 @@ class ArcGisConNewController(QObject):
 		url = str(self._newDialog.layerUrlInput.text().strip()) 	
 		if (url):	
 			# TODO: The layer name code will go somewhere else:
-			# #name = self._newDialog.layerNameInput.text()		
 			self._connection = Connection.createAndConfigureConnection(url, "")	
 			self._newDialog.connectionErrorLabel.setText("")							
 			if not self._connection.needsAuth():							
