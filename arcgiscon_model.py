@@ -356,7 +356,7 @@ class ImageSpecification:
 	def configure(self, metaInfo, maxWidth, maxHeight, limLow, limHigh, format):
 		self.metaInfo = metaInfo
 		self.setAspectRatio()
-		self.setImageSize(maxWidth, maxHeight)
+		self.configureImageSize(maxWidth, maxHeight)
 		#Timestamp is not the real time stamp but the upper boundary.
 		self.setTime(limLow, limHigh) 
 		self.settings.format = format
@@ -379,9 +379,14 @@ class ImageSpecification:
 			ratio += 0.4
 
 		self.aspectRatio = ratio
+	
+	def setSize(self, size):
+		self.width = size[0]
+		self.height = size[1]
+		self.settings.size = str(self.width) + "," + str(self.height)
 
 	# Acquires a max size from a set width and height while keeping the aspect ratio (width/height)
-	def setImageSize(self, maxWidth = 100, maxHeight = 100):
+	def configureImageSize(self, maxWidth = 100, maxHeight = 100):
 		width = self.aspectRatio
 		height = 1
 		while (True):
@@ -458,6 +463,12 @@ class Connection:
 	# Auth is the auth header for requests.
 	auth = None
 
+	def updateNamefromUrl(self):
+		sep = 'services/'
+		newName = self.basicUrl.split(sep)[1]
+		newName = newName.split('/ImageServer')[0]
+		self.name = newName
+
 	def __init__(self, basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth):
 		self.basicUrl = basicUrl
 		self.name = name
@@ -486,6 +497,7 @@ class Connection:
 					else:
 						self.authMethod = ConnectionAuthType.BasicAuthetication
 			
+
 		except ValueError as e:
 			QgsMessageLog.logMessage("error:  " + str(e))	
 			# fail silently
@@ -665,7 +677,7 @@ class EsriRasterLayer:
 												
 	def updateQgsRasterLayer(self, srcPath):
 		self.qgsRasterLayer = QgsRasterLayer(srcPath, self.connection.name)        
-		self.updateProperties()          
+		self.updateProperties()
 	
 	def updateProperties(self):
 		self.qgsRasterLayer.setCustomProperty("arcgiscon_connection_url", self.connection.basicUrl)            

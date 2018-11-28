@@ -77,6 +77,7 @@ class ArcGisConNewController(QObject):
 				self._newDialog.usernameInput.setText(self._credentials['username'])
 				self._newDialog.passwordInput.setText(self._credentials['password'])
 			self._newDialog.rememberCheckbox.setChecked(True)
+			self._initConnection()
 
 		self._newDialog.layerUrlInput.setFocus()
 
@@ -120,11 +121,9 @@ class ArcGisConNewController(QObject):
 				self._checkConnection()
 	
 	def _onConnectClick(self):
-
 		if not self._newDialog.layerUrlInput.text():
 			self._newDialog.connectionErrorLabel.setText("Enter a valid URL.")
-			return
-
+			return	
 		if self._connection.needsAuth():
 			username = self._newDialog.usernameInput.text()
 			password = self._newDialog.passwordInput.text()

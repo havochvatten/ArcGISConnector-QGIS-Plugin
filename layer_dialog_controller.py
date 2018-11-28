@@ -160,6 +160,11 @@ class LayerDialogController(QObject):
 
 
 	def requestLayerForConnection(self, imageSpec):
+		LAYER_IMAGE_SIZE = [800, 800]
+		if self.connection.name == "": 
+			self.connection.updateNamefromUrl()
+
+		imageSpec.setSize(LAYER_IMAGE_SIZE)
 	 	updateWorker = EsriUpdateWorker.create(
 			 self.connection, imageSpec,
 			 onSuccess=lambda srcPath: self.onSuccess(srcPath, imageSpec), 
