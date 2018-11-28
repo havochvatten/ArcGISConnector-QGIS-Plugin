@@ -334,7 +334,8 @@ class FileSystemService:
     tmpFolderName = "tmp"
 
     def openFile(self, src):
-        file = open(src,"rt")
+        path = os.path.join(os.path.dirname(__file__), src)
+        file = open(path,"rt")
         text = file.read()
         file.close()
         return text

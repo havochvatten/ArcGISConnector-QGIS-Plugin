@@ -146,7 +146,7 @@ class ImageItemWidget(QtGui.QWidget):
         self.setAutoFillBackground(True)
         self.setLayout(layout)
         self.setAttribute(PyQt4.QtCore.Qt.WA_StyledBackground)
-        self.styleFromFile(self, "C:/Users/almott/.qgis2/python/plugins/SKI/gui/styleSheets/ImageItemWidget.qss")
+        self.styleFromFile(self, "gui/styleSheets/ImageItemWidget.qss")
         
         self.configureChildren()
         self.configureFromDimensions(width, height)
@@ -154,8 +154,8 @@ class ImageItemWidget(QtGui.QWidget):
     def configureChildren(self):
 
         self.imageDateLabel.setText("2018-11-04")
-        self.styleFromFile(self.thumbnailLabel, "C:/Users/almott/.qgis2/python/plugins/SKI/gui/styleSheets/thumbnailLabel.qss")
-        self.styleFromFile(self.imageDateLabel, "C:/Users/almott/.qgis2/python/plugins/SKI/gui/styleSheets/imageItemLabel.qss")
+        self.styleFromFile(self.thumbnailLabel, "gui/styleSheets/thumbnailLabel.qss")
+        self.styleFromFile(self.imageDateLabel, "gui/styleSheets/imageItemLabel.qss")
 
 
     # Public function for adapting the widget size to the thumbnail image's dimensions. 
@@ -172,15 +172,15 @@ class ImageItemWidget(QtGui.QWidget):
 
         self.thumbnailLabel.setFixedSize(thumbnailSize)
         self.thumbnailLabel.setSizeHint(thumbnailSize)
-        self.thumbnailLabel.setSizePolicy(sizePolicy);
+        self.thumbnailLabel.setSizePolicy(sizePolicy)
 
         self.imageDateLabel.setFixedSize(labelSize)
         self.imageDateLabel.setSizeHint(labelSize)
-        self.imageDateLabel.setSizePolicy(sizePolicy);
+        self.imageDateLabel.setSizePolicy(sizePolicy)
        
         self.setFixedSize(widgetSize)
         self.setSizeHint(widgetSize)
-        self.setSizePolicy(sizePolicy);
+        self.setSizePolicy(sizePolicy)
         self.repaint()
         self.imageDateLabel.repaint()
         self.thumbnailLabel.repaint()
