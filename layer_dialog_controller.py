@@ -42,11 +42,16 @@ class LayerDialogController(QObject):
 		self.event = Event()
 		self.imageItems = []
 		self.layerDialogUI.scrolledDown.connect(self.onScrolledDown)
+		self.layerDialogUI.closed.connect(self.onCloseEvent)
 
 
 	# Add handler to our events
 	def addEventHandler(self, handler):
 		self.event += handler
+
+
+	def onCloseEvent(self):
+		self.clearThumbnails()
 
 	def onScrolledDown(self, y):
 		#TODO: Use the scroll position to avoid getting 300 new images instead of three.
@@ -169,13 +174,17 @@ class LayerDialogController(QObject):
 			 onError=lambda errorMsg: self.onError(errorMsg))	
 
 	 	self.updateService.update(updateWorker)	
-		self.cleanAndClose()
+		self.clearThumbnails()
+		self.closeWindow()
+		QgsMessageLog.logMessage("Has cleaned")
 		
-		
-
-	def cleanAndClose(self):
+	def clearThumbnails(self):
 		del self.imageItems[:]
+
+	def closeWindow(self):
 		self.layerDialogUI.close()
+		QgsMessageLog.logMessage("imageItems :" + str(self.imageItems))
+		QgsMessageLog.logMessage("imageItems in ui :" + str(self.layerDialogUI.scrollArea.widget().layout().count()))
 
 	def onSuccess(self, srcPath, imageSpec):
 		#Remove thumbnails.

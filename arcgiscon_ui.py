@@ -69,6 +69,8 @@ class ImageServerDashboard(QtGui.QMainWindow, DASHBOARD_WINDOW):
 
 class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
     scrolledDown = PyQt4.QtCore.pyqtSignal([int])
+    closed = PyQt4.QtCore.pyqtSignal()
+
     def __init__(self, parent=None):        
         super(LayerDialog, self).__init__(parent)        
         self.setupUi(self)  
@@ -90,6 +92,7 @@ class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
 
     def closeEvent(self, event):
         self.clearLayout(self.scrollArea.widget().layout())
+        self.closed.emit()
         super(LayerDialog, self).closeEvent(event)
 
 class ImageLabel(QtGui.QLabel):
