@@ -121,6 +121,7 @@ class EsriImageServiceQueryFactory:
 		for setting in SETTINGS_LIST:
 			if setting in settings:
 				query.update({setting: settings[setting]})
+		QgsMessageLog.logMessage("Query: " + str(query))
 		return query 
 
 	@staticmethod
@@ -291,20 +292,20 @@ class Settings:
 	#Takes a Dict
 	def updateValues(self, nextSettings):
 		self.size = nextSettings['size']
-		self.format = nextSettings['format']
-		self.pixelType = nextSettings['pixelType']
-		self.noDataInterpretation = nextSettings['noDataInterpretation']
-		self.interpolation = nextSettings['interpolation']
-		self.noData = nextSettings['noData']
-		self.compression = nextSettings['compression']
-		self.compressionQuality = nextSettings['compressionQuality']
-		self.bandIds = nextSettings['bandIds']
-		self.renderingRule = nextSettings['renderingRule']
-		self.mosaicRule = nextSettings['mosaicRule']			
-		self.time = nextSettings['time']	
+		self.format = nextSettings['format'] if 'format' in nextSettings else None
+		self.pixelType = nextSettings['pixelType'] if 'pixelType' in nextSettings else None
+		self.noDataInterpretation = nextSettings['noDataInterpretation'] if 'noDataInterpretation' in nextSettings else None
+		self.interpolation = nextSettings['interpolation'] if 'interpolation' in nextSettings else None
+		self.noData = nextSettings['noData'] if 'noData' in nextSettings else None
+		self.compression = nextSettings['compression'] if 'compression' in nextSettings else None
+		self.compressionQuality = nextSettings['compressionQuality'] if 'compressionQuality' in nextSettings else None
+		self.bandIds = nextSettings['bandIds'] if 'bandIds' in nextSettings else None
+		self.renderingRule = nextSettings['renderingRule']if 'renderingRule' in nextSettings else None
+		self.mosaicRule = nextSettings['mosaicRule'] if 'mosaicRule' in nextSettings else None			
+		self.time = nextSettings['time'] if 'time' in nextSettings else None
 
 	def getDict(self):
-		return {
+		dict = {
 			'size':self.size,
 			'format':self.format,
 			'pixelType':self.pixelType,
@@ -317,7 +318,15 @@ class Settings:
 			'renderingRule':self.renderingRule,
 			'mosaicRule':self.mosaicRule,
 			'time':self.time
-			}
+			} 
+		QgsMessageLog.logMessage("dict unfiltered: " + str(dict))
+		filtered = {}
+		for x in dict:
+			item = dict[x]
+			if item is not None:
+				filtered[x] = item
+		QgsMessageLog.logMessage("filtered: " + str(filtered))
+		return filtered
 
 	def setCurrentRasterFunction(self, index):
 		if index >= 0 and self.rasterFunctions is not None:

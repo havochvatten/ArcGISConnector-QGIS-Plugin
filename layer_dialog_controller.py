@@ -51,7 +51,7 @@ class LayerDialogController(QObject):
 	def onScrolledDown(self, y):
 		#TODO: Use the scroll position to avoid getting 300 new images instead of three.
 		#if (y > self.lastScrollPos):
-		QgsMessageLog.logMessage("Y pos: " + str(y))
+		#QgsMessageLog.logMessage("Y pos: " + str(y))
 		self.populateImageItems(self.MAX_COLUMN_AMOUNT)
 		self.updateGrid()
 		self.lastScrollPos = y

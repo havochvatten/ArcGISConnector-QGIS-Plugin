@@ -44,6 +44,7 @@ def downloadSource(args):
     resultJson = connection.getJson(query)
     if resultQueue is not None:      
         resultQueue.put(1)
+    QgsMessageLog.logMessage("result download source: " + str(resultJson))
     return resultJson  
 
 
@@ -198,7 +199,6 @@ class EsriUpdateService(QtCore.QObject):
                     settings.getDict() 
                     )
                     results = [downloadSource((currentJob.connection, query, None))]
-                    QgsMessageLog.logMessage(str(results))
                     self.progress.emit(90)                        
                     if results is not None and not self._isKilled:
                         filePath = self._processSources(results, currentJob.connection)

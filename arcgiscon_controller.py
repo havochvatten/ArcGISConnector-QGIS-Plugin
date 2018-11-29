@@ -443,8 +443,8 @@ class ConnectionSettingsController(QObject):
 				self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 			self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
 
-		ruleInSettings = self._settings['renderingRule']
-		if ruleInSettings:
+
+		if 'renderingRule' in self._settings:
 			rasterFunctionInSettings = 'rasterFunction' in self._settings['renderingRule']
 			singularRenderRule = len(json.loads(self._settings['renderingRule'])) == 1
 			if rasterFunctionInSettings and singularRenderingRule:
