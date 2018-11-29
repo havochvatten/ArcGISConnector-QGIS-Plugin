@@ -269,6 +269,8 @@ class Settings:
 	renderingRule = None
 	mosaicRule = None
 	time = None
+	# A list of the raster functions available.
+	rasterFunctions = {}
 
 	def copy(self):
 		settingsCopy = Settings()
@@ -284,10 +286,9 @@ class Settings:
 		settingsCopy.renderingRule = self.renderingRule
 		settingsCopy.mosaicRule = self.mosaicRule			
 		settingsCopy.time = self.time	
+		settingsCopy.rasterFunctions = self.rasterFunctions
 		return settingsCopy
 
-	# A list of the raster functions available.
-	rasterFunctions = {}
 
 	#Takes a Dict
 	def updateValues(self, nextSettings):
@@ -319,13 +320,11 @@ class Settings:
 			'mosaicRule':self.mosaicRule,
 			'time':self.time
 			} 
-		QgsMessageLog.logMessage("dict unfiltered: " + str(dict))
 		filtered = {}
 		for x in dict:
 			item = dict[x]
 			if item is not None:
 				filtered[x] = item
-		QgsMessageLog.logMessage("filtered: " + str(filtered))
 		return filtered
 
 	def setCurrentRasterFunction(self, index):
@@ -340,8 +339,6 @@ class Settings:
 class ImageSpecification:
 	aspectRatio = None
 	customFilter = None
-	rasterFunctions = None
-	currentRasterFunction = None
 	metaInfo = None
 	# Width and heigh only used for thumbnails. Will not be automatically updated.
 	width = None
@@ -368,6 +365,7 @@ class ImageSpecification:
 		self.configureImageSize(maxWidth, maxHeight)
 		#Timestamp is not the real time stamp but the upper boundary.
 		self.setTime(limLow, limHigh) 
+		self.settings.rasterFunctions = metaInfo.rasterFunctions
 		self.settings.format = format
 
 	def setAspectRatio(self):
@@ -412,8 +410,6 @@ class ImageSpecification:
 		imageCopy = ImageSpecification()
 		imageCopy.aspectRatio = self.aspectRatio
 		imageCopy.customFilter = self.customFilter
-		imageCopy.rasterFunctions = self.rasterFunctions
-		imageCopy.currentRasterFunction = self.currentRasterFunction
 		imageCopy.metaInfo = self.metaInfo
 		imageCopy.width = self.width
 		imageCopy.height = self.height
@@ -427,7 +423,6 @@ class ImageSpecification:
 
 	def updateBoundingBoxByRectangle(self, qgsRectangle, authId):
 		spacialReferenceWkid = self.extractWkidFromAuthId(authId)
-		QgsMessageLog.logMessage(" Updating bounding box: " + str(qgsRectangle.xMinimum()) + ", " + str(qgsRectangle.yMinimum()) + ", " + str(qgsRectangle.xMaximum()) + ", " + str(qgsRectangle.yMaximum()))
 		self.metaInfo.extent = {
 						"bbox":
 						{

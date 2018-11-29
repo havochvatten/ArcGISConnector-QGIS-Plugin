@@ -330,7 +330,7 @@ class ConnectionSettingsController(QObject):
 		self._onSizeEditChange()
 
 		if self._renderingMode == "template":
-			self._connection.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
+			self._settingsObject.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
 		elif self._renderingMode == "custom":
 			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
 			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
@@ -436,7 +436,7 @@ class ConnectionSettingsController(QObject):
 			lambda buttonValue: self._renderingButtonChecked("radioButtonNone") if buttonValue else None)
 
 		self._settingsDialog.comboBox.clear()
-		rasterFunctions = self._layer.imageSpec.rasterFunctions
+		rasterFunctions = self._settingsObject.rasterFunctions
 		if rasterFunctions != None:
 			for i in range(len(rasterFunctions)):
 				self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
@@ -462,9 +462,10 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.radioButtonNone.click()
 
 	def _onTemplateComboBoxChange(self):
+		rasterFunctions = self._settingsObject.rasterFunctions
 		index = self._settingsDialog.comboBox.currentIndex()
-		descriptionText = self._connection.rasterFunctions[index]['description']
-		helpText = self._connection.rasterFunctions[index]['help']
+		descriptionText = rasterFunctions[index]['description']
+		helpText = rasterFunctions[index]['help']
 		self._settingsDialog.templateTextEdit.clear()
 		self._settingsDialog.templateTextEdit.appendPlainText('Description: ' + descriptionText + "\n" + 'Help: ' + helpText)
 
