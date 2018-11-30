@@ -92,7 +92,12 @@ class EsriImageServiceQueryFactory:
 	@staticmethod
 	def createBaseQuery(extent=None, mapExtent=None, settings = {}):
 		
-		query = {"f":"json"}
+		query = {
+					"f": "json",
+					"size": "800,800",
+					"format": "tiff",
+					"pixelType": "UNKNOWN"
+                }
 		if extent is not None:
 			query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
 		else:
@@ -119,7 +124,7 @@ class EsriImageServiceQueryFactory:
 			'bandIds' ]
 
 		for setting in SETTINGS_LIST:
-			if setting in settings:
+			if setting in settings and settings[setting] != None:
 				query.update({setting: settings[setting]})
 		QgsMessageLog.logMessage("Query: " + str(query))
 		return query 
@@ -132,11 +137,8 @@ class EsriImageServiceQueryFactory:
 	@staticmethod
 	def createExtentParam(extent):
 
-		return {
-			"size": "800,800",
+		return {		
 			"bbox": json.dumps(extent['bbox']),
-			"format": "tiff",
-			"pixelType": "UNKNOWN",
 			"imageSR": json.dumps(extent['spatialReference']['wkid']),
 			"bboxSR": json.dumps(extent['spatialReference']['wkid'])
 		}
@@ -258,7 +260,7 @@ class Settings:
 	INTERPOLATIONS = ['', 'RSP_BilinearInterpolation', 'RSP_CubicConvolution', 'RSP_Majority', 'RSP_NearestNeighbor']
 
 	size = None
-	format = None
+	imageFormat = None #Would love to use 'format', but it is a protected word that shouldnt be used.
 	pixelType = None
 	noDataInterpretation = None
 	interpolation = None 
@@ -275,7 +277,7 @@ class Settings:
 	def copy(self):
 		settingsCopy = Settings()
 		settingsCopy.size = self.size 
-		settingsCopy.format = self.format 
+		settingsCopy.imageFormat = self.imageFormat 
 		settingsCopy.pixelType = self.pixelType 
 		settingsCopy.noDataInterpretation = self.noDataInterpretation 
 		settingsCopy.interpolation = self.interpolation 
@@ -292,23 +294,36 @@ class Settings:
 
 	#Takes a Dict
 	def updateValues(self, nextSettings):
-		self.size = nextSettings['size']
-		self.format = nextSettings['format'] if 'format' in nextSettings else None
-		self.pixelType = nextSettings['pixelType'] if 'pixelType' in nextSettings else None
-		self.noDataInterpretation = nextSettings['noDataInterpretation'] if 'noDataInterpretation' in nextSettings else None
-		self.interpolation = nextSettings['interpolation'] if 'interpolation' in nextSettings else None
-		self.noData = nextSettings['noData'] if 'noData' in nextSettings else None
-		self.compression = nextSettings['compression'] if 'compression' in nextSettings else None
-		self.compressionQuality = nextSettings['compressionQuality'] if 'compressionQuality' in nextSettings else None
-		self.bandIds = nextSettings['bandIds'] if 'bandIds' in nextSettings else None
-		self.renderingRule = nextSettings['renderingRule']if 'renderingRule' in nextSettings else None
-		self.mosaicRule = nextSettings['mosaicRule'] if 'mosaicRule' in nextSettings else None			
-		self.time = nextSettings['time'] if 'time' in nextSettings else None
+
+		if 'size' in nextSettings:
+			self.size = nextSettings['size']
+		if 'format' in nextSettings:
+			self.imageFormat = nextSettings['format']
+		if 'pixelType' in nextSettings:
+			self.pixelType = nextSettings['pixelType'] 
+		if 'noDataInterpretation' in nextSettings:
+			self.noDataInterpretation = nextSettings['noDataInterpretation']
+		if 'interpolation' in nextSettings:
+			self.interpolation = nextSettings['interpolation']
+		if 'noData' in nextSettings:
+			self.noData = nextSettings['noData']
+		if 'compression' in nextSettings:
+			self.compression = nextSettings['compression']
+		if 'compressionQuality' in nextSettings:
+			self.compressionQuality = nextSettings['compressionQuality']
+		if 'bandIds' in nextSettings:
+			self.bandIds = nextSettings['bandIds']
+		if 'renderingRule' in nextSettings:
+			self.renderingRule = nextSettings['renderingRule']
+		if 'mosaicRule' in nextSettings:
+			self.mosaicRule = nextSettings['mosaicRule']	
+		if 'time' in nextSettings:
+			self.time = nextSettings['time']
 
 	def getDict(self):
 		settings = {
 			'size':self.size,
-			'format':self.format,
+			'format':self.imageFormat,
 			'pixelType':self.pixelType,
 			'noDataInterpretation':self.noDataInterpretation,
 			'interpolation':self.interpolation, 
@@ -327,6 +342,7 @@ class Settings:
 	def setCurrentRasterFunction(self, index):
 		if index >= 0 and self.rasterFunctions is not None:
 			self.renderingRule = json.dumps({"rasterFunction": self.rasterFunctions[index]["name"]})
+			QgsMessageLog.logMessage('set rendering: ' + str(self.renderingRule))
 
 # An ImageSpecification is an object which contains all the information
 # that pertains the acquiring of an image.
@@ -356,14 +372,14 @@ class ImageSpecification:
 		return time.strftime('%Y-%m-%d', time.localtime(timeStamp))
 
 	#Configures image spec from meta info.
-	def configure(self, metaInfo, maxWidth, maxHeight, limLow, limHigh, format):
+	def configure(self, metaInfo, maxWidth, maxHeight, limLow, limHigh, imageFormat):
 		self.metaInfo = metaInfo
 		self.setAspectRatio()
 		self.configureImageSize(maxWidth, maxHeight)
 		#Timestamp is not the real time stamp but the upper boundary.
 		self.setTime(limLow, limHigh) 
 		self.settings.rasterFunctions = metaInfo.rasterFunctions
-		self.settings.format = format
+		self.settings.imageFormat = imageFormat
 
 	def setAspectRatio(self):
 		#TODO: Image aspect ratio currently does not consider 
@@ -395,7 +411,7 @@ class ImageSpecification:
 		height = 1
 		while (True):
 			if (width*2 > maxWidth or height*2 > maxHeight):
-			   break;
+			   break
 
 			width = width * 2
 			height = height * 2

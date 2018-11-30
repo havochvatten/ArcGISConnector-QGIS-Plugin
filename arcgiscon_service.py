@@ -191,8 +191,6 @@ class EsriUpdateService(QtCore.QObject):
 
                     extent = currentJob.imageSpec.metaInfo.extent
                     settings = currentJob.imageSpec.settings
-                    FORMAT_TIFF = "tiff"
-                    settings.format = FORMAT_TIFF
                     query = EsriImageServiceQueryFactory.createExportImageQuery(
                     extent,
                     extent,
@@ -250,15 +248,14 @@ class EsriUpdateService(QtCore.QObject):
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!
     def downloadThumbnail(self, connection, imageSpecification):
-        format = "png"
+        imageFormat = "png"
         #size = str(imageSpecification.settings.size[0]) + "," + str(imageSpecification.settings.size[1])
-        pixelType = "UNKNOWN"
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
             imageSpecification.metaInfo.extent,
             imageSpecification.settings.getDict())
         json = downloadSource((connection, query, None))
         download = self._downloadRaster(json[u'href'], connection)
-        return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], format)
+        return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], imageFormat)
 
     def _downloadRaster(self, href, connection):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
@@ -280,7 +277,7 @@ class EsriUpdateService(QtCore.QObject):
             if u'href' in base:
                 # Used in image service
                 download = self._downloadRaster(base[u'href'], connection)
-                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], "tiff")
+                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], base[u'href'].lower().split('.')[-1])
 
             for nextResult in sources[1:]:                
                 if self._isKilled:

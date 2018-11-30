@@ -250,7 +250,8 @@ class ArcGisConRefreshController(QObject):
 			mapCanvas = self._iface.mapCanvas()
 			try:
 				esriLayer.imageSpec.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
-				esriLayer.updateProperties()			
+				esriLayer.updateProperties()
+				QgsMessageLog.logMessage('in updater:' + str(esriLayer.imageSpec.settings.getDict()))			
 				worker = EsriUpdateWorker.create(
 					esriLayer.connection,
 					esriLayer.imageSpec,
@@ -346,7 +347,9 @@ class ConnectionSettingsController(QObject):
 		else:
 			if 'mosaicRule' in self._settings:
 				self._settings['mosaicRule'] = None
+		
 		self._settingsObject.updateValues(self._settings)
+		QgsMessageLog.logMessage('settings ' + str(self._settings) + " object: " + str(self._settingsObject.getDict()))
 
 	def _initGeneralTab(self):
 		size = ['800','800']
