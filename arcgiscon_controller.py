@@ -208,7 +208,7 @@ class ArcGisConRefreshController(QObject):
 				onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
 			updateService.update(worker)
 
-	def showTimePicker(self, layer):
+	def showTimePicker(self, layer, updateCallBack):
 		startTimeLimitLong = layer.connection.serviceTimeExtent[0] / 1000L
 		startTimeLimitDate = QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 
@@ -229,13 +229,15 @@ class ArcGisConRefreshController(QObject):
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
 		dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog))
+		dialog.buttonBox.accepted.connect(updateCallBack)
 		dialog.buttonBox.button(QtGui.QDialogButtonBox.RestoreDefaults).clicked.connect(lambda: self.onTimePickerRestoreClick(layer, dialog))
+		dialog.buttonBox.button(QtGui.QDialogButtonBox.RestoreDefaults).clicked.connect(updateCallBack)
 
 		dialog.show()
 		dialog.exec_()
 
 	def onTimePickerRestoreClick(self, layer, dialog):
-		layer.connection.setTimeExtent((None,None))
+		layer.imageSpec.time = None
 		dialog.close()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
@@ -260,10 +262,10 @@ class ArcGisConRefreshController(QObject):
 				self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
 			
 	def updateLayerWithNewTimeExtent(self, layer, dialog):
-		
+		timeExtent = []
 		if dialog.tabWidget.currentWidget() == dialog.instantTab:
 			instantDate = dialog.instantDateInput.dateTime()
-			timeExtent = instantDate.toMSecsSinceEpoch()
+			timeExtent.append(instantDate.toMSecsSinceEpoch())
 		else:
 			startDate = endDate = "null"
 			if not dialog.startDateCheckBox.isChecked():
@@ -274,10 +276,10 @@ class ArcGisConRefreshController(QObject):
 				endDate = dialog.endDateInput.dateTime()
 				endDate.setTime(QTime(23,59,59))
 				endDate = endDate.toMSecsSinceEpoch()
-			timeExtent = (startDate, endDate)
+			timeExtent.append(startDate)
+			timeExtent.append(endDate)
+		layer.imageSpec.time = timeExtent
 
-		layer.connection.setTimeExtent(timeExtent)
-		
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
 	 	esriLayer.qgsRasterLayer.triggerRepaint()

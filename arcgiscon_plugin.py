@@ -219,18 +219,14 @@ class ArcGisConnector:
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
-                self._refreshController.showTimePicker(selectedLayer)
-        
-        # After time picker window has been closed
-        self._refreshEsriLayer(True)
+                self._refreshController.showTimePicker(selectedLayer, lambda: self._refreshEsriLayer(True))
 
     def _showSettingsDialog(self):
         qgsLayers = self._iface.legendInterface().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
-                self._settingsController.showSettingsDialog(selectedLayer, lambda: self._refreshEsriLayer(True))
-        
+                self._settingsController.showSettingsDialog(selectedLayer, lambda: self._refreshEsriLayer(True))   
                                       
     def _updateServiceFinished(self):            
         self._updateService.tearDown()

@@ -306,7 +306,7 @@ class Settings:
 		self.time = nextSettings['time'] if 'time' in nextSettings else None
 
 	def getDict(self):
-		dict = {
+		settings = {
 			'size':self.size,
 			'format':self.format,
 			'pixelType':self.pixelType,
@@ -319,13 +319,10 @@ class Settings:
 			'renderingRule':self.renderingRule,
 			'mosaicRule':self.mosaicRule,
 			'time':self.time
-			} 
-		filtered = {}
-		for x in dict:
-			item = dict[x]
-			if item is not None:
-				filtered[x] = item
-		return filtered
+			}
+
+		filteredSettings = {k: v for k, v in settings.items() if v is not None}
+		return filteredSettings
 
 	def setCurrentRasterFunction(self, index):
 		if index >= 0 and self.rasterFunctions is not None:
