@@ -159,7 +159,6 @@ class LayerDialogController(QObject):
 
 
 	def onNewLayerClick(self, imageSpec):
-	
 		self.requestLayerForConnection(imageSpec)
 
 
@@ -167,13 +166,14 @@ class LayerDialogController(QObject):
 		LAYER_IMAGE_SIZE = [800, 800]
 		self.connection.updateNamefromUrl()
 		imageSpec.setSize(LAYER_IMAGE_SIZE)
-	 	updateWorker = EsriUpdateWorker.create(
+		updateWorker = EsriUpdateWorker.create(
 			 self.connection, imageSpec,
 			 onSuccess=lambda srcPath: self.onSuccess(srcPath, imageSpec), 
 			 onWarning=lambda warningMsg: self.onWarning(warningMsg), 
 			 onError=lambda errorMsg: self.onError(errorMsg))	
 
-	 	self.updateService.update(updateWorker)	
+		self.updateService.update(updateWorker)
+		imageSpec.settings.imageFormat = None #To reset it for further use
 		self.clearThumbnails()
 		self.closeWindow()
 		
