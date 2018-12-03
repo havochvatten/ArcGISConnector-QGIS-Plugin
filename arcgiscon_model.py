@@ -167,7 +167,7 @@ class EsriQuery:
 	
 		
 class ConnectionAuthType:
-	NoAuth, BasicAuthetication, NTLM = range(3)
+	NoAuth, BasicAuthetication = range(2)
 
 class EsriConnectionJSONValidatorException(Exception):
 	NotArcGisRest, WrongLayerType, NoLayer, NoPagination = range(4)  
@@ -507,9 +507,6 @@ class Connection:
 			response = self.connect(query)
 			if response.status_code != 200: 
 				if "www-authenticate" in response.headers:
-					if "NTLM, Negotiate" in response.headers["www-authenticate"]:
-						self.authMethod = ConnectionAuthType.NTLM
-					else:
 						self.authMethod = ConnectionAuthType.BasicAuthetication
 			
 
@@ -576,8 +573,6 @@ class Connection:
 	
 	def configureAuthMethod(self):
 		if self.authMethod != ConnectionAuthType.NoAuth:
-				if self.authMethod == ConnectionAuthType.NTLM:                    
-					self.auth = requests_ntlm.HttpNtlmAuth(self.username, self.password)
 				if self.authMethod == ConnectionAuthType.BasicAuthetication:
 					self.auth = (self.username, self.password) 
 	

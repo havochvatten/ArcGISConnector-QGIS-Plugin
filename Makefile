@@ -55,7 +55,7 @@ PY_FILES = \
 UI_FILES = \
     arcgiscon_dialog_new.ui \
     
-LIB_DIRS = \
+#LIB_DIRS = \
     ntlm3 \
     requests \
     requests_ntlm
@@ -122,7 +122,7 @@ deploy: compile transcompile
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	#cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
 # The dclean target removes compiled python files from plugin directory
