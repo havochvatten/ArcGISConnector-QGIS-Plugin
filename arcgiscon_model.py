@@ -24,7 +24,6 @@ from qgis.core import QgsVectorLayer
 from qgis.core import QgsRasterLayer, QgsMessageLog
 
 import requests
-import requests_ntlm
 import hashlib
 import json
 import time
@@ -95,8 +94,7 @@ class EsriImageServiceQueryFactory:
 		query = {
 					"f": "json",
 					"size": "800,800",
-					"format": "tiff",
-					"pixelType": "UNKNOWN"
+					"format": "tiff"
                 }
 		if extent is not None:
 			query.update(EsriImageServiceQueryFactory.createExtentParam(extent))
@@ -586,7 +584,7 @@ class Connection:
 	def connect(self, query):       
 		try: 
 			self.configureAuthMethod()
-			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)            
+			request = requests.post(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)
 		except requests.ConnectionError:
 			raise
 		except requests.HTTPError:
