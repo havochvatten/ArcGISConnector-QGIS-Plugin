@@ -138,3 +138,4 @@ credentials.json
 # Visual studio
 
 .vscode/*
+reqtest.py
