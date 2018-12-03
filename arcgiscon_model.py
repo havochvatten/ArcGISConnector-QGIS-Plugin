@@ -28,6 +28,7 @@ import requests_ntlm
 import hashlib
 import json
 import time
+import urllib
 
 class EsriImageServiceQueryFactory:
 
@@ -39,54 +40,43 @@ class EsriImageServiceQueryFactory:
 	@staticmethod    
 	def createServerItemsQuery(connection):
 
-	  #   bbox = {'xmin': metaJson["extent"]['xmin'], 'ymin': metaJson["extent"]['ymin'], 'xmax': metaJson["extent"]['xmax'], 'ymax': metaJson["extent"]['ymax']}
-	  #      metaInfo.extent = {'bbox': bbox, 'spatialReference': metaJson["extent"]['spatialReference']}
-	  #  if "serviceDataType" in metaJson:
-	  #      metaInfo.layerType = metaJson["serviceDataType"]
-	  #  if u'allowRasterFunction' in metaJson and metaJson[u'allowRasterFunction'] and u'rasterFunctionInfos' in metaJson:
-	  #      metaInfo.rasterFunctions = metaJson[u'rasterFunctionInfos']
-	  #  if u'timeInfo' in metaJson:
-	  #      metaInfo.timeExtent = (metaJson['timeInfo']['timeExtent'][0], metaJson['timeInfo']['timeExtent'][1])
-
-
 		query = {} 
-		jsonFormat = {"f":"json"}
-		query.update(jsonFormat)
+		QgsMessageLog.logMessage("Metainfo: " + str(connection.metaInfo))
+		timeExtentJson = {"time" : str(connection.metaInfo.timeExtent[0]) + "," + str(connection.metaInfo.timeExtent[1])}
+		query.update(timeExtentJson)
 		
-		# QgsMessageLog.logMessage(str(connection.metaInfo))
-		# timeExtentJson = {"time" : str(connection.metaInfo.timeExtent[0]) + "," + str(connection.metaInfo.timeExtent[1])}
-		# query.update(timeExtentJson)
-		
-		#bbox = connection.metaInfo.extent["bbox"]
-		#geometryJson = {"geometry": str(bbox["xmin"]) + "," + str(connection.metaInfo.extent[1])}
-		#query.update(geometryJson)
+		bbox = connection.metaInfo.extent["bbox"]
+		geometryJson = {"geometry": str(bbox["xmin"]) + "," + str(bbox["ymin"]) + "," + str(bbox["xmax"]) + "," + str(bbox["ymax"])}
+		query.update(geometryJson)
 
 		geometryTypeJson = {"geometryType": "esriGeometryEnvelope"}
 		query.update(geometryTypeJson)
 
+		inSrJson = {"inSR":str(connection.metaInfo.extent['spatialReference'][u'wkid'])}
+		query.update(inSrJson)
+
 		spatialRelJson = {"spatialRel": "esriSpatialRelIntersects"}
 		query.update(spatialRelJson)
 		
-		returnGeometryJson = {"returnGeometry": "false"}
-		query.update(returnGeometryJson)
-
-		idsOnlyJson =  {"returnIdsOnly": "false"}
-		query.update(idsOnlyJson)
-
-		countOnlyJson = {"returnCountOnly": "false"}
-		query.update(countOnlyJson)
-		
 		groupByFieldsJson = {"groupByFieldsForStatistics": "ImageDate"}
 		query.update(groupByFieldsJson)
+
+		statisticsTypeJson = {"outStatistics":[{"statisticType": "count","onStatisticField": "ImageDate","outStatisticFieldName": "CountDate"}]} 
+		query.update(statisticsTypeJson)
 
 		distinctValuesJson = {"returnDistinctValues": "false"}
 		query.update(distinctValuesJson)
 
 		trueCurvesJson = {"returnTrueCurves": "false"}
 		query.update(trueCurvesJson)
+
+		jsonFormat = {"f":"pjson"}
+		query.update(jsonFormat)
 		
-		QgsMessageLog.logMessage("Server Item Query! " + str(query))
-		return EsriQuery("/Query", query)
+		query = urllib.urlencode(query)
+		esriQuery = EsriQuery("/query", query)
+		QgsMessageLog.logMessage("Server Item Query! " + str(esriQuery.getParams())) 
+		return esriQuery
 
 
 	@staticmethod
@@ -482,7 +472,6 @@ class Connection:
 	def createAndConfigureConnection(basicUrl, name, username=None, password=None, authMethod=ConnectionAuthType.NoAuth, validator=EsriConnectionJSONValidatorLayer()):
 		connection = Connection(basicUrl, name, username, password, authMethod)
 		connection.configure(validator)
-		#connection.metaInfo = connection.createMetaInfo() 
 		return connection
 
 	def configure(self, validator):
@@ -530,6 +519,7 @@ class Connection:
 			metaJson = request.json()
 			metaInfo = EsriLayerMetaInformation.createFromMetaJson(metaJson)
 			self._updateTimeExtent(metaInfo.timeExtent)
+			self.metaInfo = metaInfo
 			return metaInfo
 
 		except ValueError as e:

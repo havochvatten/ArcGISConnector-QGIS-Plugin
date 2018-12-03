@@ -243,9 +243,8 @@ class EsriUpdateService(QtCore.QObject):
         return toReturn
 
     def downloadServerData(self, connection):
-        #query = EsriImageServiceQueryFactory.createServerItemsQuery(connection)
-        #return downloadSource((connection, query ,None))
-        pass
+        query = EsriImageServiceQueryFactory.createServerItemsQuery(connection)
+        return downloadSource((connection, query ,None))
 
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!

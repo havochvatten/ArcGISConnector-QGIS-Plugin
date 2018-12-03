@@ -63,13 +63,14 @@ class LayerDialogController(QObject):
 
 
 	def showView(self, connection, updateService, rasterLayers, legendActions):
-		self.connection = connection
-		# Create meta info (TODO? won't happen earlier currently).
-		self.connection.createMetaInfo() 
-		self.timeCatcher = TimeCatcher(self.connection.serviceTimeExtent[0], self.connection.serviceTimeExtent[1])
 		self.updateService = updateService
+		self.connection = connection
 		self.rasterLayers = rasterLayers
 		self.legendActions = legendActions
+		# Create meta info (TODO? won't happen earlier currently).
+		self.connection.createMetaInfo() 
+		self.serverItemsInfo = self.updateService.downloadServerData(self.connection)
+		self.timeCatcher = TimeCatcher(self.connection.serviceTimeExtent[0], self.connection.serviceTimeExtent[1])
 		self.renderThumbnails()
 		self.layerDialogUI.show()
 
@@ -78,7 +79,6 @@ class LayerDialogController(QObject):
 		IMAGE_AMOUNT_START = 6
 		# TODO: Regulate when to fill the grid, signals like window resize or 
 		# scroll.
-		serverItemsInfo = self.updateService.downloadServerData(self.connection)
 		self.populateImageItems(IMAGE_AMOUNT_START)
 		self.fillGrid()
 
@@ -176,15 +176,12 @@ class LayerDialogController(QObject):
 	 	self.updateService.update(updateWorker)	
 		self.clearThumbnails()
 		self.closeWindow()
-		QgsMessageLog.logMessage("Has cleaned")
 		
 	def clearThumbnails(self):
 		del self.imageItems[:]
 
 	def closeWindow(self):
 		self.layerDialogUI.close()
-		QgsMessageLog.logMessage("imageItems :" + str(self.imageItems))
-		QgsMessageLog.logMessage("imageItems in ui :" + str(self.layerDialogUI.scrollArea.widget().layout().count()))
 
 	def onSuccess(self, srcPath, imageSpec):
 		#Remove thumbnails.
