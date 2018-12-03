@@ -348,7 +348,6 @@ class ConnectionSettingsController(QObject):
 				self._settings['mosaicRule'] = None
 		
 		self._settingsObject.updateValues(self._settings)
-		QgsMessageLog.logMessage('settings ' + str(self._settings) + " object: " + str(self._settingsObject.getDict()))
 
 	def _initGeneralTab(self):
 		size = ['800','800']
