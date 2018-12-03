@@ -250,8 +250,7 @@ class ArcGisConRefreshController(QObject):
 			mapCanvas = self._iface.mapCanvas()
 			try:
 				esriLayer.imageSpec.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
-				esriLayer.updateProperties()
-				QgsMessageLog.logMessage('in updater:' + str(esriLayer.imageSpec.settings.getDict()))			
+				esriLayer.updateProperties()		
 				worker = EsriUpdateWorker.create(
 					esriLayer.connection,
 					esriLayer.imageSpec,

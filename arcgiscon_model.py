@@ -40,7 +40,6 @@ class EsriImageServiceQueryFactory:
 	def createServerItemsQuery(connection):
 
 		query = {} 
-		QgsMessageLog.logMessage("Metainfo: " + str(connection.metaInfo))
 		timeExtentJson = {"time" : str(connection.metaInfo.timeExtent[0]) + "," + str(connection.metaInfo.timeExtent[1])}
 		query.update(timeExtentJson)
 		
@@ -74,7 +73,6 @@ class EsriImageServiceQueryFactory:
 		
 		query = urllib.urlencode(query)
 		esriQuery = EsriQuery("/query", query)
-		QgsMessageLog.logMessage("Server Item Query! " + str(esriQuery.getParams())) 
 		return esriQuery
 
 
