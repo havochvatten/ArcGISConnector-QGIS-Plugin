@@ -254,7 +254,9 @@ class EsriUpdateService(QtCore.QObject):
             imageSpecification.settings.getDict())
         json = downloadSource((connection, query, None))
         download = self._downloadRaster(json[u'href'], connection)
-        return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], imageFormat)
+
+        filename = "thumbnail_" + str(id(imageSpecification)) + download['filename']
+        return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
 
     def _downloadRaster(self, href, connection):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
@@ -415,6 +417,8 @@ class FileSystemService:
     def _storeBinary(self, binaryFile, filePath):
         with open(filePath, 'wb') as outfile:
             outfile.write(binaryFile)
+            outfile.flush()
+            outfile.close()
     
     def _createFolderIfNotExists(self, folderPath):
         if not os.path.isdir(folderPath):

@@ -1,11 +1,13 @@
-from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect
-from PyQt4.QtGui import QPixmap,  QSizePolicy
+from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
+from PyQt4.QtGui import QPixmap,  QSizePolicy, QMovie
 from arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
 from arcgiscon_service import NotificationHandler, EsriUpdateWorker, TimeCatcher
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from arcgiscon_ui import LayerDialog, ImageItemWidget
 from event_handling import Event
 from PIL import Image
+import os
+import threading
 import numpy as np
 import PyQt4.QtGui as QtGui
 
@@ -89,6 +91,10 @@ class LayerDialogController(QObject):
 		MAX_ITEM_WIDTH = 400
 		MAX_ITEM_HEIGHT = 400
 		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
+
+		pixmapSignal = pyqtSignal(QPixmap)
+
+		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		imageCount = 0
 		baseSpec = imageSpec = self.connection.newImageSpecification(
 				MAX_ITEM_WIDTH,
@@ -107,29 +113,34 @@ class LayerDialogController(QObject):
 			if not imageSpec:
 				return
 
-			filePath = self.updateService.downloadThumbnail(self.connection, imageSpec)
-			if filePath:		
-				pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
-				item = ImageItemWidget(self.grid, pixmap.width(), pixmap.height())
-								
-				# Config image item
-				timeStamp = imageSpec.getTimeStamp()				
-				if not timeStamp:
-					timeStamp = self.connection.name
-				item.imageDateLabel.setText(timeStamp)
-				item.thumbnailLabel.setPixmap(pixmap)
-				
-				self.imageItems.append(item)
-				imageCount += 1
+			item = ImageItemWidget(self.grid, imageSpec.width, imageSpec.height)
+							
+			# Config image item
+			timeStamp = imageSpec.getTimeStamp()				
+			if not timeStamp:
+				timeStamp = self.connection.name
+			
+			# Placeholder with loader
+			item.imageDateLabel.setText(timeStamp)
+			item.thumbnailLabel.setMovie(loaderMovie)
+			item.thumbnailLabel.setAlignment(Qt.AlignCenter)
+			loaderMovie.start()
 
-				# Configure widget events
-				self.configureThumbnailEvents(item, imageSpec)
+			self.imageItems.append(item)
+			imageCount += 1
 
-				#Update time catcher
-				newTime = self.timeCatcher.update(imageSpec.settings.time[1])
-				if not newTime:
-					return
+			# Initiate asynchronous download
+			downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
+			downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
+			downloader.start()
 
+			# Configure widget events
+			self.configureThumbnailEvents(item, imageSpec)
+
+			#Update time catcher
+			newTime = self.timeCatcher.update(imageSpec.settings.time[1])
+			if not newTime:
+				return
 
 	def scaleImage(self, filePath, width, height, scalar):
 		pix = QPixmap(filePath)
@@ -185,14 +196,16 @@ class LayerDialogController(QObject):
 
 	def onSuccess(self, srcPath, imageSpec):
 		#Remove thumbnails.
-
-		#self.layerDialog.clear()
 		rasterLayer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
 		for action in self.legendActions:
 			self.iface.legendInterface().addLegendLayerActionForLayer(action, rasterLayer.qgsRasterLayer)
 		QgsMapLayerRegistry.instance().addMapLayer(rasterLayer.qgsRasterLayer)
 		self.rasterLayers[rasterLayer.qgsRasterLayer.id()]=rasterLayer
 		self.connection.renderLocked = True
+
+	def onDownloadThumbnail(self, imageSpec, filePath, item):
+		pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
+		item.thumbnailLabel.setPixmap(pixmap)
 
 
 	def onWarning(self, warningMessage):
@@ -201,4 +214,25 @@ class LayerDialogController(QObject):
 
 	def onError(self, errorMessage):
 		NotificationHandler.pushError('['+self.connection.name+'] :', errorMessage, 5)
-	
+
+class ImageDownloader(QObject):
+
+	downloadFinished = pyqtSignal(str)
+
+	def __init__(self, connection, imageSpec, updateService):
+		QObject.__init__(self)
+		self._connection = connection
+		self._imageSpec = imageSpec
+		self._updateService = updateService
+
+	def start(self):
+		self._thread = threading.Thread(target=self.run)
+		self._thread.start()
+
+	def downloadPixmap(self):
+		filePath = self._updateService.downloadThumbnail(self._connection, self._imageSpec)
+		return filePath
+
+	def run(self):
+		filePath = self.downloadPixmap()
+		self.downloadFinished.emit(filePath)
