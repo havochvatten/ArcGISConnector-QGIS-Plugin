@@ -39,12 +39,11 @@ class LayerDialogController(QObject):
 	def __init__(self, iface):
 		QObject.__init__(self)
 		self.iface = iface				
-		self.layerDialogUI = LayerDialog()
-		self.grid = self.layerDialogUI.imageGridWidget
-		self.event = Event()
-		self.imageItems = []
-		self.layerDialogUI.scrolledDown.connect(self.onScrolledDown)
-		self.layerDialogUI.closed.connect(self.onCloseEvent)
+
+
+	def _onSearchLineEditChanged(self, text):
+		for widget in self.imageItems:
+			widget.setVisible(text in widget.imageDateLabel.text())
 
 
 	# Add handler to our events
@@ -65,6 +64,15 @@ class LayerDialogController(QObject):
 
 
 	def showView(self, connection, updateService, rasterLayers, legendActions):
+		self.layerDialogUI = LayerDialog()
+		self.grid = self.layerDialogUI.imageGridWidget
+		self.event = Event()
+		self.imageItems = []
+		self.hiddenImageItems = []
+		self.layerDialogUI.scrolledDown.connect(self.onScrolledDown)
+		self.layerDialogUI.closed.connect(self.onCloseEvent)
+		self.layerDialogUI.searchLineEdit.textEdited.connect(self._onSearchLineEditChanged)
+
 		self.updateService = updateService
 		self.connection = connection
 		self.rasterLayers = rasterLayers
@@ -91,8 +99,6 @@ class LayerDialogController(QObject):
 		MAX_ITEM_WIDTH = 400
 		MAX_ITEM_HEIGHT = 400
 		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
-
-		pixmapSignal = pyqtSignal(QPixmap)
 
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		imageCount = 0
