@@ -72,6 +72,7 @@ class LayerDialogController(QObject):
 		self.layerDialogUI.scrolledDown.connect(self.onScrolledDown)
 		self.layerDialogUI.closed.connect(self.onCloseEvent)
 		self.layerDialogUI.searchLineEdit.textEdited.connect(self._onSearchLineEditChanged)
+		self.layerDialogUI.searchLineEdit.returnPressed.connect(lambda: self._onSearchLineEditChanged(self.layerDialogUI.searchLineEdit.text()))
 
 		self.updateService = updateService
 		self.connection = connection
