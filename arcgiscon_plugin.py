@@ -212,7 +212,7 @@ class ArcGisConnector:
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
-                self._imageController.saveImage(selectedLayer.connection.srcPath)
+                self._imageController.saveImage(selectedLayer.qgsRasterLayer.dataProvider().dataSourceUri())
 
     def _chooseTimeExtent(self):
         qgsLayers = self._iface.legendInterface().selectedLayers()

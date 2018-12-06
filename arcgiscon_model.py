@@ -459,7 +459,6 @@ class Connection:
 	authMethod = None
 	username = None
 	password = None
-	srcPath = None
 	conId = None
 	serviceTimeExtent = (None, None)
 	metaInfo = None
