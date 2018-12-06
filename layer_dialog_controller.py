@@ -113,7 +113,7 @@ class LayerDialogController(QObject):
 			if not imageSpec:
 				return
 
-			item = ImageItemWidget(self.grid, imageSpec.width, imageSpec.height)
+			item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
 							
 			# Config image item
 			timeStamp = imageSpec.getTimeStamp()				
