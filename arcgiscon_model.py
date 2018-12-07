@@ -348,7 +348,6 @@ class ImageSpecification:
 
 	def setTime(self, timeExtent):
 		#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
-		QgsMessageLog.logMessage("Raw time extent" + str(timeExtent))
 		timeStruct = time.gmtime(timeExtent/1000)
 		filteredStruct = time.struct_time([
 			timeStruct.tm_year, 
@@ -362,8 +361,6 @@ class ImageSpecification:
 			timeStruct.tm_isdst])
 		filteredExtent = calendar.timegm(filteredStruct) 
 		timeExtent = filteredExtent * 1000 
-		QgsMessageLog.logMessage("filtered extent: "  + str(filteredExtent))
-		QgsMessageLog.logMessage("new time extent" +  str(timeExtent))
 		self.settings.timeExtent = [timeExtent]
 	
 	# Returns the most recent time extent, none if there is no time extent.
