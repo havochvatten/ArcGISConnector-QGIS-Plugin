@@ -1,7 +1,7 @@
 from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QPixmap,  QSizePolicy, QMovie
 from arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
-from arcgiscon_service import NotificationHandler, EsriUpdateWorker, TimeCatcher
+from arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from arcgiscon_ui import LayerDialog, ImageItemWidget
 from event_handling import Event
@@ -27,8 +27,9 @@ class LayerDialogController(QObject):
 	updateService = None
 	rasterLayers = None
 	legendActions = None
-	timeCatcher = None
+	serverItemManager = None
 	lastScrollPos = 0
+	serverItemInfo = []
 
 	# Constants--------------------
 	MAX_COLUMN_AMOUNT = 3
@@ -50,7 +51,6 @@ class LayerDialogController(QObject):
 	def addEventHandler(self, handler):
 		self.event += handler
 
-
 	def onCloseEvent(self):
 		self.clearThumbnails()
 
@@ -58,10 +58,10 @@ class LayerDialogController(QObject):
 		#TODO: Use the scroll position to avoid getting 300 new images instead of three.
 		#if (y > self.lastScrollPos):
 		#QgsMessageLog.logMessage("Y pos: " + str(y))
-		self.populateImageItems(self.MAX_COLUMN_AMOUNT)
+		self.populateItems(self.MAX_COLUMN_AMOUNT)
 		self.updateGrid()
 		self.lastScrollPos = y
-
+	
 
 	def showView(self, connection, updateService, rasterLayers, legendActions):
 		self.layerDialogUI = LayerDialog()
@@ -80,21 +80,22 @@ class LayerDialogController(QObject):
 		self.legendActions = legendActions
 		# Create meta info (TODO? won't happen earlier currently).
 		self.connection.createMetaInfo() 
-		self.serverItemsInfo = self.updateService.downloadServerData(self.connection)
-		self.timeCatcher = TimeCatcher(self.connection.serviceTimeExtent[0], self.connection.serviceTimeExtent[1])
+		self.serverItemManager = ServerItemManager(self.connection)
 		self.renderThumbnails()
 		self.layerDialogUI.show()
-
 
 	def renderThumbnails(self): 
 		IMAGE_AMOUNT_START = 6
 		# TODO: Regulate when to fill the grid, signals like window resize or 
-		# scroll.
-		self.populateImageItems(IMAGE_AMOUNT_START)
+		if self.serverItemManager.keyDates in self.serverItemManager.serverItems:
+			self.populateItems(IMAGE_AMOUNT_START)
+		if self.serverItemManager.keyNames in self.serverItemManager.serverItems:	
+			#TODO: Implement
+			pass
 		self.fillGrid()
 
-
-	def populateImageItems(self, amount):
+	def populateItems(self, amount):
+		key = self.serverItemManager.keyDates
 		FORMAT_PNG = "png"
 		FORMAT_TIFF = "tiff"
 		MAX_ITEM_WIDTH = 400
@@ -103,11 +104,11 @@ class LayerDialogController(QObject):
 
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		imageCount = 0
+
 		baseSpec = imageSpec = self.connection.newImageSpecification(
 				MAX_ITEM_WIDTH,
 				MAX_ITEM_HEIGHT,
-				self.timeCatcher.limLow,
-				self.timeCatcher.limHigh,
+				self.serverItemManager.getCurrentItem(key),
 				FORMAT_PNG)
 		# Place ImageItems on the dialog.
 		while (imageCount < amount):
@@ -115,8 +116,7 @@ class LayerDialogController(QObject):
 			
 			imageSpec  = self.connection.newImageFromSpec(
 				baseSpec,	
-				self.timeCatcher.limLow,
-				self.timeCatcher.limHigh) 
+				self.serverItemManager.getCurrentItem(key)) 
 			if not imageSpec:
 				return
 
@@ -145,7 +145,7 @@ class LayerDialogController(QObject):
 			self.configureThumbnailEvents(item, imageSpec)
 
 			#Update time catcher
-			newTime = self.timeCatcher.update(imageSpec.settings.time[1])
+			newTime = self.serverItemManager.update()
 			if not newTime:
 				return
 

@@ -52,34 +52,41 @@ class ArcGisConDialogNew(QtGui.QDialog, FORM_CLASS_NEW):
         super(ArcGisConDialogNew, self).__init__(parent)        
         self.setupUi(self)        
 
+
 class TimePickerDialog(QtGui.QDialog, TIME_FORM):
     def __init__(self, parent=None):
         super(TimePickerDialog, self).__init__(parent)
         self.setupUi(self)
+
 
 class SettingsDialog(QtGui.QDialog, SETTINGS_FORM):
     def __init__(self, parent=None):
         super(SettingsDialog, self).__init__(parent)
         self.setupUi(self) 
 
+
 class ImageServerDashboard(QtGui.QMainWindow, DASHBOARD_WINDOW):
     def __init__(self, parent=None):        
         super(ImageServerDashboard, self).__init__(parent)        
         self.setupUi(self)
 
+
 class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
     scrolledDown = PyQt4.QtCore.pyqtSignal([int])
     closed = PyQt4.QtCore.pyqtSignal()
+
 
     def __init__(self, parent=None):        
         super(LayerDialog, self).__init__(parent)        
         self.setupUi(self)  
         self.imageGridWidget.layout().setSpacing(50)
 
+
     def wheelEvent(self, wheelEvent):
         if wheelEvent.delta() < -1:        
             self.scrolledDown.emit(wheelEvent.y)
         wheelEvent.ignore()
+
 
     def clearLayout(self,layout):
         for i in reversed(range(layout.count())): 
@@ -94,6 +101,7 @@ class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
         self.clearLayout(self.scrollArea.widget().layout())
         self.closed.emit()
         super(LayerDialog, self).closeEvent(event)
+
 
 class ImageLabel(QtGui.QLabel):
     labelSize = None
