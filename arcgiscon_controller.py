@@ -283,6 +283,7 @@ class ArcGisConRefreshController(QObject):
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
 	 	esriLayer.qgsRasterLayer.triggerRepaint()
+		self._iface.legendInterface().refreshLayerSymbology(esriLayer.qgsRasterLayer)
 		
 	def onWarning(self, connection, warningMessage):
 		NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)		
@@ -333,6 +334,7 @@ class ConnectionSettingsController(QObject):
 
 		if self._renderingMode == "template":
 			self._settingsObject.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
+			self._settings['renderingRule'] = self._settingsObject.renderingRule
 		elif self._renderingMode == "custom":
 			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
 			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
