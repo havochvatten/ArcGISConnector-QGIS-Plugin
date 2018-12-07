@@ -225,10 +225,12 @@ class LayerDialogController(QObject):
 
 	def removeImageItemWidget(self, widget):
 		layout = self.grid.layout()
-		#gridIndex = layout.indexOf(widget)
-		#QgsMessageLog.logMessage("grid index of widget to be removed: " + str(gridIndex))
-		#layout.removeWidget(widget)
-		#widget.setParent(None)
+		newList = []
+		for x in range(len(self.imageItems)-1):
+			newList.append(self.imageItems[x])
+			if self.imageItems[x] == widget:
+				pass
+		self.imageItems = filter(lambda x: x is not None, newList)
 		widget.deleteLater()
 		QgsMessageLog.logMessage("removed empty widget: "  + widget.imageDateLabel.text())
 
