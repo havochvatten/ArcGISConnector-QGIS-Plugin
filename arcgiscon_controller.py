@@ -450,7 +450,7 @@ class ConnectionSettingsController(QObject):
 		if 'renderingRule' in self._settings:
 			rasterFunctionInSettings = 'rasterFunction' in self._settings['renderingRule']
 			singularRenderRule = len(json.loads(self._settings['renderingRule'])) == 1
-			if rasterFunctionInSettings and singularRenderingRule:
+			if rasterFunctionInSettings and singularRenderRule:
 				self._renderingMode = "template"
 				self._settingsDialog.radioButtonTemplate.click()
 				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
