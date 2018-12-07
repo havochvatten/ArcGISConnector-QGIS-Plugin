@@ -191,11 +191,16 @@ class EsriUpdateService(QtCore.QObject):
 
                     extent = currentJob.imageSpec.metaInfo.extent
                     settings = currentJob.imageSpec.settings
+                    if 'skogsstyrelsen' in currentJob.connection.basicUrl and settings.renderingRule == None and settings.imageFormat != "png": #Added ugly ugly code for PoC
+                        #TODO: Delete this if statement
+                        settings.renderingRule = json.dumps({"rasterFunction": "SKS SWIR"})
+                    
                     query = EsriImageServiceQueryFactory.createExportImageQuery(
                     extent,
                     extent,
                     settings.getDict() 
                     )
+
                     results = [downloadSource((currentJob.connection, query, None))]
                     self.progress.emit(90)                        
                     if results is not None and not self._isKilled:
