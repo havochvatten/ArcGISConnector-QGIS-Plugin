@@ -90,7 +90,7 @@ class ServerItemManager:
             item = x[u'attributes'][field]
             items.append(item)
         items = filter(lambda item: item is not None, items) 
-        QgsMessageLog.logMessage("serverItems:  " + str(items))
+        #QgsMessageLog.logMessage("serverItems:  " + str(items))
         items.reverse()
         return items
 
