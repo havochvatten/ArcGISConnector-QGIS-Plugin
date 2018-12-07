@@ -330,7 +330,6 @@ class Settings:
 	def setCurrentRasterFunction(self, index):
 		if index >= 0 and self.rasterFunctions is not None:
 			self.renderingRule = json.dumps({"rasterFunction": self.rasterFunctions[index]["name"]})
-			QgsMessageLog.logMessage('set rendering: ' + str(self.renderingRule))
 
 # An ImageSpecification is an object which contains all the information
 # that pertains the acquiring of an image.

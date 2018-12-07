@@ -283,6 +283,7 @@ class ArcGisConRefreshController(QObject):
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
 	 	esriLayer.qgsRasterLayer.triggerRepaint()
+		self._iface.legendInterface().refreshLayerSymbology(esriLayer.qgsRasterLayer)
 		
 	def onWarning(self, connection, warningMessage):
 		NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)		
@@ -333,6 +334,7 @@ class ConnectionSettingsController(QObject):
 
 		if self._renderingMode == "template":
 			self._settingsObject.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
+			self._settings['renderingRule'] = self._settingsObject.renderingRule
 		elif self._renderingMode == "custom":
 			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
 			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
@@ -446,15 +448,15 @@ class ConnectionSettingsController(QObject):
 				self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 			self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
 
+		self._onTemplateComboBoxChange()
 
 		if 'renderingRule' in self._settings:
 			rasterFunctionInSettings = 'rasterFunction' in self._settings['renderingRule']
 			singularRenderRule = len(json.loads(self._settings['renderingRule'])) == 1
-			if rasterFunctionInSettings and singularRenderingRule:
+			if rasterFunctionInSettings and singularRenderRule:
 				self._renderingMode = "template"
 				self._settingsDialog.radioButtonTemplate.click()
-				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
-				self._onTemplateComboBoxChange()
+				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))				
 
 		elif 'renderingRule' in self._settings:
 			self._renderingMode = "custom"
