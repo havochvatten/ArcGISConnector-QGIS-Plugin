@@ -278,7 +278,7 @@ class ArcGisConRefreshController(QObject):
 				endDate = endDate.toMSecsSinceEpoch()
 			timeExtent.append(startDate)
 			timeExtent.append(endDate)
-		layer.imageSpec.time = timeExtent
+		layer.imageSpec.settings.timeExtent = timeExtent
 
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):

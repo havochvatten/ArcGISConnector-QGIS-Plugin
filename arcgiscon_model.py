@@ -308,9 +308,7 @@ class Settings:
 		if 'renderingRule' in nextSettings:
 			self.renderingRule = nextSettings['renderingRule']
 		if 'mosaicRule' in nextSettings:
-			self.mosaicRule = nextSettings['mosaicRule']	
-		if 'time' in nextSettings:
-			self.timeExtent = nextSettings['time']
+			self.mosaicRule = nextSettings['mosaicRule']
 
 	def getDict(self):
 		settings = {
