@@ -257,7 +257,7 @@ class ArcGisConRefreshController(QObject):
 		dialog.exec_()
 
 	def onTimePickerRestoreClick(self, layer, dialog):
-		layer.imageSpec.time = None
+		layer.imageSpec.settings.timeExtent = None
 		dialog.close()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
