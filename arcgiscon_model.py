@@ -321,7 +321,7 @@ class Settings:
 			'compressionQuality':self.compressionQuality, 
 			'bandIds':self.bandIds,
 			'renderingRule':self.renderingRule,
-			'mosaicRule':self.mosaicRule,
+			'mosaicRule':json.dumps(self.mosaicRule),
 			'time':self.timeExtent
 			}
 

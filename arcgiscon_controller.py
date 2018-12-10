@@ -227,7 +227,7 @@ class ArcGisConRefreshController(QObject):
 
 
 		timeExtent = layer.imageSpec.settings.timeExtent
-		if len(timeExtent) > 1:
+		if timeExtent != None and len(timeExtent) > 1:
 			if timeExtent[0] != "null":
 				currentStartLong = timeExtent[0] / 1000L
 				currentStart = QDate.fromString(datetime.datetime.fromtimestamp(currentStartLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
@@ -238,7 +238,7 @@ class ArcGisConRefreshController(QObject):
 				currentEnd = QDate.fromString(datetime.datetime.fromtimestamp(currentEndLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 				dialog.endDateInput.setDate(currentEnd)
 
-		elif len(timeExtent) == 1 and timeExtent[0] != "null":
+		elif timeExtent != None and len(timeExtent) == 1 and timeExtent[0] != "null":
 			currentInstantLong = timeExtent[0] / 1000L
 			currentInstant = QDate.fromString(datetime.datetime.fromtimestamp(currentInstantLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 			dialog.instantDateInput.setDate(currentInstant)
@@ -472,12 +472,11 @@ class ConnectionSettingsController(QObject):
 			if rasterFunctionInSettings and singularRenderRule:
 				self._renderingMode = "template"
 				self._settingsDialog.radioButtonTemplate.click()
-				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))				
-
-		elif 'renderingRule' in self._settings:
-			self._renderingMode = "custom"
-			self._settingsDialog.radioButtonCustom.click()
-			self._settingsDialog.customTextEdit.setPlainText(self._lastCustomText)
+				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
+			else:
+				self._renderingMode = "custom"
+				self._settingsDialog.radioButtonCustom.click()
+				self._settingsDialog.customTextEdit.setPlainText(self._settingsObject.renderingRule)
 		else:
 			self._renderingMode = "none"
 			self._settingsDialog.radioButtonNone.click()
@@ -512,6 +511,7 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.mosaicTextEdit.setEnabled(False)
 		else:
 			self._settingsDialog.mosaicCheckBox.setChecked(True)
+			self._settingsDialog.mosaicTextEdit.setPlainText(self._settingsObject.mosaicRule)
 		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
 
 	def _mosaicCheckBoxChanged(self, value):
