@@ -100,6 +100,10 @@ class EsriImageServiceQueryFactory:
 				timeExtent = str(settings['time'][0])
 			query.update({'time': timeExtent})
 
+		if 'mosaicRule' in settings:
+			#dumps = json.dumps(settings['mosaicRule'])
+			query['mosaicRule'] = settings['mosaicRule']
+
 		SETTINGS_LIST = [
 			'size',
 			'format', 
@@ -109,7 +113,7 @@ class EsriImageServiceQueryFactory:
 			'noData', 
 			'compression', 
 			'compressionQuality', 
-			'bandIds' ]
+			'bandIds']
 
 		for setting in SETTINGS_LIST:
 			if setting in settings and settings[setting] != None:

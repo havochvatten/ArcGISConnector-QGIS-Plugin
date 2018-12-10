@@ -302,9 +302,6 @@ class ConnectionSettingsController(QObject):
 	_renderingMode = None
 	_mosaicMode = None
 
-	_lastCustomText = None
-	_lastMosaicText = None
-
 	def __init__(self, iface):
 		QObject.__init__(self)
 		self._iface = iface
@@ -336,15 +333,14 @@ class ConnectionSettingsController(QObject):
 			self._settingsObject.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
 			self._settings['renderingRule'] = self._settingsObject.renderingRule
 		elif self._renderingMode == "custom":
-			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
 			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
 		else:
 			if 'renderingRule' in self._settings:
 				self._settings.pop('renderingRule')
 
 		if self._mosaicMode == True:
-			self._lastMosaicText = self._settingsDialog.mosaicTextEdit.toPlainText()
 			self._settings['mosaicRule'] = ' '.join(self._settingsDialog.mosaicTextEdit.toPlainText().split())
+			QgsMessageLog.logMessage("Mosaic rule: " + str(self._settings['mosaicRule']))
 		else:
 			if 'mosaicRule' in self._settings:
 				self._settings['mosaicRule'] = None
@@ -496,9 +492,9 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.mosaicTextEdit.setEnabled(False)
 		else:
 			self._settingsDialog.mosaicCheckBox.setChecked(True)
-		self._settingsDialog.mosaicTextEdit.setPlainText(self._lastMosaicText)
 		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
 
 	def _mosaicCheckBoxChanged(self, value):
 		self._mosaicMode = bool(value)
+		QgsMessageLog.logMessage("Mosaic mode bool: " + str(self._mosaicMode))
 		self._settingsDialog.mosaicTextEdit.setEnabled(value)
