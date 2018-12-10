@@ -101,8 +101,7 @@ class EsriImageServiceQueryFactory:
 			query.update({'time': timeExtent})
 
 		if 'mosaicRule' in settings:
-			#dumps = json.dumps(settings['mosaicRule'])
-			query['mosaicRule'] = settings['mosaicRule']
+			query['mosaicRule'] = json.loads(settings['mosaicRule'])
 
 		SETTINGS_LIST = [
 			'size',
