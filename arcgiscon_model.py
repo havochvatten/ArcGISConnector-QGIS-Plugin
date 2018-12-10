@@ -27,6 +27,7 @@ import requests
 import hashlib
 import json
 import time
+import calendar
 import urllib
 
 class EsriImageServiceQueryFactory:
@@ -37,7 +38,7 @@ class EsriImageServiceQueryFactory:
 
 
 	@staticmethod    
-	def createServerItemsQuery(connection):
+	def createServerItemsQuery(connection, fieldType):
 
 		query = {} 
 		timeExtentJson = {"time" : str(connection.metaInfo.timeExtent[0]) + "," + str(connection.metaInfo.timeExtent[1])}
@@ -53,14 +54,14 @@ class EsriImageServiceQueryFactory:
 		inSrJson = {"inSR":str(connection.metaInfo.extent['spatialReference'][u'wkid'])}
 		query.update(inSrJson)
 
-		spatialRelJson = {"spatialRel": "esriSpatialRelIntersects"}
-		query.update(spatialRelJson)
-		
-		groupByFieldsJson = {"groupByFieldsForStatistics": "ImageDate"}
+		groupByFieldsJson = {"groupByFieldsForStatistics": fieldType}
 		query.update(groupByFieldsJson)
 
-		statisticsTypeJson = {"outStatistics":[{"statisticType": "count","onStatisticField": "ImageDate","outStatisticFieldName": "CountDate"}]} 
+		statisticsTypeJson = {"outStatistics":[{"statisticType": "count","onStatisticField": fieldType,"outStatisticFieldName": "CountDate"}]} 
 		query.update(statisticsTypeJson)
+
+		spatialRelJson = {"spatialRel": "esriSpatialRelIntersects"}
+		query.update(spatialRelJson)
 
 		distinctValuesJson = {"returnDistinctValues": "false"}
 		query.update(distinctValuesJson)
@@ -73,6 +74,7 @@ class EsriImageServiceQueryFactory:
 		
 		query = urllib.urlencode(query)
 		esriQuery = EsriQuery("/query", query)
+
 		return esriQuery
 
 
@@ -256,7 +258,7 @@ class Settings:
 	bandIds = None
 	renderingRule = None
 	mosaicRule = None
-	time = None
+	timeExtent = None
 	# A list of the raster functions available.
 	rasterFunctions = {}
 
@@ -273,7 +275,7 @@ class Settings:
 		settingsCopy.bandIds = self.bandIds
 		settingsCopy.renderingRule = self.renderingRule
 		settingsCopy.mosaicRule = self.mosaicRule			
-		settingsCopy.time = self.time	
+		settingsCopy.timeExtent = self.timeExtent	
 		settingsCopy.rasterFunctions = self.rasterFunctions
 		return settingsCopy
 
@@ -304,7 +306,7 @@ class Settings:
 		if 'mosaicRule' in nextSettings:
 			self.mosaicRule = nextSettings['mosaicRule']	
 		if 'time' in nextSettings:
-			self.time = nextSettings['time']
+			self.timeExtent = nextSettings['time']
 
 	def getDict(self):
 		settings = {
@@ -319,7 +321,7 @@ class Settings:
 			'bandIds':self.bandIds,
 			'renderingRule':self.renderingRule,
 			'mosaicRule':self.mosaicRule,
-			'time':self.time
+			'time':self.timeExtent
 			}
 
 		filteredSettings = {k: v for k, v in settings.items() if v is not None}
@@ -343,26 +345,41 @@ class ImageSpecification:
 	height = None
 	settings = Settings()
 
-	def setTime(self, low, high):
-		self.settings.time = [low, high]
+	def setTime(self, timeExtent):
+		#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
+		timeStruct = time.gmtime(timeExtent/1000)
+		filteredStruct = time.struct_time([
+			timeStruct.tm_year, 
+			timeStruct.tm_mon, 
+			timeStruct.tm_mday, 
+			0,
+			0,
+			0,
+			timeStruct.tm_wday, 
+			timeStruct.tm_yday, 
+			timeStruct.tm_isdst])
+		filteredExtent = calendar.timegm(filteredStruct) 
+		timeExtent = filteredExtent * 1000 
+		self.settings.timeExtent = [timeExtent]
 	
 	# Returns the most recent time extent, none if there is no time extent.
 	def getTimeStamp(self):
-		timeStamp = self.settings.time[1]
-		if not timeStamp:
-			return self.settings.time[0]
-
+		timeStamp = self.settings.timeExtent[0]
+		if len(self.settings.timeExtent) > 1:
+			timeStamp = self.settings.timeExtent[1]
+			if not timeStamp:
+				return self.settings.timeExtent[0]
 		#Remove the milliseconds (last three digits)
 		timeStamp = timeStamp / 1000
 		return time.strftime('%Y-%m-%d', time.localtime(timeStamp))
 
 	#Configures image spec from meta info.
-	def configure(self, metaInfo, maxWidth, maxHeight, limLow, limHigh, imageFormat):
+	def configure(self, metaInfo, maxWidth, maxHeight, timeExtent, imageFormat):
 		self.metaInfo = metaInfo
 		self.setAspectRatio()
 		self.configureImageSize(maxWidth, maxHeight)
 		#Timestamp is not the real time stamp but the upper boundary.
-		self.setTime(limLow, limHigh) 
+		self.setTime(timeExtent) 
 		self.settings.rasterFunctions = metaInfo.rasterFunctions
 		self.settings.imageFormat = imageFormat
 
@@ -533,15 +550,15 @@ class Connection:
 			QgsMessageLog.logMessage("error in createMetaInfo:  " + str(e))	
 			return False
 
-	def newImageFromSpec(self, spec, limLow, limHigh):
+	def newImageFromSpec(self, spec, time):
 		newSpec = spec.copy()
-		newSpec.setTime(limLow,limHigh)
+		newSpec.setTime(time)
 		return newSpec
 
 	#  Creates and returns an ImageSpecification object.
 	#  Requires that the correct auth is set, otherwise fails.
 	#
-	def newImageSpecification(self, maxWidth, maxHeight, limLow, limHigh, format):
+	def newImageSpecification(self, maxWidth, maxHeight, time, format):
 		imageSpec = ImageSpecification()
 		if not self.metaInfo:
 			self.metaInfo  = self.createMetaInfo() 
@@ -552,8 +569,7 @@ class Connection:
 			self.metaInfo,
 			maxWidth,
 			maxHeight,
-			limLow,
-			limHigh,
+			time,
 			format)
 		return imageSpec
 	

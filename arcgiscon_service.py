@@ -51,37 +51,71 @@ def downloadSource(args):
 # A class for managing downloads from different dates.
 # Currently uses the date closest to the high limit.
 # Update limHigh to an earlier time to query earlier dates.
-class TimeCatcher:
+class ServerItemManager:
     #Limits are stored in Epoch time.
-    limLow = None
-    limHigh = None
+    #A dictionary with 'names', 'dates', 'objectIDs'
+    serverItems = None
+    keyNames = 'names'
+    keyDates = 'dates'
+    keyObjectIDs = 'objectIDs'
+    currentIndex = None
     
-    def __init__(self, limLow, limHigh):
-        self.limLow = limLow
-        self.limHigh = limHigh
+    def __init__(self, connection): 
+        self.downloadServerData(connection)
+        self.currentIndex = 0
 
 	# Returns a QDate with the current date.
     def _currentTime(self):
         epochTime = QtCore.QDateTime.currentMSecsSinceEpoch()
         return epochTime
 
-    def updateHigh(self, epochTime):
-        self.limHigh = epochTime
+    def update(self):
+        self.currentIndex += 1
+        return self.currentIndex <= len(self.serverItems)
+    
+    def getCurrentItem(self, key):
+        return self.serverItems[key][self.currentIndex]
 
-    def update(self, oldHigh):
-        if oldHigh is None or oldHigh <= self.limLow:
-            return None
-        
-        self.limHigh = oldHigh - 86400000 
-        return self.limHigh
+    def downloadTimedServerData(self, connection):
+        query = EsriImageServiceQueryFactory.createServerItemsQuery(connection, "AcquisitionDate")
+        return downloadSource((connection, query ,None))
 
+    def downloadNamedServerData(self, connection):
+        query = EsriImageServiceQueryFactory.createServerItemsQuery(connection, "Name")
+        return downloadSource((connection, query ,None))
 
+    def extractItemsList(self, result, field):
+        items = []
+        for x in result[u'features']:
+            item = x[u'attributes'][field]
+            items.append(item)
+        items = filter(lambda item: item is not None, items) 
+        #QgsMessageLog.logMessage("serverItems:  " + str(items))
+        items.reverse()
+        return items
 
-    # Updates the high limit with current time. 
-    def updateWithCurrentTime(self):
-        self.limHigh = self._currentTime()
+    #Query dependent on what Fields are available at the server.
+    def downloadServerData(self, connection):
+        fieldDate = u'AcquisitionDate'
+        fieldName = u'Name'
+        error = u'error'
 
+        self.serverItems = {self.keyDates:  [], self.keyNames: [], self.keyObjectIDs:[]} 
+        timedItemsResult = self.downloadTimedServerData(connection)
+        hasNoTimedResult = error in timedItemsResult
+       
+        if hasNoTimedResult:
+            namedItemsResult = self.downloadNamedServerData(connection)
+            hasNoNamedResult = error in namedItemsResult 
 
+            if hasNoNamedResult:
+                #TODO: Get OBJECTID items instead.
+                return
+
+            self.serverItems[self.keyNames] = self.extractItemsList(namedItemsResult, fieldName)
+    
+        self.serverItems[self.keyDates] = self.extractItemsList(timedItemsResult, fieldDate)
+       
 
 class EsriUpdateWorker(QtCore.QObject):
     def __init__(self, connection, imageSpec):
@@ -113,6 +147,7 @@ class EsriUpdateService(QtCore.QObject):
     REFRESH_WAIT_TIME = .600
 
     #-------------------------------
+    
     connectionPool = None    
     _thread = None
     _iface = None
@@ -127,6 +162,7 @@ class EsriUpdateService(QtCore.QObject):
     #because http json response with features over 1000 is too large, 
     #we limit the max features per request to 1000
     _maxRecordCount = 1000   
+    
          
     def __init__(self, iface):
         QtCore.QObject.__init__(self)        
@@ -134,6 +170,7 @@ class EsriUpdateService(QtCore.QObject):
         self._iface = iface
         self.state = EsriUpdateServiceState.Down
         self.connectionPool = []
+
         
     @staticmethod
     def createService(iface):
@@ -244,10 +281,7 @@ class EsriUpdateService(QtCore.QObject):
         if not self._isKilled:
             toReturn = workingMap.get()        
         return toReturn
-
-    def downloadServerData(self, connection):
-        query = EsriImageServiceQueryFactory.createServerItemsQuery(connection)
-        return downloadSource((connection, query ,None))
+   
 
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!

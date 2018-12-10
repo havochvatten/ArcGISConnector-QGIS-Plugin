@@ -1,11 +1,11 @@
 from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
 from PyQt4.QtGui import QPixmap,  QSizePolicy, QMovie
 from arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
-from arcgiscon_service import NotificationHandler, EsriUpdateWorker, TimeCatcher
+from arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from arcgiscon_ui import LayerDialog, ImageItemWidget
 from event_handling import Event
-from PIL import Image
+from PIL import Image, ImageChops
 import os
 import threading
 import numpy as np
@@ -27,8 +27,9 @@ class LayerDialogController(QObject):
 	updateService = None
 	rasterLayers = None
 	legendActions = None
-	timeCatcher = None
+	serverItemManager = None
 	lastScrollPos = 0
+	serverItemInfo = []
 
 	# Constants--------------------
 	MAX_COLUMN_AMOUNT = 3
@@ -43,13 +44,16 @@ class LayerDialogController(QObject):
 
 	def _onSearchLineEditChanged(self, text):
 		for widget in self.imageItems:
-			widget.setVisible(text in widget.imageDateLabel.text())
+			try:
+				widget.setVisible(text in widget.imageDateLabel.text())
+			except:
+				pass
+				
 
 
 	# Add handler to our events
 	def addEventHandler(self, handler):
 		self.event += handler
-
 
 	def onCloseEvent(self):
 		self.clearThumbnails()
@@ -58,10 +62,10 @@ class LayerDialogController(QObject):
 		#TODO: Use the scroll position to avoid getting 300 new images instead of three.
 		#if (y > self.lastScrollPos):
 		#QgsMessageLog.logMessage("Y pos: " + str(y))
-		self.populateImageItems(self.MAX_COLUMN_AMOUNT)
+		self.populateItems(self.MAX_COLUMN_AMOUNT)
 		self.updateGrid()
 		self.lastScrollPos = y
-
+	
 
 	def showView(self, connection, updateService, rasterLayers, legendActions):
 		self.layerDialogUI = LayerDialog()
@@ -80,21 +84,22 @@ class LayerDialogController(QObject):
 		self.legendActions = legendActions
 		# Create meta info (TODO? won't happen earlier currently).
 		self.connection.createMetaInfo() 
-		self.serverItemsInfo = self.updateService.downloadServerData(self.connection)
-		self.timeCatcher = TimeCatcher(self.connection.serviceTimeExtent[0], self.connection.serviceTimeExtent[1])
+		self.serverItemManager = ServerItemManager(self.connection)
 		self.renderThumbnails()
 		self.layerDialogUI.show()
-
 
 	def renderThumbnails(self): 
 		IMAGE_AMOUNT_START = 6
 		# TODO: Regulate when to fill the grid, signals like window resize or 
-		# scroll.
-		self.populateImageItems(IMAGE_AMOUNT_START)
+		if self.serverItemManager.keyDates in self.serverItemManager.serverItems:
+			self.populateItems(IMAGE_AMOUNT_START)
+		if self.serverItemManager.keyNames in self.serverItemManager.serverItems:	
+			#TODO: Implement
+			pass
 		self.fillGrid()
 
-
-	def populateImageItems(self, amount):
+	def populateItems(self, amount):
+		key = self.serverItemManager.keyDates
 		FORMAT_PNG = "png"
 		FORMAT_TIFF = "tiff"
 		MAX_ITEM_WIDTH = 400
@@ -102,21 +107,20 @@ class LayerDialogController(QObject):
 		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
 
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
-		imageCount = 0
+		self.imageCount = 0
+
 		baseSpec = imageSpec = self.connection.newImageSpecification(
 				MAX_ITEM_WIDTH,
 				MAX_ITEM_HEIGHT,
-				self.timeCatcher.limLow,
-				self.timeCatcher.limHigh,
+				self.serverItemManager.getCurrentItem(key),
 				FORMAT_PNG)
 		# Place ImageItems on the dialog.
-		while (imageCount < amount):
+		while (self.imageCount < amount):
 			# TODO: Only make *One* meta information query that holds for all images.
 			
 			imageSpec  = self.connection.newImageFromSpec(
 				baseSpec,	
-				self.timeCatcher.limLow,
-				self.timeCatcher.limHigh) 
+				self.serverItemManager.getCurrentItem(key)) 
 			if not imageSpec:
 				return
 
@@ -134,8 +138,7 @@ class LayerDialogController(QObject):
 			loaderMovie.start()
 
 			self.imageItems.append(item)
-			imageCount += 1
-
+			self.imageCount += 1
 			# Initiate asynchronous download
 			downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
 			downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
@@ -145,7 +148,7 @@ class LayerDialogController(QObject):
 			self.configureThumbnailEvents(item, imageSpec)
 
 			#Update time catcher
-			newTime = self.timeCatcher.update(imageSpec.settings.time[1])
+			newTime = self.serverItemManager.update()
 			if not newTime:
 				return
 
@@ -154,23 +157,33 @@ class LayerDialogController(QObject):
 		pix =  pix.scaled(width * scalar , height * scalar, Qt.KeepAspectRatio)
 		return pix
 
-
 	def fillGrid(self):
 		layout = self.grid.layout()
 		for x in range(len(self.imageItems)):
+			QgsMessageLog.logMessage("Item on screen " + str(self.imageItems[x].imageDateLabel.text()))
 			row = x / self.MAX_COLUMN_AMOUNT
 			col = x % self.MAX_COLUMN_AMOUNT
 			layout.addWidget(self.imageItems[x], row, col)
 	
-		
+	
+	def getColorSpan(self, filePath):
+		img = Image.open(filePath)
+		imageRGB = img.convert('RGB')
+		colorSpan = imageRGB.getextrema()
+		return colorSpan
+
 	def updateGrid(self):
 		layout = self.grid.layout()
 		newImages = len(self.imageItems) - layout.count()
 		for x in range(newImages):
 			row = x / self.MAX_COLUMN_AMOUNT
 			col = x % self.MAX_COLUMN_AMOUNT
-			layout.addWidget(self.imageItems[x], row, col)
-
+			try:
+				item = self.imageItems[x]
+				layout.addWidget(item, row, col)
+			except:
+				pass
+			
 
 	def configureThumbnailEvents(self, item, imageSpec):
 		item.clicked.connect(lambda: self.onNewLayerClick(imageSpec))
@@ -210,9 +223,29 @@ class LayerDialogController(QObject):
 		self.rasterLayers[rasterLayer.qgsRasterLayer.id()]=rasterLayer
 		self.connection.renderLocked = True
 
+	def removeImageItemWidget(self, widget):
+		layout = self.grid.layout()
+		newList = []
+		for x in range(len(self.imageItems)-1):
+			newList.append(self.imageItems[x])
+			if self.imageItems[x] == widget:
+				pass
+		self.imageItems = filter(lambda x: x is not None, newList)
+		widget.deleteLater()
+		QgsMessageLog.logMessage("removed empty widget: "  + widget.imageDateLabel.text())
+
 	def onDownloadThumbnail(self, imageSpec, filePath, item):
 		pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
 		item.thumbnailLabel.setPixmap(pixmap)
+		colorSpan =  self.getColorSpan(filePath)
+		QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
+		emptyImage = True
+		for x in colorSpan:
+			if x[0] != x[1]:
+				emptyImage = False
+		if emptyImage:
+			QgsMessageLog.logMessage("Removing date " + item.imageDateLabel.text() + " " + str(colorSpan))
+			self.removeImageItemWidget(item)
 
 
 	def onWarning(self, warningMessage):
