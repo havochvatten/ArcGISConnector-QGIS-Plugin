@@ -225,6 +225,26 @@ class ArcGisConRefreshController(QObject):
 		dialog.instantDateInput.setMinimumDate(startTimeLimitDate)
 		dialog.instantDateInput.setMaximumDate(endTimeLimitDate)
 
+
+		timeExtent = layer.imageSpec.settings.timeExtent
+		if len(timeExtent) > 1:
+			if timeExtent[0] != "null":
+				currentStartLong = timeExtent[0] / 1000L
+				currentStart = QDate.fromString(datetime.datetime.fromtimestamp(currentStartLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+				dialog.startDateInput.setDate(currentStart)
+
+			if timeExtent[1] != "null":
+				currentEndLong = timeExtent[1] / 1000L
+				currentEnd = QDate.fromString(datetime.datetime.fromtimestamp(currentEndLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+				dialog.endDateInput.setDate(currentEnd)
+
+		elif len(timeExtent) == 1 and timeExtent[0] != "null":
+			currentInstantLong = timeExtent[0] / 1000L
+			currentInstant = QDate.fromString(datetime.datetime.fromtimestamp(currentInstantLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+			dialog.instantDateInput.setDate(currentInstant)
+			dialog.tabWidget.setCurrentWidget(dialog.instantTab)
+
+
 		dialog.startDateCheckBox.stateChanged.connect(lambda state: dialog.startDateInput.setEnabled(not state))
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
