@@ -225,6 +225,26 @@ class ArcGisConRefreshController(QObject):
 		dialog.instantDateInput.setMinimumDate(startTimeLimitDate)
 		dialog.instantDateInput.setMaximumDate(endTimeLimitDate)
 
+
+		timeExtent = layer.imageSpec.settings.timeExtent
+		if timeExtent != None and len(timeExtent) > 1:
+			if timeExtent[0] != "null":
+				currentStartLong = timeExtent[0] / 1000L
+				currentStart = QDate.fromString(datetime.datetime.fromtimestamp(currentStartLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+				dialog.startDateInput.setDate(currentStart)
+
+			if timeExtent[1] != "null":
+				currentEndLong = timeExtent[1] / 1000L
+				currentEnd = QDate.fromString(datetime.datetime.fromtimestamp(currentEndLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+				dialog.endDateInput.setDate(currentEnd)
+
+		elif timeExtent != None and len(timeExtent) == 1 and timeExtent[0] != "null":
+			currentInstantLong = timeExtent[0] / 1000L
+			currentInstant = QDate.fromString(datetime.datetime.fromtimestamp(currentInstantLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
+			dialog.instantDateInput.setDate(currentInstant)
+			dialog.tabWidget.setCurrentWidget(dialog.instantTab)
+
+
 		dialog.startDateCheckBox.stateChanged.connect(lambda state: dialog.startDateInput.setEnabled(not state))
 		dialog.endDateCheckBox.stateChanged.connect(lambda state: dialog.endDateInput.setEnabled(not state))
 
@@ -237,7 +257,7 @@ class ArcGisConRefreshController(QObject):
 		dialog.exec_()
 
 	def onTimePickerRestoreClick(self, layer, dialog):
-		layer.imageSpec.time = None
+		layer.imageSpec.settings.timeExtent = None
 		dialog.close()
 			
 	def updateLayerWithNewExtent(self, updateService, esriLayer):
@@ -278,7 +298,7 @@ class ArcGisConRefreshController(QObject):
 				endDate = endDate.toMSecsSinceEpoch()
 			timeExtent.append(startDate)
 			timeExtent.append(endDate)
-		layer.imageSpec.time = timeExtent
+		layer.imageSpec.settings.timeExtent = timeExtent
 
 	
 	def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
@@ -301,9 +321,6 @@ class ConnectionSettingsController(QObject):
 
 	_renderingMode = None
 	_mosaicMode = None
-
-	_lastCustomText = None
-	_lastMosaicText = None
 
 	def __init__(self, iface):
 		QObject.__init__(self)
@@ -336,15 +353,14 @@ class ConnectionSettingsController(QObject):
 			self._settingsObject.setCurrentRasterFunction(self._settingsDialog.comboBox.currentIndex())
 			self._settings['renderingRule'] = self._settingsObject.renderingRule
 		elif self._renderingMode == "custom":
-			self._lastCustomText = self._settingsDialog.customTextEdit.toPlainText()
 			self._settings['renderingRule'] = ' '.join(self._settingsDialog.customTextEdit.toPlainText().split())
 		else:
 			if 'renderingRule' in self._settings:
 				self._settings.pop('renderingRule')
 
 		if self._mosaicMode == True:
-			self._lastMosaicText = self._settingsDialog.mosaicTextEdit.toPlainText()
 			self._settings['mosaicRule'] = ' '.join(self._settingsDialog.mosaicTextEdit.toPlainText().split())
+			QgsMessageLog.logMessage("Mosaic rule: " + str(self._settings['mosaicRule']))
 		else:
 			if 'mosaicRule' in self._settings:
 				self._settings['mosaicRule'] = None
@@ -456,12 +472,11 @@ class ConnectionSettingsController(QObject):
 			if rasterFunctionInSettings and singularRenderRule:
 				self._renderingMode = "template"
 				self._settingsDialog.radioButtonTemplate.click()
-				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))				
-
-		elif 'renderingRule' in self._settings:
-			self._renderingMode = "custom"
-			self._settingsDialog.radioButtonCustom.click()
-			self._settingsDialog.customTextEdit.setPlainText(self._lastCustomText)
+				self._settingsDialog.comboBox.setCurrentIndex(self._settingsDialog.comboBox.findText(json.loads(self._settings['renderingRule'])['rasterFunction']))
+			else:
+				self._renderingMode = "custom"
+				self._settingsDialog.radioButtonCustom.click()
+				self._settingsDialog.customTextEdit.setPlainText(self._settingsObject.renderingRule)
 		else:
 			self._renderingMode = "none"
 			self._settingsDialog.radioButtonNone.click()
@@ -496,9 +511,10 @@ class ConnectionSettingsController(QObject):
 			self._settingsDialog.mosaicTextEdit.setEnabled(False)
 		else:
 			self._settingsDialog.mosaicCheckBox.setChecked(True)
-		self._settingsDialog.mosaicTextEdit.setPlainText(self._lastMosaicText)
+			self._settingsDialog.mosaicTextEdit.setPlainText(self._settingsObject.mosaicRule)
 		self._settingsDialog.mosaicCheckBox.stateChanged.connect(lambda value: self._mosaicCheckBoxChanged(value))
 
 	def _mosaicCheckBoxChanged(self, value):
 		self._mosaicMode = bool(value)
+		QgsMessageLog.logMessage("Mosaic mode bool: " + str(self._mosaicMode))
 		self._settingsDialog.mosaicTextEdit.setEnabled(value)

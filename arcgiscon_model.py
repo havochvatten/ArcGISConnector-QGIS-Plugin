@@ -100,6 +100,9 @@ class EsriImageServiceQueryFactory:
 				timeExtent = str(settings['time'][0])
 			query.update({'time': timeExtent})
 
+		if 'mosaicRule' in settings:
+			query['mosaicRule'] = json.loads(settings['mosaicRule'])
+
 		SETTINGS_LIST = [
 			'size',
 			'format', 
@@ -109,7 +112,7 @@ class EsriImageServiceQueryFactory:
 			'noData', 
 			'compression', 
 			'compressionQuality', 
-			'bandIds' ]
+			'bandIds']
 
 		for setting in SETTINGS_LIST:
 			if setting in settings and settings[setting] != None:
@@ -304,9 +307,7 @@ class Settings:
 		if 'renderingRule' in nextSettings:
 			self.renderingRule = nextSettings['renderingRule']
 		if 'mosaicRule' in nextSettings:
-			self.mosaicRule = nextSettings['mosaicRule']	
-		if 'time' in nextSettings:
-			self.timeExtent = nextSettings['time']
+			self.mosaicRule = nextSettings['mosaicRule']
 
 	def getDict(self):
 		settings = {
@@ -320,7 +321,7 @@ class Settings:
 			'compressionQuality':self.compressionQuality, 
 			'bandIds':self.bandIds,
 			'renderingRule':self.renderingRule,
-			'mosaicRule':self.mosaicRule,
+			'mosaicRule':json.dumps(self.mosaicRule),
 			'time':self.timeExtent
 			}
 
