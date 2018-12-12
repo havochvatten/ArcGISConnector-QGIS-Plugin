@@ -85,14 +85,17 @@ class ServerItemManager:
         return downloadSource((connection, query ,None))
 
     def extractItemsList(self, result, field):
-        items = []
-        for x in result[u'features']:
-            item = x[u'attributes'][field]
-            items.append(item)
-        items = filter(lambda item: item is not None, items) 
-        #QgsMessageLog.logMessage("serverItems:  " + str(items))
-        items.reverse()
-        return items
+        if field in result[u'features']:
+            items = []
+            for x in result[u'features']:
+                item = x[u'attributes'][field]
+                items.append(item)
+            items = filter(lambda item: item is not None, items) 
+            #QgsMessageLog.logMessage("serverItems:  " + str(items))
+            items.reverse()
+            return items
+        else:
+            return []
 
     #Query dependent on what Fields are available at the server.
     def downloadServerData(self, connection):

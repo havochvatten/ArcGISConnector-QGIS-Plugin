@@ -109,82 +109,28 @@ class LayerDialogController(QObject):
 
 	def populateNamedItems(self, amount):
 		key = self.serverItemManager.keyNames
-		FORMAT_PNG = "jpgpng"
-		FORMAT_TIFF = "tiff"
-		MAX_ITEM_WIDTH = 400
-		MAX_ITEM_HEIGHT = 400
-		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
-		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
-		self.imageCount = 0
+		if self.serverItemManager.serverItems[key] != []:
+			FORMAT_PNG = "jpgpng"
+			FORMAT_TIFF = "tiff"
+			MAX_ITEM_WIDTH = 400
+			MAX_ITEM_HEIGHT = 400
+			GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
+			loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
+			self.imageCount = 0
 
-		imageSpec = self.connection.newImageSpecification(
-				MAX_ITEM_WIDTH,
-				MAX_ITEM_HEIGHT,
-				None,
-				FORMAT_PNG)
+			imageSpec = self.connection.newImageSpecification(
+					MAX_ITEM_WIDTH,
+					MAX_ITEM_HEIGHT,
+					None,
+					FORMAT_PNG)
 
-		if not imageSpec:
-			return
-		name = self.serverItemManager.getCurrentItem(key)
-		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
-		
-		# Placeholder with loader
-		item.imageDateLabel.setText(name)
-		item.thumbnailLabel.setMovie(loaderMovie)
-		item.thumbnailLabel.setAlignment(Qt.AlignCenter)
-		loaderMovie.start()
-
-		self.imageItems.append(item)
-		self.imageCount += 1
-		# Initiate asynchronous download
-		downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
-		downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
-		downloader.start()
-
-		# Configure widget events
-		self.configureThumbnailEvents(item, imageSpec)
-
-		#Update time catcher
-		newTime = self.serverItemManager.update()
-		if not newTime:
-			return
-		
-
-
-	def populateItems(self, amount):
-		key = self.serverItemManager.keyDates
-		FORMAT_PNG = "png"
-		FORMAT_TIFF = "tiff"
-		MAX_ITEM_WIDTH = 400
-		MAX_ITEM_HEIGHT = 400
-		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
-		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
-		self.imageCount = 0
-
-		baseSpec = imageSpec = self.connection.newImageSpecification(
-				MAX_ITEM_WIDTH,
-				MAX_ITEM_HEIGHT,
-				self.serverItemManager.getCurrentItem(key),
-				FORMAT_PNG)
-		# Place ImageItems on the dialog.
-		while (self.imageCount < amount):
-			# TODO: Only make *One* meta information query that holds for all images.
-			
-			imageSpec  = self.connection.newImageFromSpec(
-				baseSpec,	
-				self.serverItemManager.getCurrentItem(key)) 
 			if not imageSpec:
 				return
-
+			name = self.serverItemManager.getCurrentItem(key)
 			item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
-							
-			# Config image item
-			timeStamp = imageSpec.getTimeStamp()				
-			if not timeStamp:
-				timeStamp = self.connection.name
 			
 			# Placeholder with loader
-			item.imageDateLabel.setText(timeStamp)
+			item.imageDateLabel.setText(name)
 			item.thumbnailLabel.setMovie(loaderMovie)
 			item.thumbnailLabel.setAlignment(Qt.AlignCenter)
 			loaderMovie.start()
@@ -203,6 +149,61 @@ class LayerDialogController(QObject):
 			newTime = self.serverItemManager.update()
 			if not newTime:
 				return
+
+	def populateItems(self, amount):
+		
+		key = self.serverItemManager.keyDates
+		if self.serverItemManager.serverItems[key] != []:
+			FORMAT_PNG = "png"
+			FORMAT_TIFF = "tiff"
+			MAX_ITEM_WIDTH = 400
+			MAX_ITEM_HEIGHT = 400
+			GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
+			loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
+			self.imageCount = 0
+
+			baseSpec = imageSpec = self.connection.newImageSpecification(
+					MAX_ITEM_WIDTH,
+					MAX_ITEM_HEIGHT,
+					self.serverItemManager.getCurrentItem(key),
+					FORMAT_PNG)
+			# Place ImageItems on the dialog.
+			while (self.imageCount < amount):
+				# TODO: Only make *One* meta information query that holds for all images.
+				
+				imageSpec  = self.connection.newImageFromSpec(
+					baseSpec,	
+					self.serverItemManager.getCurrentItem(key)) 
+				if not imageSpec:
+					return
+
+				item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
+								
+				# Config image item
+				timeStamp = imageSpec.getTimeStamp()				
+				if not timeStamp:
+					timeStamp = self.connection.name
+				
+				# Placeholder with loader
+				item.imageDateLabel.setText(timeStamp)
+				item.thumbnailLabel.setMovie(loaderMovie)
+				item.thumbnailLabel.setAlignment(Qt.AlignCenter)
+				loaderMovie.start()
+
+				self.imageItems.append(item)
+				self.imageCount += 1
+				# Initiate asynchronous download
+				downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
+				downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
+				downloader.start()
+
+				# Configure widget events
+				self.configureThumbnailEvents(item, imageSpec)
+
+				#Update time catcher
+				newTime = self.serverItemManager.update()
+				if not newTime:
+					return
 
 	def scaleImage(self, filePath, width, height, scalar):
 		pix = QPixmap(filePath)
