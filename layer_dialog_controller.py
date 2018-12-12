@@ -17,6 +17,7 @@ class LayerDialogController(QObject):
 	#Variables ---------------------
 
 	# Our QT interface object
+	EMPTY_GRID_MESSAGE = "No images could be found..."
 	iface = None
 	layerDialogUI = None
 	# Connection to server.
@@ -77,6 +78,7 @@ class LayerDialogController(QObject):
 		self.layerDialogUI.closed.connect(self.onCloseEvent)
 		self.layerDialogUI.searchLineEdit.textEdited.connect(self._onSearchLineEditChanged)
 		self.layerDialogUI.searchLineEdit.returnPressed.connect(lambda: self._onSearchLineEditChanged(self.layerDialogUI.searchLineEdit.text()))
+		self.layerDialogUI.infoLabel.clear()
 
 		self.updateService = updateService
 		self.connection = connection
@@ -103,11 +105,11 @@ class LayerDialogController(QObject):
 		elif entryContainsNames:	
 			QgsMessageLog.logMessage("Trying to show named items")
 			self.populateNamedItems(IMAGE_AMOUNT_START)
-		self.fillGrid()
+		self.updateGrid()
 
 	def populateNamedItems(self, amount):
 		key = self.serverItemManager.keyNames
-		FORMAT_PNG = "png"
+		FORMAT_PNG = "jpgpng"
 		FORMAT_TIFF = "tiff"
 		MAX_ITEM_WIDTH = 400
 		MAX_ITEM_HEIGHT = 400
@@ -206,21 +208,17 @@ class LayerDialogController(QObject):
 		pix = QPixmap(filePath)
 		pix =  pix.scaled(width * scalar , height * scalar, Qt.KeepAspectRatio)
 		return pix
-
-	def fillGrid(self):
-		layout = self.grid.layout()
-		for x in range(len(self.imageItems)):
-			QgsMessageLog.logMessage("Item on screen " + str(self.imageItems[x].imageDateLabel.text()))
-			row = x / self.MAX_COLUMN_AMOUNT
-			col = x % self.MAX_COLUMN_AMOUNT
-			layout.addWidget(self.imageItems[x], row, col)
-	
 	
 	def getColorSpan(self, filePath):
-		img = Image.open(filePath)
-		imageRGB = img.convert('RGB')
-		colorSpan = imageRGB.getextrema()
-		return colorSpan
+		try:
+			img = Image.open(filePath)
+			imageRGB = img.convert('RGB')
+			colorSpan = imageRGB.getextrema()
+			return colorSpan
+		except:
+			QgsMessageLog.logMessage("IOException, unsupported format / corrupted file.")
+			return None
+		
 
 	def updateGrid(self):
 		layout = self.grid.layout()
@@ -233,6 +231,15 @@ class LayerDialogController(QObject):
 				layout.addWidget(item, row, col)
 			except:
 				pass
+		self.updateInfoMessage()
+
+	def updateInfoMessage(self):
+		if self.grid.layout().isEmpty():
+			#TODO: Make it function properly.
+			pass
+			#self.layerDialogUI.infoLabel.setText(self.EMPTY_GRID_MESSAGE)
+		else:
+			self.layerDialogUI.infoLabel.clear()
 			
 
 	def configureThumbnailEvents(self, item, imageSpec):
@@ -283,18 +290,23 @@ class LayerDialogController(QObject):
 		self.imageItems = filter(lambda x: x is not None, newList)
 		widget.deleteLater()
 		QgsMessageLog.logMessage("removed empty widget: "  + widget.imageDateLabel.text())
+		self.updateInfoMessage()
 
 	def onDownloadThumbnail(self, imageSpec, filePath, item):
 		pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
 		item.thumbnailLabel.setPixmap(pixmap)
 		colorSpan =  self.getColorSpan(filePath)
-		QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
 		emptyImage = True
-		for x in colorSpan:
-			if x[0] != x[1]:
-				emptyImage = False
-		if emptyImage:
-			QgsMessageLog.logMessage("Removing date " + item.imageDateLabel.text() + " " + str(colorSpan))
+		if colorSpan:
+			QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
+			for x in colorSpan:
+				if x[0] != x[1]:
+					emptyImage = False
+			if emptyImage:
+				QgsMessageLog.logMessage("Empty image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
+				self.removeImageItemWidget(item)
+		else:
+			QgsMessageLog.logMessage("Malformed image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
 			self.removeImageItemWidget(item)
 
 

@@ -146,7 +146,7 @@
             <enum>QFrame::NoFrame</enum>
            </property>
            <property name="text">
-            <string>1: Choose an image</string>
+            <string>Choose an image</string>
            </property>
           </widget>
          </item>
@@ -212,6 +212,33 @@ QLineEdit:focus{
        </spacer>
       </item>
       <item>
+       <widget class="QLabel" name="infoLabel">
+        <property name="font">
+         <font>
+          <family>Myriad Pro</family>
+          <pointsize>-1</pointsize>
+          <weight>75</weight>
+          <italic>true</italic>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+	color: #6f6f6f;
+	max-height: 15px;
+	background: #FFF;
+	font-size: 15px;
+	font-family: &quot;Myriad Pro&quot;;
+	font-weight: bold;
+    qproperty-alignment: AlignCenter;
+}</string>
+        </property>
+        <property name="text">
+         <string>Helllo</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QScrollArea" name="scrollArea">
         <property name="styleSheet">
          <string notr="true">QScrollArea{
@@ -226,8 +253,8 @@ QLineEdit:focus{
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>1102</width>
-           <height>402</height>
+           <width>1098</width>
+           <height>381</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout"/>
