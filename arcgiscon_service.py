@@ -85,7 +85,7 @@ class ServerItemManager:
         return downloadSource((connection, query ,None))
 
     def extractItemsList(self, result, field):
-        if field in result[u'features']:
+        if field in result[u'features'][0][u'attributes']:
             items = []
             for x in result[u'features']:
                 item = x[u'attributes'][field]
