@@ -113,6 +113,7 @@ class ServerItemManager:
                 return
 
             self.serverItems[self.keyNames] = self.extractItemsList(namedItemsResult, fieldName)
+            return
     
         self.serverItems[self.keyDates] = self.extractItemsList(timedItemsResult, fieldDate)
        

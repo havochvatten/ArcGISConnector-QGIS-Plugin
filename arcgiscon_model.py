@@ -347,21 +347,22 @@ class ImageSpecification:
 	settings = Settings()
 
 	def setTime(self, timeExtent):
-		#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
-		timeStruct = time.gmtime(timeExtent/1000)
-		filteredStruct = time.struct_time([
-			timeStruct.tm_year, 
-			timeStruct.tm_mon, 
-			timeStruct.tm_mday, 
-			0,
-			0,
-			0,
-			timeStruct.tm_wday, 
-			timeStruct.tm_yday, 
-			timeStruct.tm_isdst])
-		filteredExtent = calendar.timegm(filteredStruct) 
-		timeExtent = filteredExtent * 1000 
-		self.settings.timeExtent = [timeExtent]
+		if timeExtent:
+			#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
+			timeStruct = time.gmtime(timeExtent/1000)
+			filteredStruct = time.struct_time([
+				timeStruct.tm_year, 
+				timeStruct.tm_mon, 
+				timeStruct.tm_mday, 
+				0,
+				0,
+				0,
+				timeStruct.tm_wday, 
+				timeStruct.tm_yday, 
+				timeStruct.tm_isdst])
+			filteredExtent = calendar.timegm(filteredStruct) 
+			timeExtent = filteredExtent * 1000 
+			self.settings.timeExtent = [timeExtent]
 	
 	# Returns the most recent time extent, none if there is no time extent.
 	def getTimeStamp(self):

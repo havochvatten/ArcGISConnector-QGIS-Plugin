@@ -85,18 +85,69 @@ class LayerDialogController(QObject):
 		# Create meta info (TODO? won't happen earlier currently).
 		self.connection.createMetaInfo() 
 		self.serverItemManager = ServerItemManager(self.connection)
+		QgsMessageLog.logMessage("server items: " + str(self.serverItemManager.serverItems[self.serverItemManager.keyNames]))
 		self.renderThumbnails()
 		self.layerDialogUI.show()
 
 	def renderThumbnails(self): 
 		IMAGE_AMOUNT_START = 6
 		# TODO: Regulate when to fill the grid, signals like window resize or 
-		if self.serverItemManager.keyDates in self.serverItemManager.serverItems:
+		QgsMessageLog.logMessage(str(self.serverItemManager.serverItems))
+
+		entryContainsDates = self.serverItemManager.serverItems[self.serverItemManager.keyDates] != []
+		entryContainsNames = self.serverItemManager.serverItems[self.serverItemManager.keyNames] != []
+
+		if entryContainsDates:
+			QgsMessageLog.logMessage("Trying to show date items")
 			self.populateItems(IMAGE_AMOUNT_START)
-		if self.serverItemManager.keyNames in self.serverItemManager.serverItems:	
-			#TODO: Implement
-			pass
+		elif entryContainsNames:	
+			QgsMessageLog.logMessage("Trying to show named items")
+			self.populateNamedItems(IMAGE_AMOUNT_START)
 		self.fillGrid()
+
+	def populateNamedItems(self, amount):
+		key = self.serverItemManager.keyNames
+		FORMAT_PNG = "png"
+		FORMAT_TIFF = "tiff"
+		MAX_ITEM_WIDTH = 400
+		MAX_ITEM_HEIGHT = 400
+		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
+		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
+		self.imageCount = 0
+
+		imageSpec = self.connection.newImageSpecification(
+				MAX_ITEM_WIDTH,
+				MAX_ITEM_HEIGHT,
+				None,
+				FORMAT_PNG)
+
+		if not imageSpec:
+			return
+		name = self.serverItemManager.getCurrentItem(key)
+		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
+		
+		# Placeholder with loader
+		item.imageDateLabel.setText(name)
+		item.thumbnailLabel.setMovie(loaderMovie)
+		item.thumbnailLabel.setAlignment(Qt.AlignCenter)
+		loaderMovie.start()
+
+		self.imageItems.append(item)
+		self.imageCount += 1
+		# Initiate asynchronous download
+		downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
+		downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
+		downloader.start()
+
+		# Configure widget events
+		self.configureThumbnailEvents(item, imageSpec)
+
+		#Update time catcher
+		newTime = self.serverItemManager.update()
+		if not newTime:
+			return
+		
+
 
 	def populateItems(self, amount):
 		key = self.serverItemManager.keyDates
@@ -105,7 +156,6 @@ class LayerDialogController(QObject):
 		MAX_ITEM_WIDTH = 400
 		MAX_ITEM_HEIGHT = 400
 		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
-
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		self.imageCount = 0
 
