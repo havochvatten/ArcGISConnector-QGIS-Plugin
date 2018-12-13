@@ -192,11 +192,9 @@ class LayerDialogController(QObject):
 
 				self.imageItems.append(item)
 				self.imageCount += 1
-				# Initiate asynchronous download
-				downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
-				downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
-				downloader.start()
 
+				self.startDownloadJob(imageSpec, item)
+				
 				# Configure widget events
 				self.configureThumbnailEvents(item, imageSpec)
 
@@ -292,23 +290,50 @@ class LayerDialogController(QObject):
 		widget.deleteLater()
 		QgsMessageLog.logMessage("removed empty widget: "  + widget.imageDateLabel.text())
 		self.updateInfoMessage()
+	
+	def fileIsHealthy(self, filePath):
+		try:
+			img = Image.open(filePath)
+			return True
+		except:
+			QgsMessageLog.logMessage("File was not found healthy")
+			os.remove(filePath)
+			return False
+	
+	def startImageScrapingJob(self, imageSpec, item):
+		downloader = ImageDownloader(self.connection, imageSpec, self.updateService, True)
+		downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
+		downloader.start()
+
+
+	def startDownloadJob(self, imageSpec, item):
+		# Initiate asynchronous download
+		downloader = ImageDownloader(self.connection, imageSpec, self.updateService)
+		downloader.downloadFinished.connect(lambda filePath, i=item: self.onDownloadThumbnail(imageSpec, filePath, i))
+		downloader.start()
 
 	def onDownloadThumbnail(self, imageSpec, filePath, item):
-		pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
-		item.thumbnailLabel.setPixmap(pixmap)
-		colorSpan =  self.getColorSpan(filePath)
-		emptyImage = True
-		if colorSpan:
-			QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
-			for x in colorSpan:
-				if x[0] != x[1]:
-					emptyImage = False
-			if emptyImage:
-				QgsMessageLog.logMessage("Empty image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
+		if self.fileIsHealthy(filePath):
+			pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
+			item.thumbnailLabel.setPixmap(pixmap)
+			colorSpan =  self.getColorSpan(filePath)
+			emptyImage = True
+			if colorSpan:
+				QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
+				for x in colorSpan:
+					if x[0] != x[1]:
+						emptyImage = False
+				if emptyImage:
+					QgsMessageLog.logMessage("Empty image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
+					self.removeImageItemWidget(item)
+			else:
+				QgsMessageLog.logMessage("Malformed image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
 				self.removeImageItemWidget(item)
 		else:
-			QgsMessageLog.logMessage("Malformed image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
-			self.removeImageItemWidget(item)
+			newSpec = imageSpec.copy() 
+			newSpec.setSize([300,300])
+			newSpec.setAspectRatio(1,1)
+			self.startImageScrapingJob(newSpec,item)
 
 
 	def onWarning(self, warningMessage):
@@ -322,20 +347,30 @@ class ImageDownloader(QObject):
 
 	downloadFinished = pyqtSignal(str)
 
-	def __init__(self, connection, imageSpec, updateService):
+	def __init__(self, connection, imageSpec, updateService, retryFromIncompatible = False):
 		QObject.__init__(self)
 		self._connection = connection
 		self._imageSpec = imageSpec
 		self._updateService = updateService
+		self.retryFromIncompatible = retryFromIncompatible
 
 	def start(self):
 		self._thread = threading.Thread(target=self.run)
 		self._thread.start()
 
-	def downloadPixmap(self):
+	def downloadAsJson(self):
 		filePath = self._updateService.downloadThumbnail(self._connection, self._imageSpec)
 		return filePath
 
+	def downloadAsImage(self):
+		filePath = self._updateService.downloadImageDirectly(self._connection, self._imageSpec)
+		return filePath
+
 	def run(self):
-		filePath = self.downloadPixmap()
+		filePath = None
+		if self.retryFromIncompatible:
+			filePath = self.downloadAsImage()
+		else:
+			filePath = self.downloadAsJson()
 		self.downloadFinished.emit(filePath)
+

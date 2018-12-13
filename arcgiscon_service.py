@@ -35,6 +35,7 @@ import shutil
 import requests
 import base64
 import datetime
+import urllib
 
 
 def downloadSource(args):  
@@ -46,7 +47,6 @@ def downloadSource(args):
         resultQueue.put(1)
     QgsMessageLog.logMessage("result download source: " + str(resultJson))
     return resultJson  
-
 
 # A class for managing downloads from different dates.
 # Currently uses the date closest to the high limit.
@@ -228,24 +228,23 @@ class EsriUpdateService(QtCore.QObject):
                     del self.connectionPool[:]
                        
                     self.progress.emit(10)
-                    results = []
-
                     extent = currentJob.imageSpec.metaInfo.extent
                     settings = currentJob.imageSpec.settings
                     if 'skogsstyrelsen' in currentJob.connection.basicUrl and settings.renderingRule == None and settings.imageFormat != "png": #Added ugly ugly code for PoC
                         #TODO: Delete this if statement
                         settings.renderingRule = json.dumps({"rasterFunction": "SKS SWIR"})
                     
-                    query = EsriImageServiceQueryFactory.createExportImageQuery(
+                    responseFormat = "image"
+                    query = EsriImageServiceQueryFactory.createThumbnailQuery(
                     extent,
-                    extent,
-                    settings.getDict() 
+                    settings.getDict(),
+                    responseFormat
                     )
 
-                    results = [downloadSource((currentJob.connection, query, None))]
+                    url = self.createSourceURL(currentJob.connection, query)
                     self.progress.emit(90)                        
-                    if results is not None and not self._isKilled:
-                        filePath = self._processSources(results, currentJob.connection)
+                    if url is not None and not self._isKilled:
+                        filePath = self._processSources([url], currentJob.connection, settings.imageFormat)
                         currentJob.onSuccess.emit(filePath)
                     self.progress.emit(100)    
                     self.state = EsriUpdateServiceState.Idle 
@@ -286,22 +285,41 @@ class EsriUpdateService(QtCore.QObject):
             toReturn = workingMap.get()        
         return toReturn
    
+    def createSourceURL(self, connection, query):
+        url = connection.basicUrl + query.getUrlAddon() + "?"
+        params = urllib.urlencode(query.getParams())
+        url += params
+        QgsMessageLog.logMessage("url: " + str(url))
+        return url
 
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!
     def downloadThumbnail(self, connection, imageSpecification):
-        imageFormat = "png"
+        QgsMessageLog.logMessage("Download thumbnail")
+        imageFormat = "jpgpng"
         #size = str(imageSpecification.settings.size[0]) + "," + str(imageSpecification.settings.size[1])
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
             imageSpecification.metaInfo.extent,
             imageSpecification.settings.getDict())
         json = downloadSource((connection, query, None))
         download = self._downloadRaster(json[u'href'], connection)
-
         filename = "thumbnail_" + str(id(imageSpecification)) + download['filename']
         return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
 
-    def _downloadRaster(self, href, connection):
+    def downloadImageDirectly(self, connection, imageSpecification):
+        QgsMessageLog.logMessage("Scrape thumbnail directly from URL")
+        imageFormat = "jpgpng"
+        responseFormat = "image"
+        query = EsriImageServiceQueryFactory.createThumbnailQuery(
+            imageSpecification.metaInfo.extent,
+            imageSpecification.settings.getDict(),
+            responseFormat)
+        url = self.createSourceURL(connection, query)
+        download = self._downloadRaster(url, connection)
+        filename = "thumbnail_" + str(id(imageSpecification)) + download['filename']
+        return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
+
+    def _downloadRaster(self, href, connection, params = None):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
         response = None
         if connection.authMethod == ConnectionAuthType.BasicAuthetication:
@@ -312,25 +330,31 @@ class EsriUpdateService(QtCore.QObject):
         fname = connectionName_clean + "_" + str(connection.conId)
         return dict(filename = fname, data = response.content)
     
-    def _processSources(self, sources, connection):     
+    def _processSources(self, sources, connection, imageFormat):     
         combined = {}
         progressStepFactor = 10.0 / len(sources)
         if len(sources) > 0:
-            base = sources[0] 
+            hrefSource = sources[0] 
             step = 1
-            if u'href' in base:
+            #if u'href' in hrefSource:
+            #    # Used in image service
+            #    download = self._downloadRaster(hrefSource[u'href'], connection)
+            #    return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], hrefSource[u'href'].lower().split('.')[-1])
+
+            if hrefSource:
                 # Used in image service
-                download = self._downloadRaster(base[u'href'], connection)
-                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], base[u'href'].lower().split('.')[-1])
+                download = self._downloadRaster(hrefSource, connection)
+                QgsMessageLog.logMessage("downloaded raster")
+                return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], imageFormat)
 
             for nextResult in sources[1:]:                
                 if self._isKilled:
                     break                             
-                if u'features' in base and u'features' in nextResult:                     
-                    base[u'features'].extend(nextResult[u'features'])
+                if u'features' in hrefSource and u'features' in nextResult:                     
+                    hrefSource[u'features'].extend(nextResult[u'features'])
                 self.progress.emit(90+step*progressStepFactor)
                 step += 1                            
-            combined = base
+            combined = hrefSource
         
         if not self._isKilled:
             filePath = None
