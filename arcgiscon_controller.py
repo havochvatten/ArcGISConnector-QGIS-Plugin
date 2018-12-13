@@ -516,5 +516,4 @@ class ConnectionSettingsController(QObject):
 
 	def _mosaicCheckBoxChanged(self, value):
 		self._mosaicMode = bool(value)
-		QgsMessageLog.logMessage("Mosaic mode bool: " + str(self._mosaicMode))
 		self._settingsDialog.mosaicTextEdit.setEnabled(value)
