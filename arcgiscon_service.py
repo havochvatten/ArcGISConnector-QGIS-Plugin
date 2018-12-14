@@ -59,6 +59,7 @@ class ServerItemManager:
     keyDates = 'dates'
     keyObjectIDs = 'objectIDs'
     currentIndex = None
+    serverNotQueryable = False
     
     def __init__(self, connection): 
         self.downloadServerData(connection)
@@ -111,8 +112,9 @@ class ServerItemManager:
             hasNoNamedResult = error in namedItemsResult 
 
             if hasNoNamedResult:
-                #TODO: Get OBJECTID items instead.
-                return
+                #TODO: Download simply 'one' result.
+                self.serverNotQueryable = True
+                return 
 
             self.serverItems[self.keyNames] = self.extractItemsList(namedItemsResult, fieldName)
             return
