@@ -119,23 +119,22 @@ class ArcGisConNewController(QObject):
 				self._checkConnection()
 	
 	def _onConnectClick(self):
+		
 		if not self._newDialog.layerUrlInput.text():
 			self._newDialog.connectionErrorLabel.setText("Enter a valid URL.")
 			return	
+		if self._connection.needsAuth():
+			username = self._newDialog.usernameInput.text()
+			password = self._newDialog.passwordInput.text()
+			self._connection.updateAuth(username, password) 
+			if not username or not password:
+				self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
+				return			
+			if self._newDialog.rememberCheckbox.isChecked():
+				self._saveCurrentCredentials()
+		
 		self._checkConnection()
 		if self.canConnect:
-			if self._connection.needsAuth():
-				username = self._newDialog.usernameInput.text()
-				password = self._newDialog.passwordInput.text()
-				self._connection.updateAuth(username, password) 
-
-				if not username or not password:
-					self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
-					return
-				
-				if self._newDialog.rememberCheckbox.isChecked():
-					self._saveCurrentCredentials()
-
 			self._event(self, self._connection)
 			self._newDialog.hide()
 			
@@ -147,12 +146,11 @@ class ArcGisConNewController(QObject):
 			self._checkConnection()
 			
 	def _checkConnection(self):
-		try:
-			self._connection.validate(EsriConnectionJSONValidatorLayer())			
-			self._newDialog.connectionErrorLabel.setText("")
-			self.canConnect = True	
-		except Exception as e:						
-			self._newDialog.connectionErrorLabel.setText(str(e.message))
+		error = self._connection.validate(EsriConnectionJSONValidatorLayer())			
+		self._newDialog.connectionErrorLabel.setText("")
+		self.canConnect = True		
+		if error:				
+			self._newDialog.connectionErrorLabel.setText(str(error.message))
 			self.canConnect = False
 
 	def _disableAuthSection(self):
@@ -516,4 +514,5 @@ class ConnectionSettingsController(QObject):
 
 	def _mosaicCheckBoxChanged(self, value):
 		self._mosaicMode = bool(value)
+		QgsMessageLog.logMessage("Mosaic mode bool: " + str(self._mosaicMode))
 		self._settingsDialog.mosaicTextEdit.setEnabled(value)

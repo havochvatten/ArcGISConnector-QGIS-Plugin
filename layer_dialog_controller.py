@@ -122,7 +122,7 @@ class LayerDialogController(QObject):
 		return item
 
 	def showNonQueryableImage(self):
-		FORMAT_JPGPNG = "jpgpng"
+		FORMAT_PNG = "png"
 		FORMAT_TIFF = "tiff"
 		MAX_ITEM_WIDTH = 400
 		MAX_ITEM_HEIGHT = 400
@@ -141,7 +141,7 @@ class LayerDialogController(QObject):
 	def populateNamedItems(self, amount):
 		key = self.serverItemManager.keyNames
 		if self.serverItemManager.serverItems[key] != []:
-			FORMAT_PNG = "jpgpng"
+			FORMAT_PNG = "png"
 			FORMAT_TIFF = "tiff"
 			MAX_ITEM_WIDTH = 400
 			MAX_ITEM_HEIGHT = 400
@@ -195,14 +195,13 @@ class LayerDialogController(QObject):
 				if not imageSpec:
 					return
 
-				item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
 								
 				# Config image item
 				itemName = imageSpec.getTimeStamp()				
 				if not itemName:
 					itemName = self.connection.name
 				
-				self.createAndConfigureImageItem(imageSpec, itemName)
+				item = self.createAndConfigureImageItem(imageSpec, itemName)
 				self.imageItems.append(item)
 				self.imageCount += 1
 
@@ -324,6 +323,7 @@ class LayerDialogController(QObject):
 		if self.fileIsHealthy(filePath):
 			pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
 			item.thumbnailLabel.setPixmap(pixmap)
+			QgsMessageLog.logMessage("setting pixmap: " + filePath)
 			colorSpan =  self.getColorSpan(filePath)
 			emptyImage = True
 			if colorSpan:
@@ -334,10 +334,6 @@ class LayerDialogController(QObject):
 				if emptyImage:
 					QgsMessageLog.logMessage("Empty image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
 					self.removeImageItemWidget(item)
-			else:
-				QgsMessageLog.logMessage("Malformed image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
-				self.removeImageItemWidget(item)
-
 		else:
 			newWidth = 300
 			newHeight = 300

@@ -533,9 +533,10 @@ class Connection:
 			metaInfo = EsriLayerMetaInformation.createFromMetaJson(response.json())
 			self._updateRasterFunctions(metaInfo.rasterFunctions)
 			self._updateTimeExtent(metaInfo.timeExtent)
-		except Exception:
-			raise
-	
+			return False
+		except Exception as error:
+			QgsMessageLog.logMessage(str(error))
+			return error
 
 	def updateAuth(self, username, password):
 		self.username = username
