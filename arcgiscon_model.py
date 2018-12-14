@@ -345,6 +345,7 @@ class ImageSpecification:
 	# Width and heigh only used for thumbnails. Will not be automatically updated.
 	width = None
 	height = None
+	name = ""
 	settings = Settings()
 
 	def setTime(self, timeExtent):
@@ -709,7 +710,10 @@ class EsriRasterLayer:
 		return esriLayer
 												
 	def updateQgsRasterLayer(self, srcPath):
-		self.qgsRasterLayer = QgsRasterLayer(srcPath, self.connection.name)        
+		if self.imageSpec.name != self.connection.name:
+			self.qgsRasterLayer = QgsRasterLayer(srcPath, self.connection.name + " " + self.imageSpec.name)     
+		else:
+			 self.qgsRasterLayer = QgsRasterLayer(srcPath, self.imageSpec.name)  
 		self.updateProperties()
 	
 	def updateProperties(self):
