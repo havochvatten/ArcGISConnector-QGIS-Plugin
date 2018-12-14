@@ -122,20 +122,22 @@ class ArcGisConNewController(QObject):
 		if not self._newDialog.layerUrlInput.text():
 			self._newDialog.connectionErrorLabel.setText("Enter a valid URL.")
 			return	
-		if self._connection.needsAuth():
-			username = self._newDialog.usernameInput.text()
-			password = self._newDialog.passwordInput.text()
-			self._connection.updateAuth(username, password) 
+		self._checkConnection()
+		if self.canConnect:
+			if self._connection.needsAuth():
+				username = self._newDialog.usernameInput.text()
+				password = self._newDialog.passwordInput.text()
+				self._connection.updateAuth(username, password) 
 
-			if not username or not password:
-				self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
-				return
-			
-			if self._newDialog.rememberCheckbox.isChecked():
-				self._saveCurrentCredentials()
+				if not username or not password:
+					self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
+					return
+				
+				if self._newDialog.rememberCheckbox.isChecked():
+					self._saveCurrentCredentials()
 
-		self._event(self, self._connection)
-		self._newDialog.hide()
+			self._event(self, self._connection)
+			self._newDialog.hide()
 			
 	def _onAuthInputChange(self):
 		username = str(self._newDialog.usernameInput.text())
@@ -148,12 +150,10 @@ class ArcGisConNewController(QObject):
 		try:
 			self._connection.validate(EsriConnectionJSONValidatorLayer())			
 			self._newDialog.connectionErrorLabel.setText("")
-			# TODO: Move layer and raster function stuff somewhere else.
-			# self._newDialog.layerNameInput.setText(self._connection.name)
-			#if self._connection.rasterFunctions is not None:
-			#	self._addRasterFunctions(self._connection.rasterFunctions)		
+			self.canConnect = True	
 		except Exception as e:						
 			self._newDialog.connectionErrorLabel.setText(str(e.message))
+			self.canConnect = False
 
 	def _disableAuthSection(self):
 		self._newDialog.usernameInput.setText("")

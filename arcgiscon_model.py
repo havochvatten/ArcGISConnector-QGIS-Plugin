@@ -204,7 +204,7 @@ class EsriConnectionJSONValidatorLayer(EsriConnectionJSONValidator):
 			raise EsriConnectionJSONValidatorException("No ArcGIS Resource found.", EsriConnectionJSONValidatorException.NotArcGisRest)
 		metaInfo = EsriLayerMetaInformation.createFromMetaJson(responseJson)
 		if metaInfo.layerType is None:
-			raise EsriConnectionJSONValidatorException("The URL points not to a layer.", EsriConnectionJSONValidatorException.NoLayer)
+			raise EsriConnectionJSONValidatorException("The URL does not host an image server.", EsriConnectionJSONValidatorException.NoLayer)
 		if "esriImageServiceDataType" not in metaInfo.layerType:
 			raise EsriConnectionJSONValidatorException("Layer must be of type Image Service. {} provided.".format(metaInfo.layerType), EsriConnectionJSONValidatorException.WrongLayerType)
 		

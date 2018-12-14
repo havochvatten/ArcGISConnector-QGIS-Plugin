@@ -29,6 +29,7 @@ class LayerDialogController(QObject):
 	rasterLayers = None
 	legendActions = None
 	serverItemManager = None
+	serverExtentNotRepresentative = False
 	lastScrollPos = 0
 	imageCount = 0
 	serverItemInfo = []
@@ -108,7 +109,7 @@ class LayerDialogController(QObject):
 	def createAndConfigureImageItem(self, imageSpec, name):
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
-		item.imageDateLabel.setText(name)
+		item.imageDateLabel.setText(name) 
 		item.thumbnailLabel.setMovie(loaderMovie)
 		item.thumbnailLabel.setAlignment(Qt.AlignCenter)
 		loaderMovie.start()
@@ -158,7 +159,7 @@ class LayerDialogController(QObject):
 			name = self.serverItemManager.getCurrentItem(key)
 			
 			# Add new image item
-			self.createAndConfigureImageItem(imageSpec, name)
+			item = self.createAndConfigureImageItem(imageSpec, name)
 			self.imageItems.append(item)
 			self.imageCount += 1
 	
@@ -336,12 +337,16 @@ class LayerDialogController(QObject):
 			else:
 				QgsMessageLog.logMessage("Malformed image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
 				self.removeImageItemWidget(item)
-		else:
-			newSpec = imageSpec.copy() 
-			newSpec.setSize([300,300])
-			newSpec.setAspectRatio(1,1)
-			self.startImageScrapingJob(newSpec,item)
 
+		else:
+			newWidth = 300
+			newHeight = 300
+			self.serverExtentNotRepresentative = True
+			item.configureFromDimensions(newWidth,newHeight)
+			newSpec = imageSpec.copy() 
+			newSpec.setSize([newWidth,newHeight])
+			newSpec.setAspectRatio(newWidth,newHeight)
+			self.startImageScrapingJob(newSpec,item)
 
 	def onWarning(self, warningMessage):
 		NotificationHandler.pushWarning('['+self.connection.name+'] :', warningMessage, 5)
