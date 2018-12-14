@@ -79,10 +79,10 @@ class EsriImageServiceQueryFactory:
 
 
 	@staticmethod
-	def createBaseQuery(extent=None, mapExtent=None, settings = {}):
+	def createBaseQuery(extent=None, mapExtent=None, settings = {}, responseFormat = "json"):
 		
 		query = {
-					"f": "json",
+					"f": responseFormat,
 					"size": "800,800",
 					"format": "tiff"
                 }
@@ -138,11 +138,12 @@ class EsriImageServiceQueryFactory:
 	# For exporting small map thumbnails to the graphical userface. 
 	#
 	# settings of type dict?
-	def createThumbnailQuery(extent=None, settings = None):
+	def createThumbnailQuery(extent=None, settings = {}, responseFormat = "json"):
 		query = EsriImageServiceQueryFactory.createBaseQuery(
 			extent,
 			extent,
-			settings)
+			settings,
+			responseFormat)
 		return EsriQuery("/ExportImage", query)
 
 class EsriQuery:
@@ -203,7 +204,7 @@ class EsriConnectionJSONValidatorLayer(EsriConnectionJSONValidator):
 			raise EsriConnectionJSONValidatorException("No ArcGIS Resource found.", EsriConnectionJSONValidatorException.NotArcGisRest)
 		metaInfo = EsriLayerMetaInformation.createFromMetaJson(responseJson)
 		if metaInfo.layerType is None:
-			raise EsriConnectionJSONValidatorException("The URL points not to a layer.", EsriConnectionJSONValidatorException.NoLayer)
+			raise EsriConnectionJSONValidatorException("The URL does not host an image server.", EsriConnectionJSONValidatorException.NoLayer)
 		if "esriImageServiceDataType" not in metaInfo.layerType:
 			raise EsriConnectionJSONValidatorException("Layer must be of type Image Service. {} provided.".format(metaInfo.layerType), EsriConnectionJSONValidatorException.WrongLayerType)
 		
@@ -347,21 +348,22 @@ class ImageSpecification:
 	settings = Settings()
 
 	def setTime(self, timeExtent):
-		#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
-		timeStruct = time.gmtime(timeExtent/1000)
-		filteredStruct = time.struct_time([
-			timeStruct.tm_year, 
-			timeStruct.tm_mon, 
-			timeStruct.tm_mday, 
-			0,
-			0,
-			0,
-			timeStruct.tm_wday, 
-			timeStruct.tm_yday, 
-			timeStruct.tm_isdst])
-		filteredExtent = calendar.timegm(filteredStruct) 
-		timeExtent = filteredExtent * 1000 
-		self.settings.timeExtent = [timeExtent]
+		if timeExtent:
+			#QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd") 
+			timeStruct = time.gmtime(timeExtent/1000)
+			filteredStruct = time.struct_time([
+				timeStruct.tm_year, 
+				timeStruct.tm_mon, 
+				timeStruct.tm_mday, 
+				0,
+				0,
+				0,
+				timeStruct.tm_wday, 
+				timeStruct.tm_yday, 
+				timeStruct.tm_isdst])
+			filteredExtent = calendar.timegm(filteredStruct) 
+			timeExtent = filteredExtent * 1000 
+			self.settings.timeExtent = [timeExtent]
 	
 	# Returns the most recent time extent, none if there is no time extent.
 	def getTimeStamp(self):
@@ -377,14 +379,14 @@ class ImageSpecification:
 	#Configures image spec from meta info.
 	def configure(self, metaInfo, maxWidth, maxHeight, timeExtent, imageFormat):
 		self.metaInfo = metaInfo
-		self.setAspectRatio()
+		self.configureAspectRatio()
 		self.configureImageSize(maxWidth, maxHeight)
 		#Timestamp is not the real time stamp but the upper boundary.
 		self.setTime(timeExtent) 
 		self.settings.rasterFunctions = metaInfo.rasterFunctions
 		self.settings.imageFormat = imageFormat
 
-	def setAspectRatio(self):
+	def configureAspectRatio(self):
 		#TODO: Image aspect ratio currently does not consider 
 		# special case where the pixel size is uneven between X Y axis.
 		
@@ -407,6 +409,9 @@ class ImageSpecification:
 		self.width = size[0]
 		self.height = size[1]
 		self.settings.size = str(self.width) + "," + str(self.height)
+
+	def setAspectRatio(self, x, y):
+		self.aspectRatio = float(x)/y
 
 	# Acquires a max size from a set width and height while keeping the aspect ratio (width/height)
 	def configureImageSize(self, maxWidth = 100, maxHeight = 100):
@@ -592,6 +597,21 @@ class Connection:
 		except requests.TooManyRedirects:
 			raise    
 		return request
+
+
+	def getRequest(self, query):       
+		try: 
+			self.configureAuthMethod()
+			request = requests.get(self.basicUrl + query.getUrlAddon(), params=query.getParams(), auth=self.auth, timeout=180)
+		except requests.ConnectionError:
+			raise
+		except requests.HTTPError:
+			raise
+		except requests.Timeout:
+			raise
+		except requests.TooManyRedirects:
+			raise    
+		return request
 	
 	def needsAuth(self):
 		return self.authMethod != ConnectionAuthType.NoAuth
@@ -621,7 +641,7 @@ class Connection:
 	def getJson(self, query):
 		connected = self.connect(query)
 		return connected.json()
-									
+								
 	def createSourceFileName(self):        
 		vectorSrcName = hashlib.sha224(self.getConnectionIdentifier()).hexdigest()
 		return vectorSrcName + ".json"
