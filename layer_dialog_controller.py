@@ -107,6 +107,7 @@ class LayerDialogController(QObject):
 		self.updateGrid()
 
 	def createAndConfigureImageItem(self, imageSpec, name):
+		imageSpec.name = name
 		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
 		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
 		item.imageDateLabel.setText(name) 
@@ -194,8 +195,7 @@ class LayerDialogController(QObject):
 					self.serverItemManager.getCurrentItem(key)) 
 				if not imageSpec:
 					return
-
-								
+		
 				# Config image item
 				itemName = imageSpec.getTimeStamp()				
 				if not itemName:

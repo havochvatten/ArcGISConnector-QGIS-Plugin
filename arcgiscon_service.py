@@ -36,6 +36,7 @@ import requests
 import base64
 import datetime
 import urllib
+import sip
 
 
 def downloadSource(args):  
@@ -384,8 +385,11 @@ class EsriUpdateService(QtCore.QObject):
         self._iface.messageBar().popWidget(self._messageBar)
         self._messageBar = None        
     
-    def _adjustProgress(self, value):        
-        self._progressBar.setValue(value)
+    def _adjustProgress(self, value):   
+        if not sip.isdeleted(self._progressBar):
+            self._progressBar.setValue(value)
+        else:
+            self._createMessageBarWidget()
             
     finished = QtCore.pyqtSignal()
     #progress is linked with progress bar and expects number 
