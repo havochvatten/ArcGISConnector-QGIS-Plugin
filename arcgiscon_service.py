@@ -296,7 +296,7 @@ class EsriUpdateService(QtCore.QObject):
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!
     def downloadThumbnail(self, connection, imageSpecification):
-        imageFormat = "jpgpng"
+        imageFormat = "png"
         #size = str(imageSpecification.settings.size[0]) + "," + str(imageSpecification.settings.size[1])
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
             imageSpecification.metaInfo.extent,
@@ -307,7 +307,7 @@ class EsriUpdateService(QtCore.QObject):
         return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
 
     def downloadImageDirectly(self, connection, imageSpecification):
-        imageFormat = "jpgpng"
+        imageFormat = "png"
         responseFormat = "image"
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
             imageSpecification.metaInfo.extent,
