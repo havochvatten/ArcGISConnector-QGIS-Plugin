@@ -91,7 +91,6 @@ class ServerItemManager:
                 item = x[u'attributes'][field]
                 items.append(item)
             items = filter(lambda item: item is not None, items) 
-            #QgsMessageLog.logMessage("serverItems:  " + str(items))
             items.reverse()
             return items
         else:
@@ -270,7 +269,7 @@ class EsriUpdateService(QtCore.QObject):
         workingMap = workerPool.map_async(downloadSource,args)
         progressStepFactor = 80.0 / len(queries)                  
         while not self._isKilled:
-            if(workingMap.ready()):                                
+            if(workingMap.ready()) :                                
                 break
             else:
                 size = resultQueue.qsize()                                                              
@@ -295,7 +294,6 @@ class EsriUpdateService(QtCore.QObject):
     # Downloads thumbnail and returns its filepath.
     # TODO: Will have a separate url for the specific image server when there are more than one!
     def downloadThumbnail(self, connection, imageSpecification):
-        QgsMessageLog.logMessage("Download thumbnail")
         imageFormat = "jpgpng"
         #size = str(imageSpecification.settings.size[0]) + "," + str(imageSpecification.settings.size[1])
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
@@ -307,7 +305,6 @@ class EsriUpdateService(QtCore.QObject):
         return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
 
     def downloadImageDirectly(self, connection, imageSpecification):
-        QgsMessageLog.logMessage("Scrape thumbnail directly from URL")
         imageFormat = "jpgpng"
         responseFormat = "image"
         query = EsriImageServiceQueryFactory.createThumbnailQuery(
@@ -344,10 +341,12 @@ class EsriUpdateService(QtCore.QObject):
             if hrefSource:
                 # Used in image service
                 download = self._downloadRaster(hrefSource, connection)
-                QgsMessageLog.logMessage("downloaded raster")
+                if imageFormat is None:
+                    imageFormat = "tiff"
                 return FileSystemService().storeBinaryInTmpFolder(download['data'], download['filename'], imageFormat)
 
-            for nextResult in sources[1:]:                
+
+            for nextResult in sources[1:]:              
                 if self._isKilled:
                     break                             
                 if u'features' in hrefSource and u'features' in nextResult:                     
@@ -356,7 +355,7 @@ class EsriUpdateService(QtCore.QObject):
                 step += 1                            
             combined = hrefSource
         
-        if not self._isKilled:
+        if not self._isKilled: 
             filePath = None
             if self._projectId is not None:
                 filePath = FileSystemService().storeJsonInProjectFolder(combined, connection.createSourceFileName(), self._projectId)
