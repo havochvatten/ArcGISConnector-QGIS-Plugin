@@ -30,7 +30,6 @@ from arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
 from arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController, ConnectionSettingsController
 from arcgiscon_image_controller import ImageController
-from dashboard_controller import DashboardController
 from layer_dialog_controller import LayerDialogController
 from arcgiscon_model import EsriRasterLayer
 from uuid import uuid4
@@ -57,7 +56,6 @@ class ArcGisConnector:
  # Controllers
     _settingsController = None
     _imageController = None
-    _dashboardController = None
     _refreshController = None
     _connectionController = None
     _layerDialogController = None
@@ -91,13 +89,8 @@ class ArcGisConnector:
         self._settingsController = ConnectionSettingsController(self._iface)
         self._imageController = ImageController(self._iface)
         self._refreshController = ArcGisConRefreshController(self._iface)
-        #self._dashboardController = DashboardController(self._iface) 
         self._connectionController = ArcGisConNewController(self._iface)
         self._layerDialogController = LayerDialogController(self._iface)
-
-        #Add self as event handlers
-        #self._dashboardController.addEventHandler(self)
-        #self._newLayerController.addEventHandler(self)
 
         #Register handler to event
         self._connectionController.addEventHandler(self.handleLogin)

@@ -25,7 +25,7 @@
 
 #Add iso code for any locales you want to support here (space separated)
 # default is no locales
-LOCALES = arcgiscon_en arcgiscon_de arcgiscon_fr
+LOCALES = arcgiscon_en
 
 # If locales are enabled, set the name of the lrelease binary on your system. If
 # you have trouble compiling the translations, you may have to specify the full path to
@@ -40,7 +40,13 @@ SOURCES = \
     arcgiscon_controller.py \
     arcgiscon_model.py \
     arcgiscon_service.py \
-    arcgiscon_ui.py
+    arcgiscon_ui.py \
+	arcgiscon_plugin_dialog.py \
+	arciscon_image_controller.py \
+	layer_dialog_controller.py \
+	event_handling.py
+
+
     
 PLUGINNAME = connector
 
@@ -50,10 +56,18 @@ PY_FILES = \
     arcgiscon_controller.py \
     arcgiscon_model.py \
     arcgiscon_service.py \
-    arcgiscon_ui.py
+    arcgiscon_ui.py \
+	arcgiscon_plugin_dialog.py \
+	arciscon_image_controller.py \
+	layer_dialog_controller.py \
+	event_handling.py
 
 UI_FILES = \
     arcgiscon_dialog_new.ui \
+	image_server_dashboard.ui \
+	timeinput_dialog.ui \
+	settings.ui \
+	image_item.ui
     
 #LIB_DIRS = \
     ntlm3 \
