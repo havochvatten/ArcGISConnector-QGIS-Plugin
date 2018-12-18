@@ -1,8 +1,0 @@
-Mosaic 1
-{"where": "imageDate=date '2018-07-27'"}
-
-Mosaic 2
-{ "mosaicMethod" : "esriMosaicNadir", "ascending" : true, "mosaicOperation" : "MT_FIRST" }
- 
- Mosaic 3
-{ "mosaicMethod" : "esriMosaicLockRaster", "lockRasterIds": [1,2,3], "ascending" : true, "mosaicOperation" : "MT_FIRST" }
