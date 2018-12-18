@@ -157,6 +157,12 @@ class ArcGisConnector:
     def _refreshAllEsriLayers(self): 
         for layer in self._esriRasterLayers.values():
             self._refreshController.updateLayer(self._updateService, layer)
+
+    def _refreshAllVisibleLayers(self):
+        for layer in self._esriRasterLayers.values():
+            if QgsProject.instance().layerTreeRoot().findLayer(layer.qgsRasterLayer.id()).isVisible():
+                self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
+                
     
     def _refreshEsriLayer(self, withCurrentExtent=False):
         qgsLayers = self._iface.legendInterface().selectedLayers()
@@ -164,13 +170,10 @@ class ArcGisConnector:
             if layer.id() in self._esriRasterLayers:  
                 if withCurrentExtent:
                     self._refreshController.updateLayerWithNewExtent(self._updateService, self._esriRasterLayers[layer.id()])
-                else:
-                    pass
-                    #self._refreshController.updateLayer(self._updateService, self._esriVectorLayers[layer.id()])
 
     def _onExtentsChanged(self):
         if self._iface.mapCanvas().renderFlag():
-            self._refreshEsriLayer(True)
+            self._refreshAllVisibleLayers()
 
     def _onProjectLoad(self): 
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
