@@ -283,7 +283,13 @@ class ArcGisConRefreshController(QObject):
 		timeExtent = []
 		if dialog.tabWidget.currentWidget() == dialog.instantTab:
 			instantDate = dialog.instantDateInput.dateTime()
-			timeExtent.append(instantDate.toMSecsSinceEpoch())
+			instantDate.setTimeSpec(1) # 1 is for UTC
+			instantDate.setTime(QTime(0,0,0,0))
+			instantDateStart = instantDate.toMSecsSinceEpoch()
+			instantDate.setTime(QTime(23,59,59,999))
+			instantDateEnd = instantDate.toMSecsSinceEpoch()
+			timeExtent.append(instantDateStart)
+			timeExtent.append(instantDateEnd)
 		else:
 			startDate = endDate = "null"
 			if not dialog.startDateCheckBox.isChecked():
