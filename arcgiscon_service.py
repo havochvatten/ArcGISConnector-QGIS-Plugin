@@ -102,18 +102,16 @@ class ServerItemManager:
     def downloadServerData(self, connection):
         fieldDate = u'AcquisitionDate'
         fieldName = u'Name'
-        error = u'error'
 
         self.serverItems = {self.keyDates:  [], self.keyNames: [], self.keyObjectIDs:[]} 
         timedItemsResult = self.downloadTimedServerData(connection)
-        hasNoTimedResult = error in timedItemsResult
-       
+        hasNoTimedResult = "CountDate" not in str(timedItemsResult)
+
         if hasNoTimedResult:
             namedItemsResult = self.downloadNamedServerData(connection)
-            hasNoNamedResult = error in namedItemsResult 
+            hasNoNamedResult = "CountDate" not in str(namedItemsResult)
 
             if hasNoNamedResult:
-                #TODO: Download simply 'one' result.
                 self.serverNotQueryable = True
                 return 
 

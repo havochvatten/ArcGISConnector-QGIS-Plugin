@@ -132,7 +132,7 @@ class LayerDialogController(QObject):
 					MAX_ITEM_WIDTH,
 					MAX_ITEM_HEIGHT,
 					None,
-					FORMAT_JPGPNG)
+					FORMAT_PNG)
 		if not imageSpec:
 				return
 		itemName = self.connection.name
