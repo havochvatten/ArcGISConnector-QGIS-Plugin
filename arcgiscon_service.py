@@ -46,7 +46,6 @@ def downloadSource(args):
     resultJson = connection.getJson(query)
     if resultQueue is not None:      
         resultQueue.put(1)
-    QgsMessageLog.logMessage("result download source: " + str(resultJson))
     return resultJson  
 
 # A class for managing downloads from different dates.
@@ -71,9 +70,9 @@ class ServerItemManager:
         epochTime = QtCore.QDateTime.currentMSecsSinceEpoch()
         return epochTime
 
-    def update(self):
+    def update(self, key):
         self.currentIndex += 1
-        return self.currentIndex <= len(self.serverItems)
+        return self.currentIndex <= len(self.serverItems[key])
     
     def getCurrentItem(self, key):
         return self.serverItems[key][self.currentIndex]
@@ -102,18 +101,16 @@ class ServerItemManager:
     def downloadServerData(self, connection):
         fieldDate = u'AcquisitionDate'
         fieldName = u'Name'
-        error = u'error'
 
         self.serverItems = {self.keyDates:  [], self.keyNames: [], self.keyObjectIDs:[]} 
         timedItemsResult = self.downloadTimedServerData(connection)
-        hasNoTimedResult = error in timedItemsResult
-       
+        hasNoTimedResult = "CountDate" not in str(timedItemsResult)
+
         if hasNoTimedResult:
             namedItemsResult = self.downloadNamedServerData(connection)
-            hasNoNamedResult = error in namedItemsResult 
+            hasNoNamedResult = "CountDate" not in str(namedItemsResult)
 
             if hasNoNamedResult:
-                #TODO: Download simply 'one' result.
                 self.serverNotQueryable = True
                 return 
 
@@ -291,7 +288,6 @@ class EsriUpdateService(QtCore.QObject):
         url = connection.basicUrl + query.getUrlAddon() + "?"
         params = urllib.urlencode(query.getParams())
         url += params
-        QgsMessageLog.logMessage("url: " + str(url))
         return url
 
     # Downloads thumbnail and returns its filepath.
