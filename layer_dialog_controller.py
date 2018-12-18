@@ -86,14 +86,12 @@ class LayerDialogController(QObject):
 		# Create meta info (TODO? won't happen earlier currently).
 		self.connection.createMetaInfo() 
 		self.serverItemManager = ServerItemManager(self.connection)
-		QgsMessageLog.logMessage("server items: " + str(self.serverItemManager.serverItems[self.serverItemManager.keyNames]))
 		self.renderThumbnails()
 		self.layerDialogUI.show()
 
 	def renderThumbnails(self): 
 		IMAGE_AMOUNT_START = 6
 		# TODO: Regulate when to fill the grid, signals like window resize or 
-		QgsMessageLog.logMessage(str(self.serverItemManager.serverItems))
 
 		entryContainsDates = self.serverItemManager.serverItems[self.serverItemManager.keyDates] != []
 		entryContainsNames = self.serverItemManager.serverItems[self.serverItemManager.keyNames] != []
@@ -295,7 +293,6 @@ class LayerDialogController(QObject):
 				pass
 		self.imageItems = filter(lambda x: x is not None, newList)
 		widget.deleteLater()
-		QgsMessageLog.logMessage("removed empty widget: "  + widget.imageDateLabel.text())
 		self.updateInfoMessage()
 	
 	def fileIsHealthy(self, filePath):
@@ -303,7 +300,6 @@ class LayerDialogController(QObject):
 			img = Image.open(filePath)
 			return True
 		except:
-			QgsMessageLog.logMessage("File was not found healthy")
 			os.remove(filePath)
 			return False
 	
@@ -323,16 +319,13 @@ class LayerDialogController(QObject):
 		if self.fileIsHealthy(filePath):
 			pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
 			item.thumbnailLabel.setPixmap(pixmap)
-			QgsMessageLog.logMessage("setting pixmap: " + filePath)
 			colorSpan =  self.getColorSpan(filePath)
 			emptyImage = True
 			if colorSpan:
-				QgsMessageLog.logMessage("Date color" + item.imageDateLabel.text() + " " + str(colorSpan))
 				for x in colorSpan:
 					if x[0] != x[1]:
 						emptyImage = False
 				if emptyImage:
-					QgsMessageLog.logMessage("Empty image, removing " + item.imageDateLabel.text() + " " + str(colorSpan))
 					self.removeImageItemWidget(item)
 		else:
 			newWidth = 300

@@ -46,7 +46,6 @@ def downloadSource(args):
     resultJson = connection.getJson(query)
     if resultQueue is not None:      
         resultQueue.put(1)
-    QgsMessageLog.logMessage("result download source: " + str(resultJson))
     return resultJson  
 
 # A class for managing downloads from different dates.
@@ -289,7 +288,6 @@ class EsriUpdateService(QtCore.QObject):
         url = connection.basicUrl + query.getUrlAddon() + "?"
         params = urllib.urlencode(query.getParams())
         url += params
-        QgsMessageLog.logMessage("url: " + str(url))
         return url
 
     # Downloads thumbnail and returns its filepath.

@@ -117,7 +117,6 @@ class EsriImageServiceQueryFactory:
 		for setting in SETTINGS_LIST:
 			if setting in settings and settings[setting] != None:
 				query.update({setting: settings[setting]})
-		QgsMessageLog.logMessage("Query: " + str(query))
 		return query 
 
 	@staticmethod
@@ -555,7 +554,6 @@ class Connection:
 			return metaInfo
 
 		except ValueError as e:
-			QgsMessageLog.logMessage("error in createMetaInfo:  " + str(e))	
 			return False
 
 	def newImageFromSpec(self, spec, time):
