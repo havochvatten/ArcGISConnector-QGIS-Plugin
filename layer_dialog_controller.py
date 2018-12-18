@@ -6,12 +6,11 @@ from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from arcgiscon_ui import LayerDialog, ImageItemWidget
 from event_handling import Event
 from PIL import Image, ImageChops
+import time
 import os
 import threading
 import numpy as np
 import PyQt4.QtGui as QtGui
-
-
 
 class LayerDialogController(QObject):
 	#Variables ---------------------
@@ -43,15 +42,24 @@ class LayerDialogController(QObject):
 		QObject.__init__(self)
 		self.iface = iface				
 
-
 	def _onSearchLineEditChanged(self, text):
+		#TODO: Show filtered items in a good way. Almost done.
+		# filterItems = self.serverItemManager.filterItems
+		# if filterItems is not {}:
+		# 	#Filter existing server items on the string.
+		# 	dateItems = []
+		# 	for key in self.serverItemManager.filterItems:
+		# 		if text in key:
+		# 			dateItems.append(filterItems[key])
+		#	#Add those filtered items to the screen.
+		# 	self.clearThumbnails()
+		# 	self.populateItems(-1, [dateItems[0], dateItems[1], dateItems[2], dateItems[3], dateItems[4], dateItems[5]])
+			
 		for widget in self.imageItems:
 			try:
 				widget.setVisible(text in widget.imageDateLabel.text())
 			except:
 				pass
-				
-
 
 	# Add handler to our events
 	def addEventHandler(self, handler):
@@ -66,7 +74,6 @@ class LayerDialogController(QObject):
 		self.updateGrid()
 		self.lastScrollPos = y
 	
-
 	def showView(self, connection, updateService, rasterLayers, legendActions):
 		self.layerDialogUI = LayerDialog()
 		self.grid = self.layerDialogUI.imageGridWidget
@@ -167,17 +174,43 @@ class LayerDialogController(QObject):
 			if not newTime:
 				return
 
-	def populateItems(self, amount):
-		
+	def populateItems(self, amount, source = None):
 		key = self.serverItemManager.keyDates
+		FORMAT_PNG = "png"
+		FORMAT_TIFF = "tiff"
+		MAX_ITEM_WIDTH = 400
+		MAX_ITEM_HEIGHT = 400
+		GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
+		self.imageCount = 0
+		
+		if source is not None:
+			self.clearThumbnails()
+			for date in source:	
+				baseSpec = imageSpec = self.connection.newImageSpecification(
+					MAX_ITEM_WIDTH,
+					MAX_ITEM_HEIGHT,
+					source[0],
+					FORMAT_PNG)	
+					# Place ImageItems on the dialog.
+				
+				for x in range(len(source)-2):
+					# TODO: Only make *One* meta information query that holds for all images.
+					imageSpec  = self.connection.newImageFromSpec(
+						baseSpec,	
+						source[x+1]) 
+					if not imageSpec:
+						return
+					# Config image item
+					itemName = imageSpec.getTimeStamp()				
+					if not itemName:
+						itemName = self.connection.name
+					
+					item = self.createAndConfigureImageItem(imageSpec, itemName)
+					self.imageItems.append(item)
+					self.imageCount += 1
+				return			
+	
 		if self.serverItemManager.serverItems[key] != []:
-			FORMAT_PNG = "png"
-			FORMAT_TIFF = "tiff"
-			MAX_ITEM_WIDTH = 400
-			MAX_ITEM_HEIGHT = 400
-			GRID_MAX_WIDTH = self.layerDialogUI.width() - 100
-			self.imageCount = 0
-
 			baseSpec = imageSpec = self.connection.newImageSpecification(
 					MAX_ITEM_WIDTH,
 					MAX_ITEM_HEIGHT,
@@ -271,6 +304,8 @@ class LayerDialogController(QObject):
 		
 	def clearThumbnails(self):
 		del self.imageItems[:]
+		layout = self.layerDialogUI.scrollArea.widget().layout()
+		self.layerDialogUI.clearLayout(layout)
 
 	def closeWindow(self):
 		self.layerDialogUI.close()
