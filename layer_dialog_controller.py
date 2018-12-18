@@ -62,7 +62,7 @@ class LayerDialogController(QObject):
 
 	def onScrolledDown(self, y):
 		#TODO: Use the scroll position to avoid getting 300 new images instead of three.
-		self.populateItems(self.MAX_COLUMN_AMOUNT)
+		self.populateItems(self.MAX_COLUMN_AMOUNT*2)
 		self.updateGrid()
 		self.lastScrollPos = y
 	
@@ -204,7 +204,7 @@ class LayerDialogController(QObject):
 				self.imageCount += 1
 
 				#Update time catcher
-				newTime = self.serverItemManager.update()
+				newTime = self.serverItemManager.update(key)
 				if not newTime:
 					return
 

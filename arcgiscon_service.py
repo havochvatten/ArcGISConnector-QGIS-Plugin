@@ -70,9 +70,9 @@ class ServerItemManager:
         epochTime = QtCore.QDateTime.currentMSecsSinceEpoch()
         return epochTime
 
-    def update(self):
+    def update(self, key):
         self.currentIndex += 1
-        return self.currentIndex <= len(self.serverItems)
+        return self.currentIndex <= len(self.serverItems[key])
     
     def getCurrentItem(self, key):
         return self.serverItems[key][self.currentIndex]
