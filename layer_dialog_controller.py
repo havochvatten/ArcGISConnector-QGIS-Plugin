@@ -113,7 +113,7 @@ class LayerDialogController(QObject):
 
 	def createAndConfigureImageItem(self, imageSpec, name):
 		imageSpec.name = name
-		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), 'loading.gif'))
+		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), '/gui/icons/loading.gif'))
 		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
 		item.imageDateLabel.setText(name) 
 		item.thumbnailLabel.setMovie(loaderMovie)

@@ -72,7 +72,7 @@ UI_FILES = \
     requests \
     requests_ntlm
 
-EXTRAS = arcgis.png magnifying-glass.png placeholderMapLight.png tick.png loading.gif metadata.txt
+EXTRAS = metadata.txt
 
 EXTRA_DIRS = \
 	gui

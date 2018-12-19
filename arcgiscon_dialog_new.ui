@@ -30,7 +30,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/plugins/arcgiscon/arcgis.png</normaloff>:/plugins/arcgiscon/arcgis.png</iconset>
+    <normaloff>:/plugins/ImageServerConnector/icons/arcgis.png</normaloff>:/plugins/ImageServerConnector/icons/arcgis.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog {
@@ -399,7 +399,7 @@ QCheckBox::indicator{
 
 QCheckBox::indicator:checked{
 	background: #65C46D;
-	image: url(:/plugins/arcgiscon/tick.png);
+	image: url(:/plugins/ImageServerConnector/icons/tick.png);
 	icon-size: 8px 8px;
 
 }
@@ -425,7 +425,7 @@ QCheckBox::indicator:checked:hover {
 QCheckBox::indicator:checked:disabled {
     background: #f0f0f0;
 	border: transparent;
-	image: url(:/plugins/arcgiscon/tick.png);
+	image: url(:/plugins/ImageServerConnector/icons/tick.png);
 	icon-size: 8px 8px;
 	
 }

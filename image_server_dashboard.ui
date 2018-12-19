@@ -51,7 +51,7 @@
   	border-radius: 0.2em;
 	border: 0.2em  solid #cacaca;
 	
-	background-image: url(:/plugins/arcgiscon/magnifying-glass.png);
+	background-image: url(:/plugins/ImageServerConnector/icons/magnifying-glass.png);
     background-repeat: no-repeat;
     background-position: left;
 	padding-left: 40px;
@@ -177,7 +177,7 @@ QWidget:focus{
             <widget class="QLabel" name="thumbnailLabel">
              <property name="styleSheet">
               <string notr="true">QLabel {
-	/*border-image: url(:/plugins/arcgiscon/placeholderMapLight.png) 0 0 0 0 cover cover;*/
+	/*border-image: url(:/plugins/ImageServerConnector/icons/placeholderMapLight.png) 0 0 0 0 cover cover;*/
 	border: transparent;
 	background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,   stop:0 rgba(240,240,240,255), stop:1 rgba(240,240,240,255));
 	image-radius: 0.8em;
