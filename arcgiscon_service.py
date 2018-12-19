@@ -65,7 +65,7 @@ class ServerItemManager:
         self.downloadServerData(connection)
         self.currentIndex = 0
 
-	# Returns a QDate with the current date.
+    # Returns a QDate with the current date.
     def _currentTime(self):
         epochTime = QtCore.QDateTime.currentMSecsSinceEpoch()
         return epochTime
@@ -118,7 +118,26 @@ class ServerItemManager:
             return
     
         self.serverItems[self.keyDates] = self.extractItemsList(timedItemsResult, fieldDate)
+        self.createFilterList()
        
+
+    def getStringTimeStamp(self, timeStamp):
+        timeStamp = timeStamp / 1000
+        return time.strftime('%Y-%m-%d', time.localtime(timeStamp))
+        
+    def createFilterList(self):
+        serverItems = self.serverItems[self.keyDates]
+        self.filterItems = {}
+        if serverItems is []:
+            serverItems = self.serverItemManager.serverItems[self.keyNames]
+            #TODO: Implement
+            return
+            if serverItems is []:
+                #TODO?
+                return
+        for x in serverItems:
+            self.filterItems.update({self.getStringTimeStamp(x) : x})
+                
 
 class EsriUpdateWorker(QtCore.QObject):
     def __init__(self, connection, imageSpec):
