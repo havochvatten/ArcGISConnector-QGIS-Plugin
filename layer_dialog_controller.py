@@ -170,7 +170,7 @@ class LayerDialogController(QObject):
 			self.imageCount += 1
 	
 			#Update time catcher
-			newTime = self.serverItemManager.update()
+			newTime = self.serverItemManager.update(key)
 			if not newTime:
 				return
 
