@@ -25,7 +25,7 @@
 
 #Add iso code for any locales you want to support here (space separated)
 # default is no locales
-LOCALES = arcgiscon_en arcgiscon_de arcgiscon_fr
+LOCALES = arcgiscon_en
 
 # If locales are enabled, set the name of the lrelease binary on your system. If
 # you have trouble compiling the translations, you may have to specify the full path to
@@ -40,9 +40,13 @@ SOURCES = \
     arcgiscon_controller.py \
     arcgiscon_model.py \
     arcgiscon_service.py \
-    arcgiscon_ui.py
-    
-PLUGINNAME = connector
+    arcgiscon_ui.py \
+	arcgiscon_plugin_dialog.py \
+	arcgiscon_image_controller.py \
+	layer_dialog_controller.py \
+	event_handling.py
+
+PLUGINNAME = ImageServerConnector
 
 PY_FILES = \
     __init__.py \
@@ -50,17 +54,28 @@ PY_FILES = \
     arcgiscon_controller.py \
     arcgiscon_model.py \
     arcgiscon_service.py \
-    arcgiscon_ui.py
+    arcgiscon_ui.py \
+	arcgiscon_plugin_dialog.py \
+	arcgiscon_image_controller.py \
+	layer_dialog_controller.py \
+	event_handling.py
 
 UI_FILES = \
     arcgiscon_dialog_new.ui \
-    
+	image_server_dashboard.ui \
+	timeinput_dialog.ui \
+	settings.ui \
+	image_item.ui \
+	new_layer_dialog.ui
 #LIB_DIRS = \
     ntlm3 \
     requests \
     requests_ntlm
 
-EXTRAS = arcgis.png metadata.txt
+EXTRAS = metadata.txt
+
+EXTRA_DIRS = \
+	gui
 
 COMPILED_RESOURCE_FILES = resources_rc.py
 
@@ -122,7 +137,9 @@ deploy: compile transcompile
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	#cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
 # The dclean target removes compiled python files from plugin directory

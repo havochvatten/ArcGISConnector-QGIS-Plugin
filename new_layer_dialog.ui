@@ -173,7 +173,7 @@
   	border-radius: 0.2em;
 	border: 0.2em  solid #cacaca;
 	
-	background-image: url(:/plugins/arcgiscon/magnifying-glass.png);
+	background-image: url(:/plugins/ImageServerConnector/icons/magnifying-glass.png);
     background-repeat: no-repeat;
     background-position: left;
 	padding-left: 40px;

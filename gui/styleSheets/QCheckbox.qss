@@ -13,7 +13,7 @@ QCheckBox::indicator{
 
 QCheckBox::indicator:checked{
 	background: #65C46D;
-	image: url(:/icons/icons/tick.png);
+	image: url(:/plugins/ImageServerConnector/icons/tick.png);
 	icon-size: 8px 8px;
 
 }

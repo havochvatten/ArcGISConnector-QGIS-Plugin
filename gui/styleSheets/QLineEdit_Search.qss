@@ -6,7 +6,7 @@ QLineEdit{
   	border-radius: 0.2em;
 	border: 0.2em  solid #cacaca;
 	
-	background-image: url(:/icons/icons/magnifying-glass.png); /* actual size, e.g. 16x16 */
+	background-image: url(:/plugins/ImageServerConnector/icons/magnifying-glass.png); /* actual size, e.g. 16x16 */
     background-repeat: no-repeat;
     background-position: left;
 	padding-left: 40px;

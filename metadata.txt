@@ -30,7 +30,7 @@ homepage=
 tracker=https://bitbucket.havochvatten.se/projects/POC/repos/ski-qgis-imageserver-plugin/
 repository=
 category=Plugins
-icon=arcgis.png
+icon=gui/icons/arcgis.png
 # experimental flag
 experimental=True
 
