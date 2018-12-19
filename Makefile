@@ -42,13 +42,11 @@ SOURCES = \
     arcgiscon_service.py \
     arcgiscon_ui.py \
 	arcgiscon_plugin_dialog.py \
-	arciscon_image_controller.py \
+	arcgiscon_image_controller.py \
 	layer_dialog_controller.py \
 	event_handling.py
 
-
-    
-PLUGINNAME = connector
+PLUGINNAME = ImageServerConnector
 
 PY_FILES = \
     __init__.py \
@@ -58,7 +56,7 @@ PY_FILES = \
     arcgiscon_service.py \
     arcgiscon_ui.py \
 	arcgiscon_plugin_dialog.py \
-	arciscon_image_controller.py \
+	arcgiscon_image_controller.py \
 	layer_dialog_controller.py \
 	event_handling.py
 
@@ -67,14 +65,17 @@ UI_FILES = \
 	image_server_dashboard.ui \
 	timeinput_dialog.ui \
 	settings.ui \
-	image_item.ui
-    
+	image_item.ui \
+	new_layer_dialog.ui
 #LIB_DIRS = \
     ntlm3 \
     requests \
     requests_ntlm
 
-EXTRAS = arcgis.png metadata.txt
+EXTRAS = arcgis.png magnifying-glass.png placeholderMapLight.png tick.png loading.gif metadata.txt
+
+EXTRA_DIRS = \
+	gui
 
 COMPILED_RESOURCE_FILES = resources_rc.py
 
@@ -136,7 +137,9 @@ deploy: compile transcompile
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	#cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
 # The dclean target removes compiled python files from plugin directory
