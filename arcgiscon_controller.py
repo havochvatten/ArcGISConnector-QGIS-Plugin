@@ -466,8 +466,9 @@ class ConnectionSettingsController(QObject):
 				self._settingsDialog.comboBox.addItem(rasterFunctions[i]['name'])
 				self._settingsDialog.comboBox.setItemData(i+1, rasterFunctions[i]['description'], 3) #3 Is the value for tooltip
 			self._settingsDialog.comboBox.currentIndexChanged.connect(self._onTemplateComboBoxChange)
-
-		self._onTemplateComboBoxChange()
+			self._onTemplateComboBoxChange()
+		else:
+			self._settingsDialog.radioButtonTemplate.setEnabled(False)
 
 		if 'renderingRule' in self._settings:
 			rasterFunctionInSettings = 'rasterFunction' in self._settings['renderingRule']
