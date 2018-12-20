@@ -156,7 +156,7 @@
 }</string>
         </property>
         <property name="text">
-         <string>Server URL</string>
+         <string>Image Server URL</string>
         </property>
        </widget>
       </item>
@@ -186,10 +186,10 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The URL to the image server provider whose images you want to explore.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
-         <string>Server URL</string>
+         <string>Image Server URL, must end in '/ImageServer'</string>
         </property>
         <property name="whatsThis">
-         <string>Server URL</string>
+         <string>Image Server URL, must end in '/ImageServer'</string>
         </property>
         <property name="accessibleName">
          <string>ServerURL</string>
@@ -211,7 +211,7 @@ QLineEdit:focus{
 }</string>
         </property>
         <property name="placeholderText">
-         <string comment="Server URL" extracomment="Server URL">Server URL</string>
+         <string comment="Server URL" extracomment="Server URL">Image Server URL, must end in '/ImageServer'</string>
         </property>
        </widget>
       </item>
