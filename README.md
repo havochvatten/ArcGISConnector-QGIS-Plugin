@@ -50,10 +50,13 @@ For the future of this project we have composed a backlog for issues we recommen
 * Update the **settings view** to be in the same style as the other views. There are resources for stylesheets in the *gui* folder.
 * In the **settings view**, show raster function options as a grid of thumbnails showing previews of each raster function, instead of a drop down list with no preview.
 * Reload the extent when clicking ok/apply such that the mosaic rule is applied immediately.
+* Suggest more (auto complete?) in each field, to alleviate the process for the user. (eg based on earlier usages, or some smart stuff you can come up with.)
+* In the custom raster function field, allow the user to write stuff without having to add the syntactic stuff like '{}' brackets.
 
 ### Create layer view
 
 * ***Priority*:** Functionality for the search field to filter items that are on the server. It is almost already done, and the finishing step is to intergrate it in *'layer_dialog_controller.py'*. There is a TODO in the file and some code that has been commented out, have a look there to find where to start. Currently it 'can' filter server items but it crashes because there are usually too many (Only 'works' for image servers with dates on their server items). Also, there is no regulation of how to handle filtered images and then going back to showing all images.
+* Bugfix: The grid already removes 'empty' or malformed images. However, it creates white space where these widgets were supposed to be. Please make it go away, such that the grid is *compact*.
 * Bugfix: When filtering stuff in the search field one image just sticks to the top left corner of the grid. Please remove this unholy beast.
 * Bugfix the crashing when you close the application with the 'create layer' view open.
 * Load new items even when scrolling with the scroll slider. Currently it only loads new items when scrolling with the mouse wheel.
