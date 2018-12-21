@@ -1,0 +1,8 @@
+QLabel {
+	color: #0f0f0f;
+	font-size: 40px;
+	font-family: "Myriad Pro";
+	font-weight: bold;
+    text-align: center;
+    vertical-align: text-top;
+}

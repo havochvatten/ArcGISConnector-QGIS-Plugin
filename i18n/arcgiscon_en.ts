@@ -109,7 +109,7 @@
     <message>
         <location filename="arcgiscon_plugin.py" line="158"/>
         <source>arcgiscon</source>
-        <translation>Add ArcGIS feature service layer</translation>
+        <translation>Add ArcGIS ImageServer Layer..</translation>
     </message>
 </context>
 </TS>

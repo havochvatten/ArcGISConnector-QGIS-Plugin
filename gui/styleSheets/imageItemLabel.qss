@@ -1,0 +1,10 @@
+QLabel {
+	font-size: 11pt;
+	border: transparent;
+	font-family: "Myriad Pro";
+	color: #5a5a5a;;
+    qproperty-alignment: AlignCenter;
+	border-radius: 0em;
+	background: #f9f7fa
+	
+}

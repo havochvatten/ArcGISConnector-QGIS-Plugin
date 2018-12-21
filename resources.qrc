@@ -1,5 +1,9 @@
 <RCC>
-    <qresource prefix="/plugins/arcgiscon" >
-        <file>arcgis.png</file>
-    </qresource>
+  <qresource prefix="/plugins/ImageServerConnector/icons">
+    <file alias="magnifying-glass.png">gui/icons/magnifying-glass.png</file>
+    <file alias="placeholderMapLight.png">gui/icons/placeholderMapLight.png</file>
+    <file alias="tick.png">gui/icons/tick.png</file>
+    <file alias="arcgis.png">gui/icons/arcgis.png</file>
+    <file alias="loading.gif">gui/icons/loading.gif</file>
+  </qresource>
 </RCC>

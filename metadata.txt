@@ -7,13 +7,13 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=ArcGIS REST API Connector
+name=ArcGIS ImageServer Connector
 qgisMinimumVersion=2.0
-description=ArcGIS REST API Connector
-about=This plugin allows to connect to ArcGIS REST API Services. Currently only feature layers (from Feature Services or Map Services) are supported. 
-version=0.3.3
-author=geometalab
-email=geometalab@gmail.com
+description=ArcGIS ImageServer Connector
+about=ArcGIS ImageServer Connector This plugin allows users to connect to some ArcGIS REST API ImageServer Services. This plugin is a fork by the Swedish Agency for Marine and Water Management, SwAM of ArcGIS REST API Services by geometalab. The main focus is to gain access to raster functions such as NDVI and NDWI ect as hosted on Image Servers. It provides a fast way to visually scan the image as to decide if the area of interest is cloud free. Most of the image servers API functions found under “export image” has been transferred to the plugin. It relies on advanced query so it will not work with older image server installations (10.2.5 and older). It is i encouraged to extend on this application as much as is needed to further increase the amount of image servers that can be accessed from QGIS. For information on how to take advantage of the API please read more here: https://developers.arcgis.com/rest/services-reference/image-service.htm
+version=1.0.0
+author=Anton Myrholm, Alma Ottedag
+email=anton.myrholm@havochvatten.se, alma.ottedag@havochvatten.se
 
 # End of mandatory metadata
 
@@ -23,13 +23,14 @@ email=geometalab@gmail.com
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=arcgis, feature, service, layer, vector, webservice, provider
+tags=arcgis, API, image service, image server, mosaic rules, raster functions, time extent 
 
-homepage=http://giswiki.hsr.ch/QGIS_ArcGIS_REST_API_Connector_Plugin
-tracker=https://github.com/geometalab/ArcGISConnector-QGIS-Plugin/issues
-repository=https://github.com/geometalab/ArcGISConnector-QGIS-Plugin
+
+homepage=
+tracker=https://bitbucket.havochvatten.se/projects/POC/repos/ski-qgis-imageserver-plugin/
+repository=
 category=Plugins
-icon=arcgis.png
+icon=gui/icons/arcgis.png
 # experimental flag
 experimental=True
 

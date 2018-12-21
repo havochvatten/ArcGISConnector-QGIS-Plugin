@@ -1,0 +1,17 @@
+QLineEdit{
+  	border: transparent;
+	background: #FFF;
+  	padding: 10px;
+  	font-size: 12pt;
+  	border-radius: 0.2em;
+	border: 0.2em  solid #cacaca;
+	
+	background-image: url(:/plugins/ImageServerConnector/icons/magnifying-glass.png); /* actual size, e.g. 16x16 */
+    background-repeat: no-repeat;
+    background-position: left;
+	padding-left: 40px;
+}
+
+QLineEdit:focus{
+	border: 0.2em solid #65C46D;
+}

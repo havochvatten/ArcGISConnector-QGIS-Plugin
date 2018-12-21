@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ImageServerDashboard</class>
+ <widget class="QMainWindow" name="ImageServerDashboard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1694</width>
+    <height>963</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+	background: #fafafa;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">QWidget {
+	background: #fff;
+}</string>
+   </property>
+   <widget class="QWidget" name="windowWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>1681</width>
+      <height>881</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="topMargin">
+      <number>40</number>
+     </property>
+     <property name="rightMargin">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="searchLineEdit_2">
+       <property name="styleSheet">
+        <string notr="true">QLineEdit{
+  	border: transparent;
+	background: #FFF;
+  	padding: 10px;
+  	font-size: 12pt;
+  	border-radius: 0.2em;
+	border: 0.2em  solid #cacaca;
+	
+	background-image: url(:/plugins/ImageServerConnector/icons/magnifying-glass.png);
+    background-repeat: no-repeat;
+    background-position: left;
+	padding-left: 40px;
+}
+
+QLineEdit:focus{
+	border: 0.2em solid #65C46D;
+}
+</string>
+       </property>
+       <property name="placeholderText">
+        <string>Search...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="dashboardLabel">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel {
+	color: #0f0f0f;
+	width: 100%;
+	background: #FFF;
+	font-size: 40px;
+	font-family: &quot;Myriad Pro&quot;;
+	font-weight: bold;
+    qproperty-alignment: AlignCenter;
+}</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="text">
+        <string>Dashboard</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>50</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item alignment="Qt::AlignLeft|Qt::AlignTop">
+      <widget class="QWidget" name="serverGridWidget_2" native="true">
+       <property name="styleSheet">
+        <string notr="true">QWidget{
+	border-radius: 3px;
+	background: #FFF;
+}</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item row="0" column="1">
+         <widget class="QWidget" name="serverItemWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>278</width>
+            <height>400</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QWidget{
+	max-width: 300px;
+	max-height: 500px;
+  	border-radius: 0.8em;
+	border: 2px solid #f0f0f0;
+	background: #fff;
+}
+
+QWidget:disabled {
+    border-color: #6F6F6F;
+}
+
+QWidget:hover{
+    border-color: #B8E6BC;
+}
+
+QWidget:focus{
+	background: #B8E6BC;
+}</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="thumbnailLabel">
+             <property name="styleSheet">
+              <string notr="true">QLabel {
+	/*border-image: url(:/plugins/ImageServerConnector/icons/placeholderMapLight.png) 0 0 0 0 cover cover;*/
+	border: transparent;
+	background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,   stop:0 rgba(240,240,240,255), stop:1 rgba(240,240,240,255));
+	image-radius: 0.8em;
+	min-height: 400px;
+	min-width: 300px;
+}</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="serverNameLabel">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>314</width>
+               <height>518</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QLabel {
+    font-size: 12pt;
+	font-family: &quot;Myriad Pro&quot;;
+	padding:4px 7px;
+	color: #5a5a5a;
+	margin-top: 10px;
+  	border-radius: 0em;
+	border: transparent;
+}</string>
+             </property>
+             <property name="text">
+              <string>My Image Server</string>
+             </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="latestUpdateLabel">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>314</width>
+               <height>518</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QLabel {
+    font-size: 10pt;
+	font-family: &quot;Myriad Pro&quot;;
+	padding:4px 7px;
+	color: #5a5a5a;
+	margin 0px;
+  	border-radius: 0em;
+	background: transparent;
+	border: transparent;
+	margin-bottom: 10px;
+}</string>
+             </property>
+             <property name="text">
+              <string>Latest update: 2018-10-12</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1694</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

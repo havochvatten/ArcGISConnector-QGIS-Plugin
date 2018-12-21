@@ -1,0 +1,6 @@
+QLabel {
+	/*border-image: url(:/plugins/ImageServerConnector/icons/placeholderMapLight.png) 0 0 0 0 cover cover;*/
+	background: #fafafa; /*qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,   stop:0 rgba(240,240,240,255), stop:1 rgba(240,240,240,255));*/
+	border-radius: 0.0em;
+	border: transparent;
+}

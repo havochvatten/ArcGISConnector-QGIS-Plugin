@@ -1,0 +1,20 @@
+QWidget{
+    border-radius: 0.0em;
+    border: 2px solid #f0f0f0;
+    background: rgb(235, 252, 249);
+
+    align-horizontal: left;
+    align-vertical: top;
+}
+
+QWidget:disabled {
+    border-color: #6F6F6F;
+}
+
+QWidget:hover{
+    border-color: rgb(48, 204, 61);
+}
+
+QWidget:focus{
+    background: #B8E6BC;
+}
