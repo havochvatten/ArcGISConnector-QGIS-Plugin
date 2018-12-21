@@ -6,6 +6,7 @@ from qgis.core import QgsMessageLog, QgsMapLayerRegistry
 from arcgiscon_ui import LayerDialog, ImageItemWidget
 from event_handling import Event
 from PIL import Image, ImageChops
+import resources_rc
 import time
 import os
 import threading
@@ -113,7 +114,7 @@ class LayerDialogController(QObject):
 
 	def createAndConfigureImageItem(self, imageSpec, name):
 		imageSpec.name = name
-		loaderMovie = QMovie(os.path.join(os.path.dirname(__file__), '/gui/icons/loading.gif'))
+		loaderMovie = QMovie(':/plugins/ImageServerConnector/icons/loading.gif')
 		item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
 		item.imageDateLabel.setText(name) 
 		item.thumbnailLabel.setMovie(loaderMovie)
