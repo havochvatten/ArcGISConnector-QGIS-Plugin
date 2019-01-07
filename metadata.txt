@@ -27,8 +27,8 @@ tags=arcgis, API, image service, image server, mosaic rules, raster functions, t
 
 
 homepage=
-tracker=https://bitbucket.havochvatten.se/projects/POC/repos/ski-qgis-imageserver-plugin/
-repository=
+tracker=https://github.com/havochvatten/ArcGISConnector-QGIS-Plugin/tree/beta/
+repository=https://github.com/havochvatten/ArcGISConnector-QGIS-Plugin/tree/beta/
 category=Plugins
 icon=gui/icons/arcgis.png
 # experimental flag
