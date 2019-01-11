@@ -26,7 +26,7 @@ email=anton.myrholm@havochvatten.se, alma.ottedag@havochvatten.se
 tags=arcgis, API, image service, image server, mosaic rules, raster functions, time extent 
 
 
-homepage=
+homepage=https://github.com/havochvatten/ArcGISConnector-QGIS-Plugin/tree/beta/
 tracker=https://github.com/havochvatten/ArcGISConnector-QGIS-Plugin/tree/beta/
 repository=https://github.com/havochvatten/ArcGISConnector-QGIS-Plugin/tree/beta/
 category=Plugins
