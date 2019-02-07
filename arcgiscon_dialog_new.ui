@@ -30,7 +30,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>:/plugins/ImageServerConnector/icons/arcgis.png</normaloff>:/plugins/ImageServerConnector/icons/arcgis.png</iconset>
+    <normaloff>:/plugins/ImageServerConnector/icons/logo.png</normaloff>:/plugins/ImageServerConnector/icons/logo.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog {
