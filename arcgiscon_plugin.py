@@ -110,7 +110,7 @@ class ArcGisConnector:
                 ])
 
     def initGui(self):
-        newLayerActionIcon = QIcon(':/plugins/ImageServerConnector/icons/arcgis.png')
+        newLayerActionIcon = QIcon(':/plugins/ImageServerConnector/icons/logo.png')
         self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'arcgiscon')
         self._newLayerAction = QAction(
             newLayerActionIcon,

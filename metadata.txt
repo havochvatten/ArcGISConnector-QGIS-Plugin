@@ -30,7 +30,7 @@ homepage=https://github.com/havochvatten/ImageServerConnector-QGIS-Plugin/
 tracker=https://github.com/havochvatten/ImageServerConnector-QGIS-Plugin/issues/
 repository=https://github.com/havochvatten/ImageServerConnector-QGIS-Plugin/
 category=Plugins
-icon=gui/icons/arcgis.png
+icon=gui/icons/logo.png
 # experimental flag
 experimental=True
 
