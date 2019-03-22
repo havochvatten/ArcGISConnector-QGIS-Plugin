@@ -13,14 +13,14 @@ LOGIN_SUCCESS = 'Login Success'
 # disregard this until 
 class Publisher(QObject):
     event = None
-	
+    
     def __init__(self):
         QObject.__init__(self)
         self.event = Event()
 
     # Add handler to our events
-	def addEventHandler(self, handler):
-		self.event.add(handler)
+    def addEventHandler(self, handler):
+        self.event.add(handler)
 
 # Events for event handling, especially routing between views. 
 # 'Handler' is typically the main plugin object, but can be more than one.
