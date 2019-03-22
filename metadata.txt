@@ -1,17 +1,9 @@
-# This file contains metadata for your plugin. Since 
-# version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
-# is no longer supported since version 2.0.
-
-# This file should be included when you package your plugin.# Mandatory items:
-
 [general]
 name=ArcGIS ImageServer Connector
-qgisMinimumVersion=2.0
+qgisMinimumVersion=3.0
 description=ArcGIS ImageServer Connector
 about=ArcGIS ImageServer Connector This plugin allows users to connect to some ArcGIS REST API ImageServer Services. This plugin is a fork by the Swedish Agency for Marine and Water Management, SwAM of ArcGIS REST API Services by geometalab. The main focus is to gain access to raster functions such as NDVI and NDWI ect as hosted on Image Servers. It provides a fast way to visually scan the image as to decide if the area of interest is cloud free. Most of the image servers API functions found under “export image” has been transferred to the plugin. It relies on advanced query so it will not work with older image server installations (10.2.5 and older). It is i encouraged to extend on this application as much as is needed to further increase the amount of image servers that can be accessed from QGIS. For information on how to take advantage of the API please read more here: https://developers.arcgis.com/rest/services-reference/image-service.htm
-version=1.0.0
+version=2.0.0
 author=Anton Myrholm, Alma Ottedag
 email=anton.myrholm@havochvatten.se, alma.ottedag@havochvatten.se
 
@@ -20,7 +12,7 @@ email=anton.myrholm@havochvatten.se, alma.ottedag@havochvatten.se
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=QGIS 3 support
 
 # Tags are comma separated with spaces allowed
 tags=arcgis, API, image service, image server, mosaic rules, raster functions, time extent 

@@ -31,7 +31,6 @@ LOCALES = arcgiscon_en
 # you have trouble compiling the translations, you may have to specify the full path to
 # lrelease
 LRELEASE = lrelease
-#LRELEASE = lrelease-qt4
 
 # translation
 SOURCES = \
@@ -67,10 +66,6 @@ UI_FILES = \
 	settings.ui \
 	image_item.ui \
 	new_layer_dialog.ui
-#LIB_DIRS = \
-    ntlm3 \
-    requests \
-    requests_ntlm
 
 EXTRAS = metadata.txt
 
@@ -92,14 +87,14 @@ PLUGIN_UPLOAD = $(c)/plugin_upload.py
 
 RESOURCE_SRC=$(shell grep '^ *<file' resources.qrc | sed 's@</file>@@g;s/.*>//g' | tr '\n' ' ')
 
-QGISDIR=.qgis2
+QGISDIR=AppData/Roaming/QGIS/QGIS3/profiles/default
 
 default: compile
 
 compile: $(COMPILED_RESOURCE_FILES)
 
 %_rc.py : %.qrc
-	pyrcc4 -o $*_rc.py  $<
+	pyrcc5 -o $*_rc.py  $<
 
 %.qm : %.ts
 	$(LRELEASE) $<
@@ -126,7 +121,7 @@ test: compile transcompile
 deploy: compile transcompile
 	@echo
 	@echo "------------------------------------------"
-	@echo "Deploying plugin to your .qgis2 directory."
+	@echo "Deploying plugin to your plugins directory."
 	@echo "------------------------------------------"
 	# The deploy  target only works on unix like operating system where
 	# the Python plugin directory is located at:
