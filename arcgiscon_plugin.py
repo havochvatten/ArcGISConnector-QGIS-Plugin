@@ -2,11 +2,10 @@
 
 from __future__ import absolute_import
 from builtins import str
-from builtins import object
-from qgis.PyQt.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
-from qgis.PyQt.QtWidgets import QAction, QApplication
-from qgis.PyQt.QtGui import QIcon
 
+from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction, QApplication
 from qgis.core import QgsMapLayer, QgsProject
 
 from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
@@ -120,7 +119,7 @@ class ArcGisConnector(object):
         self._iface.legendInterface().addLegendLayerAction(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id3", QgsMapLayer.RasterLayer, False )
         self._iface.legendInterface().addLegendLayerAction(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id4", QgsMapLayer.RasterLayer, False )
 
-        self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
+        self._iface.context().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisSaveImageAction.triggered.connect(self._onLayerImageSave)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
         self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
@@ -149,7 +148,7 @@ class ArcGisConnector(object):
                     self._refreshController.updateLayerWithNewExtent(self._updateService, self._esriRasterLayers[layer.id()])
 
     def _onExtentsChanged(self):
-        if self._iface.mapCanvas().renderFlag():
+        if self._iface.context().renderFlag():
             self._refreshAllVisibleLayers()
 
     def _onProjectLoad(self): 

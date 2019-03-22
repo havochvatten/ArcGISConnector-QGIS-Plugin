@@ -1,9 +1,11 @@
 from __future__ import absolute_import
-from qgis.PyQt import QtGui
-from qgis.PyQt.QtCore import QObject
-from qgis.core import QgsMessageLog
+
+from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QFileDialog
+
 from .arcgiscon_service import FileSystemService
 import os.path
+
 
 class ImageController(QObject):
     _iface = None
@@ -13,6 +15,6 @@ class ImageController(QObject):
 
     def saveImage(self, srcPath):
         fileExt = os.path.splitext(srcPath)[1]
-        dstPath = QtGui.QFileDialog.getSaveFileName(caption = 'Save layer as image', filter = '*' + fileExt)
+        dstPath = QFileDialog.getSaveFileName(caption='Save layer as image', filter='*' + fileExt)
         if len(dstPath) > 0:
             FileSystemService().saveImageAs(srcPath, dstPath)

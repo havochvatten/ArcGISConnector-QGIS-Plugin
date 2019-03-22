@@ -1,9 +1,10 @@
 from builtins import object
-from qgis.PyQt.QtCore import QObject
 
 
 # EVENT TYPES (Static variables / Enum...)
 # Defines the event types that exist in the plugin
+from PyQt5.QtCore import QObject
+
 LOGIN_SUCCESS = 'Login Success'
 
 

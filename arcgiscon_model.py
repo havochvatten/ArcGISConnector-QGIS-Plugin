@@ -25,7 +25,6 @@ standard_library.install_aliases()
 from builtins import str
 from builtins import range
 from builtins import object
-from qgis.core import QgsVectorLayer
 from qgis.core import QgsRasterLayer, QgsMessageLog
 
 import requests
@@ -43,36 +42,11 @@ class EsriImageServiceQueryFactory(object):
 
 
 	@staticmethod    
-	def createServerItemsQuery(connection, fieldType):
+	def createServerItemsQuery(connection):
 
 		query = {} 
 		timeExtentJson = {"time" : str(connection.metaInfo.timeExtent[0]) + "," + str(connection.metaInfo.timeExtent[1])}
 		query.update(timeExtentJson)
-		
-		bbox = connection.metaInfo.extent["bbox"]
-		geometryJson = {"geometry": str(bbox["xmin"]) + "," + str(bbox["ymin"]) + "," + str(bbox["xmax"]) + "," + str(bbox["ymax"])}
-		query.update(geometryJson)
-
-		geometryTypeJson = {"geometryType": "esriGeometryEnvelope"}
-		query.update(geometryTypeJson)
-
-		inSrJson = {"inSR":str(connection.metaInfo.extent['spatialReference'][u'wkid'])}
-		query.update(inSrJson)
-
-		groupByFieldsJson = {"groupByFieldsForStatistics": fieldType}
-		query.update(groupByFieldsJson)
-
-		statisticsTypeJson = {"outStatistics":[{"statisticType": "count","onStatisticField": fieldType,"outStatisticFieldName": "CountDate"}]} 
-		query.update(statisticsTypeJson)
-
-		spatialRelJson = {"spatialRel": "esriSpatialRelIntersects"}
-		query.update(spatialRelJson)
-
-		distinctValuesJson = {"returnDistinctValues": "false"}
-		query.update(distinctValuesJson)
-
-		trueCurvesJson = {"returnTrueCurves": "false"}
-		query.update(trueCurvesJson)
 
 		jsonFormat = {"f":"pjson"}
 		query.update(jsonFormat)
