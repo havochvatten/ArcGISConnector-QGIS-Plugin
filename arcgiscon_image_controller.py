@@ -15,6 +15,6 @@ class ImageController(QObject):
 
     def saveImage(self, srcPath):
         fileExt = os.path.splitext(srcPath)[1]
-        dstPath = QFileDialog.getSaveFileName(caption='Save layer as image', filter='*' + fileExt)
+        dstPath, __ = QFileDialog.getSaveFileName(caption='Save layer as image', filter='*' + fileExt)
         if len(dstPath) > 0:
             FileSystemService().saveImageAs(srcPath, dstPath)

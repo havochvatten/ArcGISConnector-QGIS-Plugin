@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from builtins import object
 from builtins import str
 
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
