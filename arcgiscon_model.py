@@ -20,6 +20,11 @@ A QGIS plugin
  ***************************************************************************/
 """
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 from qgis.core import QgsVectorLayer
 from qgis.core import QgsRasterLayer, QgsMessageLog
 
@@ -28,9 +33,9 @@ import hashlib
 import json
 import time
 import calendar
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
-class EsriImageServiceQueryFactory:
+class EsriImageServiceQueryFactory(object):
 
 	@staticmethod
 	def createMetaInformationQuery():
@@ -72,7 +77,7 @@ class EsriImageServiceQueryFactory:
 		jsonFormat = {"f":"pjson"}
 		query.update(jsonFormat)
 		
-		query = urllib.urlencode(query)
+		query = urllib.parse.urlencode(query)
 		esriQuery = EsriQuery("/query", query)
 
 		return esriQuery
@@ -145,7 +150,7 @@ class EsriImageServiceQueryFactory:
 			responseFormat)
 		return EsriQuery("/ExportImage", query)
 
-class EsriQuery:
+class EsriQuery(object):
 	_urlAddon = None
 	_params = None
 	def __init__(self, urlAddon="", params={}):
@@ -159,11 +164,11 @@ class EsriQuery:
 		return self._params
 	
 		
-class ConnectionAuthType:
-	NoAuth, BasicAuthetication = range(2)
+class ConnectionAuthType(object):
+	NoAuth, BasicAuthetication = list(range(2))
 
 class EsriConnectionJSONValidatorException(Exception):
-	NotArcGisRest, WrongLayerType, NoLayer, NoPagination = range(4)  
+	NotArcGisRest, WrongLayerType, NoLayer, NoPagination = list(range(4))  
 	
 	errorNr = None
 	
@@ -172,7 +177,7 @@ class EsriConnectionJSONValidatorException(Exception):
 		self.errorNr = errorNr
 
 
-class EsriConnectionJSONValidatorResponse:
+class EsriConnectionJSONValidatorResponse(object):
 	isValid = None
 	exceptionMessage = None
 				
@@ -189,7 +194,7 @@ class EsriConnectionJSONValidatorResponse:
 		return EsriConnectionJSONValidatorResponse(False, message)
 	
 
-class EsriConnectionJSONValidator:
+class EsriConnectionJSONValidator(object):
 	
 	def validate(self, responseJson):
 		raise NotImplementedError("Needs implementation")
@@ -208,7 +213,7 @@ class EsriConnectionJSONValidatorLayer(EsriConnectionJSONValidator):
 			raise EsriConnectionJSONValidatorException("Layer must be of type Image Service. {} provided.".format(metaInfo.layerType), EsriConnectionJSONValidatorException.WrongLayerType)
 		
 			
-class EsriLayerMetaInformation:
+class EsriLayerMetaInformation(object):
 	maxRecordCount = 0
 	supportsPagination = False
 	layerType = None
@@ -243,7 +248,7 @@ class InvalidCrsIdException(Exception):
 		super(InvalidCrsIdException, self).__init__("CRS not supported")
 		self.crs = crs
 
-class Settings:
+class Settings(object):
    
 	IMAGE_FORMATS = ['', 'tiff', 'jpgpng', 'png', 'png8', 'png24', 'jpg', 'bmp', 'gif', 'png32', 'bip', 'bsq', 'lerc']
 	PIXEL_TYPES = ['', 'UNKNOWN','C128', 'C64', 'F32', 'F64', 'S16', 'S32', 'S8', 'U1', 'U16', 'U2', 'U32', 'U4', 'U8', 'UNKNOWN']
@@ -325,7 +330,7 @@ class Settings:
 			'time':self.timeExtent
 			}
 
-		filteredSettings = {k: v for k, v in settings.items() if v is not None}
+		filteredSettings = {k: v for k, v in list(settings.items()) if v is not None}
 		return filteredSettings
 
 	def setCurrentRasterFunction(self, index):
@@ -337,7 +342,7 @@ class Settings:
 # 
 # It is only created by a Connection object. Therefore, a Connection and an
 # ImageSpecification are both needed to download images through the EsriUpdateService.
-class ImageSpecification:
+class ImageSpecification(object):
 	aspectRatio = None
 	customFilter = None
 	metaInfo = None
@@ -475,7 +480,7 @@ class ImageSpecification:
 		except ValueError:
 			raise InvalidCrsIdException(authId)
 
-class Connection:    
+class Connection(object):    
 	basicUrl = None    
 	name = None    
 	authMethod = None
@@ -679,7 +684,7 @@ class Connection:
 			raise InvalidCrsIdException(authId)
 	
 
-class EsriRasterLayer:
+class EsriRasterLayer(object):
 	qgsRasterLayer = None        
 	connection = None
 	imageSpec = None

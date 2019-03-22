@@ -1,17 +1,19 @@
-from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
-from PyQt4.QtGui import QPixmap,  QSizePolicy, QMovie
-from arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
-from arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
+from __future__ import absolute_import
+from builtins import range
+from qgis.PyQt.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QSizePolicy
+from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
+from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
 from qgis.core import QgsMessageLog, QgsMapLayerRegistry
-from arcgiscon_ui import LayerDialog, ImageItemWidget
-from event_handling import Event
+from .arcgiscon_ui import LayerDialog, ImageItemWidget
+from .event_handling import Event
 from PIL import Image, ImageChops
 import resources_rc
 import time
 import os
 import threading
 import numpy as np
-import PyQt4.QtGui as QtGui
 
 class LayerDialogController(QObject):
 	#Variables ---------------------
@@ -327,7 +329,7 @@ class LayerDialogController(QObject):
 			newList.append(self.imageItems[x])
 			if self.imageItems[x] == widget:
 				pass
-		self.imageItems = filter(lambda x: x is not None, newList)
+		self.imageItems = [x for x in newList if x is not None]
 		widget.deleteLater()
 		self.updateInfoMessage()
 	

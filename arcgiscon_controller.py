@@ -19,14 +19,19 @@ email                : geometalab@gmail.com
 *                                                                         *
 ***************************************************************************/
 """
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 from qgis.core import QgsMapLayerRegistry, QgsMessageLog
-from PyQt4.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
-from PyQt4 import QtGui
-from arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
-from arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
-from arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
-from event_handling import *
-from Queue import Queue
+from qgis.PyQt.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
+from qgis.PyQt import QtGui
+from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
+from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
+from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
+from .event_handling import *
+from queue import Queue
 import datetime, time
 
 
@@ -207,10 +212,10 @@ class ArcGisConRefreshController(QObject):
 			updateService.update(worker)
 
 	def showTimePicker(self, layer, updateCallBack):
-		startTimeLimitLong = layer.connection.serviceTimeExtent[0] / 1000L
+		startTimeLimitLong = layer.connection.serviceTimeExtent[0] / 1000
 		startTimeLimitDate = QDate.fromString(datetime.datetime.fromtimestamp(startTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 
-		endTimeLimitLong = layer.connection.serviceTimeExtent[1] / 1000L
+		endTimeLimitLong = layer.connection.serviceTimeExtent[1] / 1000
 		endTimeLimitDate = QDate.fromString(datetime.datetime.fromtimestamp(endTimeLimitLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 
 		dialog = TimePickerDialog()
@@ -227,17 +232,17 @@ class ArcGisConRefreshController(QObject):
 		timeExtent = layer.imageSpec.settings.timeExtent
 		if timeExtent != None and len(timeExtent) > 1:
 			if timeExtent[0] != "null":
-				currentStartLong = timeExtent[0] / 1000L
+				currentStartLong = timeExtent[0] / 1000
 				currentStart = QDate.fromString(datetime.datetime.fromtimestamp(currentStartLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 				dialog.startDateInput.setDate(currentStart)
 
 			if timeExtent[1] != "null":
-				currentEndLong = timeExtent[1] / 1000L
+				currentEndLong = timeExtent[1] / 1000
 				currentEnd = QDate.fromString(datetime.datetime.fromtimestamp(currentEndLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 				dialog.endDateInput.setDate(currentEnd)
 
 		elif timeExtent != None and len(timeExtent) == 1 and timeExtent[0] != "null":
-			currentInstantLong = timeExtent[0] / 1000L
+			currentInstantLong = timeExtent[0] / 1000
 			currentInstant = QDate.fromString(datetime.datetime.fromtimestamp(currentInstantLong).strftime('%Y-%m-%d'), "yyyy-MM-dd")
 			dialog.instantDateInput.setDate(currentInstant)
 			dialog.tabWidget.setCurrentWidget(dialog.instantTab)

@@ -1,4 +1,5 @@
-from PyQt4.QtCore import QObject
+from builtins import object
+from qgis.PyQt.QtCore import QObject
 
 
 # EVENT TYPES (Static variables / Enum...)
@@ -22,7 +23,7 @@ class Publisher(QObject):
 
 # Events for event handling, especially routing between views. 
 # 'Handler' is typically the main plugin object, but can be more than one.
-class Event():
+class Event(object):
     
     def __init__(self):
         self.handlers = []
