@@ -1,34 +1,13 @@
 
 # -*- coding: utf-8 -*-
-"""
-/***************************************************************************
-ArcGIS REST API Connector
-A QGIS plugin
-                              -------------------
-        begin                : 2015-05-27
-        git sha              : $Format:%H$
-        copyright            : (C) 2015 by geometalab
-        email                : geometalab@gmail.com
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-"""
 from __future__ import absolute_import
-from builtins import str
 from builtins import range
-from qgis.core import QgsMessageLog
 import os
-import resources_rc
 from .arcgiscon_service import FileSystemService
-from qgis.PyQt import QtGui, uic
-import qgis.PyQt
+from PyQt5.QtWidgets import QDialog, QMainWindow, QLabel, QWidget, \
+    QVBoxLayout, QLayout, QSizePolicy
+from PyQt5.QtCore import QSize, pyqtSignal
+from PyQt5 import uic, QtCore
 
 FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'arcgiscon_dialog_new.ui'))
@@ -39,44 +18,44 @@ TIME_FORM, _ = uic.loadUiType(os.path.join(
 SETTINGS_FORM, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'settings.ui'))
 DASHBOARD_WINDOW, _ = uic.loadUiType(os.path.join(
-os.path.dirname(__file__), 'image_server_dashboard.ui'))
+    os.path.dirname(__file__), 'image_server_dashboard.ui'))
 
 LAYER_DIALOG, _ = uic.loadUiType(os.path.join(
-os.path.dirname(__file__), 'new_layer_dialog.ui'))
+    os.path.dirname(__file__), 'new_layer_dialog.ui'))
 
 IMAGE_ITEM, _ = uic.loadUiType(os.path.join(
-os.path.dirname(__file__), 'image_item.ui'))
+    os.path.dirname(__file__), 'image_item.ui'))
 
 service = FileSystemService()
 
 
-class ArcGisConDialogNew(QtGui.QDialog, FORM_CLASS_NEW):
+class ArcGisConDialogNew(QDialog, FORM_CLASS_NEW):
     def __init__(self, parent=None):        
         super(ArcGisConDialogNew, self).__init__(parent)        
         self.setupUi(self)        
 
 
-class TimePickerDialog(QtGui.QDialog, TIME_FORM):
+class TimePickerDialog(QDialog, TIME_FORM):
     def __init__(self, parent=None):
         super(TimePickerDialog, self).__init__(parent)
         self.setupUi(self)
 
 
-class SettingsDialog(QtGui.QDialog, SETTINGS_FORM):
+class SettingsDialog(QDialog, SETTINGS_FORM):
     def __init__(self, parent=None):
         super(SettingsDialog, self).__init__(parent)
         self.setupUi(self) 
 
 
-class ImageServerDashboard(QtGui.QMainWindow, DASHBOARD_WINDOW):
+class ImageServerDashboard(QMainWindow, DASHBOARD_WINDOW):
     def __init__(self, parent=None):        
         super(ImageServerDashboard, self).__init__(parent)        
         self.setupUi(self)
 
 
-class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
-    scrolledDown = qgis.PyQt.QtCore.pyqtSignal([int])
-    closed = qgis.PyQt.QtCore.pyqtSignal()
+class LayerDialog(QDialog, LAYER_DIALOG):
+    scrolledDown = pyqtSignal([int])
+    closed = pyqtSignal()
 
 
     def __init__(self, parent=None):        
@@ -106,7 +85,7 @@ class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
         super(LayerDialog, self).closeEvent(event)
 
 
-class ImageLabel(QtGui.QLabel):
+class ImageLabel(QLabel):
     labelSize = None
 
 
@@ -123,16 +102,15 @@ class ImageLabel(QtGui.QLabel):
         return self.labelSize
 
 
-class ImageItemWidget(QtGui.QWidget):
+class ImageItemWidget(QWidget):
     imageDateLabel = None
     thumbnailLabel = None
-    widgetSize = None
-    clicked = qgis.PyQt.QtCore.pyqtSignal()
+    widgetSizeHint = None
+    clicked = pyqtSignal()
 
     def __init__(self, parent, width, height):
         super(ImageItemWidget, self).__init__(parent)
         self.initUI(width, height)
-        
 
     def mouseReleaseEvent(self, event):
         self.clicked.emit()
@@ -142,15 +120,15 @@ class ImageItemWidget(QtGui.QWidget):
         self.widgetSize = size
 
     def sizeHint(self):
-        return self.widgetSize
+        return self.widgetSizeHint
     
     def minimumSizeHint(self):
-        return self.widgetSize
+        return self.widgetSizeHint
 
     def initUI(self, width, height):
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(2,2,2,2)
-        layout.setSizeConstraint(QtGui.QLayout.SetNoConstraint)
+        layout.setSizeConstraint(QLayout.SetNoConstraint)
    
         self.imageDateLabel = ImageLabel(self)
         self.thumbnailLabel = ImageLabel(self)
@@ -159,7 +137,7 @@ class ImageItemWidget(QtGui.QWidget):
  
         self.setAutoFillBackground(True)
         self.setLayout(layout)
-        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_StyledBackground)
+        self.setAttribute(QtCore.Qt.WA_StyledBackground)
         self.styleFromFile(self, "gui/styleSheets/ImageItemWidget.qss")
         
         self.configureChildren()
@@ -176,13 +154,13 @@ class ImageItemWidget(QtGui.QWidget):
     # Where thumbnailDimensions is a list [width, height]
     def configureFromDimensions(self, width, height):
        
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
 
-        thumbnailSize = qgis.PyQt.QtCore.QSize(width, height)
-        labelSize = qgis.PyQt.QtCore.QSize(width, 50)
-        widgetSize = qgis.PyQt.QtCore.QSize(width + 4, height + labelSize.height())
+        thumbnailSize = QSize(width, height)
+        labelSize = QSize(width, 50)
+        widgetSize = QSize(width + 4, height + labelSize.height())
 
         self.thumbnailLabel.setFixedSize(thumbnailSize)
         self.thumbnailLabel.setSizeHint(thumbnailSize)
@@ -202,32 +180,3 @@ class ImageItemWidget(QtGui.QWidget):
     # Shorthand for setting stylesheet from file.
     def styleFromFile(self, widget, src):
         widget.setStyleSheet(service.openFile(src))
-
-    # For Debug purposes
-    def logSizeInfo(self):  
-        QgsMessageLog.logMessage("Size info")
-        QgsMessageLog.logMessage("size downloaded image: " + "[" + str(thumbnailWidth) + ", " + str(thumbnailHeight) + "]")
-        
-        QgsMessageLog.logMessage("max widget: " + "[" + str(self.maximumWidth()) + ", " + str(self.maximumHeight()) + "]")
-        QgsMessageLog.logMessage("min  widget: " + "[" + str(self.minimumWidth()) + ", " + str(self.minimumHeight()) + "]")
-        
-        QgsMessageLog.logMessage("max label: " + "[" + str(self.imageDateLabel.maximumWidth()) + ", " + str(self.imageDateLabel.maximumHeight()) + "]")
-        QgsMessageLog.logMessage("min  label: " + "[" + str(self.imageDateLabel.minimumWidth()) + ", " + str(self.imageDateLabel.minimumHeight()) + "]")
-       
-        QgsMessageLog.logMessage("max thumbnail: " + "[" + str(self.thumbnailLabel.maximumWidth()) + ", " + str(self.thumbnailLabel.maximumHeight()) + "]")
-        QgsMessageLog.logMessage("min  thumbnail: " + "[" + str(self.thumbnailLabel.minimumWidth()) + ", " + str(self.thumbnailLabel.minimumHeight()) + "]")
-        
-        QgsMessageLog.logMessage("width/height widget: " + "[" + str(self.width()) + ", " + str(self.height()) + "]")
-        QgsMessageLog.logMessage("width/height label: " + "[" + str(self.imageDateLabel.width()) + ", " + str(self.imageDateLabel.height()) + "]")
-        QgsMessageLog.logMessage("width/height thumbnail: " + "[" + str(self.thumbnailLabel.width()) + ", " + str(self.thumbnailLabel.height()) + "]")
-
-        QgsMessageLog.logMessage("geometry widget: " + str(self.geometry()))
-        QgsMessageLog.logMessage("geometry label: " + str(self.imageDateLabel.geometry()))
-        QgsMessageLog.logMessage("geometry thumbnail: " + str(self.thumbnailLabel.geometry()))
-
-        QgsMessageLog.logMessage("sizehint widget: " + str(self.sizeHint()))
-        QgsMessageLog.logMessage("sizehint label: " + str(self.imageDateLabel.sizeHint()))
-        QgsMessageLog.logMessage("sizehint thumbnail: " + str(self.thumbnailLabel.sizeHint()))
-        QgsMessageLog.logMessage("\n \n")
-
-           
