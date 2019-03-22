@@ -26,28 +26,28 @@ class ArcGisConNewController(QObject):
     _iface = None
     _connection = None
     _legendActions = None
-    _updateService = None	
+    _updateService = None
     _customFilterJson = None
     _credentials = None
     _updateWorkerPool = None
     _event = None
-    
+
     def __init__(self, iface):
         QObject.__init__(self)
-        self._iface = iface				
-        self._newDialog = ArcGisConDialogNew()	
+        self._iface = iface
+        self._newDialog = ArcGisConDialogNew()
         self._newDialog.setModal(True)
         self._newDialog.layerUrlInput.editingFinished.connect(self._onUrlEdit)
         self._newDialog.passwordInput.editingFinished.connect(self._onAuthInputChange)
         self._newDialog.rememberCheckbox.stateChanged.connect(lambda state: self._onAuthCheckBoxChanged(state))
         self._newDialog.cancelButton.clicked.connect(self._newDialog.reject)
         self._newDialog.connectButton.clicked.connect(self._onConnectClick)
-        self._updateWorkerPool = Queue()	
-        self._event = Event()			
-            
+        self._updateWorkerPool = Queue()
+        self._event = Event()
+
     # Add handler to our events
     def addEventHandler(self, handler):
-        self._event += handler	
+        self._event += handler
 
     def showView(self):
         self._resetInputValues()
@@ -77,65 +77,65 @@ class ArcGisConNewController(QObject):
 
     def _saveCurrentCredentials(self):
         self._credentials = {}
-        self._credentials['url'] = self._newDialog.layerUrlInput.text() 
-        self._credentials['username'] = self._newDialog.usernameInput.text() 
+        self._credentials['url'] = self._newDialog.layerUrlInput.text()
+        self._credentials['username'] = self._newDialog.usernameInput.text()
         self._credentials['password'] = self._newDialog.passwordInput.text()
         FileSystemService().saveCredentials(self._credentials)
 
     def _loadSavedCredentials(self):
         self._credentials = FileSystemService().loadSavedCredentials()
-    
+
     def _enableAuthSection(self):
         self._newDialog.usernameInput.setDisabled(False)
         self._newDialog.passwordInput.setDisabled(False)
-        self._newDialog.rememberCheckbox.setDisabled(False)	
-    
+        self._newDialog.rememberCheckbox.setDisabled(False)
+
     def _onUrlEdit(self):
         self._enableAuthSection()
         self._initConnection()
 
     def _initConnection(self):
-        url = str(self._newDialog.layerUrlInput.text().strip()) 	
-        if (url):	
+        url = str(self._newDialog.layerUrlInput.text().strip())
+        if (url):
             # TODO: The layer name code will go somewhere else:
-            self._connection = Connection.createAndConfigureConnection(url, "")	
-            self._newDialog.connectionErrorLabel.setText("")							
-            if not self._connection.needsAuth():							
+            self._connection = Connection.createAndConfigureConnection(url, "")
+            self._newDialog.connectionErrorLabel.setText("")
+            if not self._connection.needsAuth():
                 self._disableAuthSection()
                 self._checkConnection()
-    
+
     def _onConnectClick(self):
-        
+
         if not self._newDialog.layerUrlInput.text():
             self._newDialog.connectionErrorLabel.setText("Enter a valid URL.")
-            return	
+            return
         if self._connection.needsAuth():
             username = self._newDialog.usernameInput.text()
             password = self._newDialog.passwordInput.text()
-            self._connection.updateAuth(username, password) 
+            self._connection.updateAuth(username, password)
             if not username or not password:
                 self._newDialog.connectionErrorLabel.setText("Enter valid server credentials")
-                return			
+                return
             if self._newDialog.rememberCheckbox.isChecked():
                 self._saveCurrentCredentials()
-        
+
         self._checkConnection()
         if self.canConnect:
             self._event(self, self._connection)
             self._newDialog.hide()
-            
+
     def _onAuthInputChange(self):
         username = str(self._newDialog.usernameInput.text())
         password = str(self._newDialog.passwordInput.text())
         if self._connection is not None:
             self._connection.updateAuth(username, password)
             self._checkConnection()
-            
+
     def _checkConnection(self):
-        error = self._connection.validate(EsriConnectionJSONValidatorLayer())			
+        error = self._connection.validate(EsriConnectionJSONValidatorLayer())
         self._newDialog.connectionErrorLabel.setText("")
-        self.canConnect = True		
-        if error:				
+        self.canConnect = True
+        if error:
             self._newDialog.connectionErrorLabel.setText(str(error.message))
             self.canConnect = False
 
@@ -143,9 +143,9 @@ class ArcGisConNewController(QObject):
         self._newDialog.usernameInput.setText("")
         self._newDialog.passwordInput.setText("")
         self._newDialog.usernameInput.setDisabled(True)
-        self._newDialog.passwordInput.setDisabled(True)	
+        self._newDialog.passwordInput.setDisabled(True)
         self._newDialog.rememberCheckbox.setDisabled(True)
-                                    
+
     def onSuccess(self, srcPath, connection, imageSpec):
         esriLayer = EsriRasterLayer.create(connection, imageSpec, srcPath)
         for action in self._legendActions:
@@ -157,10 +157,10 @@ class ArcGisConNewController(QObject):
 
     def onWarning(self, connection, warningMessage):
         NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)
-            
+
     def onError(self, connection, errorMessage):
         NotificationHandler.pushError('['+connection.name+'] :', errorMessage, 5)
-        
+
     def _resetInputValues(self):
         self._newDialog.layerUrlInput.setText("")
         #self._newDialog.layerNameInput.setText("")
@@ -171,10 +171,10 @@ class ArcGisConNewController(QObject):
         # self._newDialog.extentOnly.setChecked(False)
         #self._newDialog.extentOnly.hide()
         self._customFilterJson = None
-        
+
     def _resetConnectionErrorStatus(self):
         self._newDialog.connectionErrorLabel.setText("")
-        
+
 class ArcGisConRefreshController(QObject):
     _iface = None
 
@@ -185,11 +185,11 @@ class ArcGisConRefreshController(QObject):
     def updateLayer(self, updateService, esriLayer):
         if not esriLayer.connection is None:
             worker = EsriUpdateWorker.create(
-                esriLayer.connection, 
+                esriLayer.connection,
                 esriLayer.imageSpec,
-                onSuccess=None, 
-                onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), 
-                onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
+                onSuccess=None,
+                onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg),
+                onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))
             updateService.update(worker)
 
     def showTimePicker(self, layer, updateCallBack):
@@ -243,7 +243,7 @@ class ArcGisConRefreshController(QObject):
     def onTimePickerRestoreClick(self, layer, dialog):
         layer.imageSpec.settings.timeExtent = None
         dialog.close()
-            
+
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if not esriLayer.connection is None:
 
@@ -254,17 +254,17 @@ class ArcGisConRefreshController(QObject):
             mapCanvas = self._iface.mapCanvas()
             try:
                 esriLayer.imageSpec.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
-                esriLayer.updateProperties()		
+                esriLayer.updateProperties()
                 worker = EsriUpdateWorker.create(
                     esriLayer.connection,
                     esriLayer.imageSpec,
                     onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(newSrcPath, esriLayer, mapCanvas.extent()),
-                    onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg), 
-                    onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))			
+                    onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg),
+                    onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))
                 updateService.update(worker)
             except InvalidCrsIdException as e:
-                self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))			
-            
+                self.onError(esriLayer.connection, QCoreApplication.translate('ArcGisConController', "CRS [{}] not supported").format(e.crs))
+
     def updateLayerWithNewTimeExtent(self, layer, dialog):
         timeExtent = []
         if dialog.tabWidget.currentWidget() == dialog.instantTab:
@@ -290,17 +290,17 @@ class ArcGisConRefreshController(QObject):
             timeExtent.append(endDate)
         layer.imageSpec.settings.timeExtent = timeExtent
 
-    
+
     def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
-         esriLayer.qgsRasterLayer.triggerRepaint()
+        esriLayer.qgsRasterLayer.triggerRepaint()
         self._iface.legendInterface().refreshLayerSymbology(esriLayer.qgsRasterLayer)
-        
+
     def onWarning(self, connection, warningMessage):
-        NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)		
-                                                                    
+        NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)
+
     def onError(self, connection, errorMessage):
-        NotificationHandler.pushError('['+connection.name+'] :', errorMessage, 5)	
-        
+        NotificationHandler.pushError('['+connection.name+'] :', errorMessage, 5)
+
 class ConnectionSettingsController(QObject):
     _iface = None
     _settingsDialog = None
@@ -353,23 +353,23 @@ class ConnectionSettingsController(QObject):
         else:
             if 'mosaicRule' in self._settings:
                 self._settings['mosaicRule'] = None
-        
+
         self._settingsObject.updateValues(self._settings)
 
     def _initGeneralTab(self):
         size = ['800','800']
         if 'size' in self._settings:
             size = self._settings['size'].split(',')
-        
+
         self._settingsDialog.sizeXEdit.setText(size[0])
         self._settingsDialog.sizeYEdit.setText(size[1])
 
         for imageFormat in self._settingsObject.IMAGE_FORMATS:
             self._settingsDialog.imageFormatComboBox.addItem(imageFormat)
-        
+
         for pixelType in self._settingsObject.PIXEL_TYPES:
             self._settingsDialog.pixelTypeComboBox.addItem(pixelType)
-        
+
         for noDataInter in self._settingsObject.NO_DATA_INTERPRETATIONS:
             self._settingsDialog.noDataInterpretationComboBox.addItem(noDataInter)
 
@@ -394,26 +394,26 @@ class ConnectionSettingsController(QObject):
 
         if 'noData' in self._settings:
             self._settingsDialog.noDataEdit.setText(self._settings['noData'])
-        
+
         if 'compression' in self._settings:
             self._settingsDialog.compressionEdit.setText(self._settings['compression'])
-        
+
         if 'compressionQuality' in self._settings:
             self._settingsDialog.compressionQualityEdit.setText(self._settings['compressionQuality'])
-        
+
         if 'bandIds' in self._settings:
             self._settingsDialog.bandIdEdit.setText(self._settings['bandIds'])
-    
+
         self._settingsDialog.imageFormatComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.imageFormatComboBox, index, 'format'))
         self._settingsDialog.pixelTypeComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.pixelTypeComboBox, index, 'pixelType'))
         self._settingsDialog.noDataInterpretationComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.noDataInterpretationComboBox, index, 'noDataInterpretation'))
         self._settingsDialog.interpolationComboBox.currentIndexChanged.connect(lambda index: self._onGeneralComboBoxChange(self._settingsDialog.interpolationComboBox, index, 'interpolation'))
-    
+
         self._settingsDialog.noDataEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'noData'))
         self._settingsDialog.compressionEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compression'))
         self._settingsDialog.compressionQualityEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'compressionQuality'))
         self._settingsDialog.bandIdEdit.textEdited.connect(lambda text: self._onGeneralEditChange(text, 'bandIds'))
-        
+
         self._settingsDialog.sizeXEdit.textEdited.connect(self._onSizeEditChange)
         self._settingsDialog.sizeYEdit.textEdited.connect(self._onSizeEditChange)
 
