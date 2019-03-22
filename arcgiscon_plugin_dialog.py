@@ -23,13 +23,14 @@
 
 import os
 
-from qgis.PyQt import QtGui, uic
+from PyQt5 import uic
+from PyQt5.QtWidgets import QDialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'arcgiscon_plugin_dialog_base.ui'))
 
 
-class ArcGisConnectorDialog(QtGui.QDialog, FORM_CLASS):
+class ArcGisConnectorDialog(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(ArcGisConnectorDialog, self).__init__(parent)

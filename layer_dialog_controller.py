@@ -1,19 +1,18 @@
 from __future__ import absolute_import
 from builtins import range
-from qgis.PyQt.QtCore import QObject, QCoreApplication, Qt, QDate, QTime, QRect, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt.QtWidgets import QSizePolicy
-from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer
+
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtGui import QMovie
+from PyQt5 import Qt
+
+from .arcgiscon_model import EsriRasterLayer
 from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
-from qgis.core import QgsMessageLog, QgsMapLayerRegistry
+from qgis.core import QgsMessageLog, QgsProject
 from .arcgiscon_ui import LayerDialog, ImageItemWidget
 from .event_handling import Event
 from PIL import Image, ImageChops
-import resources_rc
-import time
 import os
 import threading
-import numpy as np
 
 class LayerDialogController(QObject):
 	#Variables ---------------------
@@ -274,7 +273,7 @@ class LayerDialogController(QObject):
 		self.updateInfoMessage()
 
 	def updateInfoMessage(self):
-		if self.grid.layout().isEmpty():
+		if self.grid.layout().isNull():
 			#TODO: Make it function properly.
 			pass
 			#self.layerDialogUI.infoLabel.setText(self.EMPTY_GRID_MESSAGE)
@@ -318,7 +317,7 @@ class LayerDialogController(QObject):
 		rasterLayer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
 		for action in self.legendActions:
 			self.iface.legendInterface().addLegendLayerActionForLayer(action, rasterLayer.qgsRasterLayer)
-		QgsMapLayerRegistry.instance().addMapLayer(rasterLayer.qgsRasterLayer)
+		QgsProject.instance().addMapLayer(rasterLayer.qgsRasterLayer)
 		self.rasterLayers[rasterLayer.qgsRasterLayer.id()]=rasterLayer
 		self.connection.renderLocked = True
 

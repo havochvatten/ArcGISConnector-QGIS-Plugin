@@ -1,38 +1,19 @@
 # -*- coding: utf-8 -*-
-"""
-/***************************************************************************
-ArcGIS REST API Connector
-A QGIS plugin
-		-------------------
-begin                : 2015-05-27
-git sha              : $Format:%H$
-copyright            : (C) 2015 by geometalab
-email                : geometalab@gmail.com
-***************************************************************************/
-
-/***************************************************************************
-*                                                                         *
-*   This program is free software; you can redistribute it and/or modify  *
-*   it under the terms of the GNU General Public License as published by  *
-*   the Free Software Foundation; either version 2 of the License, or     *
-*   (at your option) any later version.                                   *
-*                                                                         *
-***************************************************************************/
-"""
 from __future__ import absolute_import
+
+from PyQt5.QtCore import QDate, QTime, QCoreApplication
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
-from qgis.core import QgsMapLayerRegistry, QgsMessageLog
-from qgis.PyQt.QtCore import QObject, QCoreApplication, Qt, QDate, QTime
+from qgis.core import QgsProject
 from qgis.PyQt import QtGui
 from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
 from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
 from .event_handling import *
 from queue import Queue
-import datetime, time
+import datetime
 
 
 import json
@@ -169,7 +150,7 @@ class ArcGisConNewController(QObject):
 		esriLayer = EsriRasterLayer.create(connection, imageSpec, srcPath)
 		for action in self._legendActions:
 			self._iface.legendInterface().addLegendLayerActionForLayer(action, esriLayer.qgsRasterLayer)
-		QgsMapLayerRegistry.instance().addMapLayer(esriLayer.qgsRasterLayer)
+		QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
 		self._esriRasterLayers[esriLayer.qgsRasterLayer.id()]=esriLayer
 		self._connection.srcPath = srcPath
 		self._connection.renderLocked = True
