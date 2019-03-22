@@ -7,7 +7,7 @@ from qgis.PyQt.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction, QApplication
 from qgis.PyQt.QtGui import QIcon
 
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject
+from qgis.core import QgsMapLayer, QgsProject
 
 from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
@@ -65,7 +65,7 @@ class ArcGisConnector(object):
         self._updateService = EsriUpdateService.createService(iface)
         self._updateService.finished.connect(self._updateServiceFinished) 
 
-        QgsMapLayerRegistry.instance().layerRemoved.connect(self._onLayerRemoved)
+        QgsProject.instance().layerRemoved.connect(self._onLayerRemoved)
         QgsProject.instance().writeProject.connect(self._onProjectInitialWrite)
         QgsProject.instance().projectSaved.connect(self._onProjectSaved)
         self._connectToRefreshAction()
@@ -77,7 +77,7 @@ class ArcGisConnector(object):
         self._connectionController = ArcGisConNewController(self._iface)
         self._layerDialogController = LayerDialogController(self._iface)
 
-        #Register handler to event
+        # Register handler to event
         self._connectionController.addEventHandler(self.handleLogin)
         
     def handleLogin(self, sender, connection): 
@@ -91,7 +91,6 @@ class ArcGisConnector(object):
                     self._arcGisSaveImageAction,
                     self._arcGisTimePickerAction,
                     self._arcGisSettingsAction
-
                 ])
 
     def initGui(self):
@@ -177,7 +176,7 @@ class ArcGisConnector(object):
             FileSystemService().removeDanglingFilesFromProjectDir([layer.connection.createSourceFileName() for layer in list(self._esriRasterLayers.values())], projectId)
                         
     def _reconnectEsriLayers(self):
-        layers = QgsMapLayerRegistry.instance().mapLayers()                
+        layers = QgsProject.instance().mapLayers()
         for qgsLayer in list(layers.values()):            
             if qgsLayer.customProperty('arcgiscon_connection_url', ''):                
                 try:
