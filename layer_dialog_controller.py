@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from builtins import range
 
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QMovie
+from PyQt5.QtGui import QMovie, QPixmap
 from PyQt5 import Qt
 
 from .arcgiscon_model import EsriRasterLayer
@@ -10,7 +10,7 @@ from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItem
 from qgis.core import QgsMessageLog, QgsProject
 from .arcgiscon_ui import LayerDialog, ImageItemWidget
 from .event_handling import Event
-from PIL import Image, ImageChops
+from PIL import Image
 import os
 import threading
 
@@ -245,7 +245,7 @@ class LayerDialogController(QObject):
 
     def scaleImage(self, filePath, width, height, scalar):
         pix = QPixmap(filePath)
-        pix =  pix.scaled(width * scalar , height * scalar, Qt.KeepAspectRatio)
+        pix = pix.scaled(width * scalar, height * scalar, Qt.KeepAspectRatio)
         return pix
     
     def getColorSpan(self, filePath):
