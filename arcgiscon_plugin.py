@@ -1,38 +1,18 @@
 # -*- coding: utf-8 -*-
-"""
-/***************************************************************************
-ArcGIS REST API Connector
-A QGIS plugin
-                              -------------------
-        begin                : 2015-05-27
-        git sha              : $Format:%H$
-        copyright            : (C) 2015 by geometalab
-        email                : geometalab@gmail.com
- ***************************************************************************/
 
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-"""
 from __future__ import absolute_import
 from builtins import str
 from builtins import object
 from qgis.PyQt.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction, QApplication
-from qgis.PyQt.QtGui import QIcon #QAction, QIcon, QApplication
-import resources_rc
+from qgis.PyQt.QtGui import QIcon
 
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject, QgsMessageLog
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject
 
 from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
-from .arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController, ConnectionSettingsController
+from .arcgiscon_controller import ArcGisConNewController, \
+    ArcGisConRefreshController, ConnectionSettingsController
 from .arcgiscon_image_controller import ImageController
 from .layer_dialog_controller import LayerDialogController
 from .arcgiscon_model import EsriRasterLayer
@@ -228,16 +208,16 @@ class ArcGisConnector(object):
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
                 self._settingsController.showSettingsDialog(selectedLayer, lambda: self._refreshEsriLayer(True))   
-                                      
+
     def _updateServiceFinished(self):            
         self._updateService.tearDown()
-        #move back to main GUI thread
+        # move back to main GUI thread
         self._updateService.moveToThread(QApplication.instance().thread())
 
     def _onLayerRemoved(self, layerId):
         if layerId in self._esriRasterLayers:
             del self._esriRasterLayers[layerId]
-         
+
     def unload(self):
         FileSystemService().clearAllFilesFromTmpFolder()
         self._iface.removePluginMenu(
@@ -246,4 +226,3 @@ class ArcGisConnector(object):
         self._iface.removePluginVectorMenu(self._newLayerActionText, self._newLayerAction)
         self._iface.removeToolBarIcon(self._newLayerAction)        
         self._iface.legendInterface().removeLegendLayerAction(self._arcGisRefreshLayerAction)
-        
