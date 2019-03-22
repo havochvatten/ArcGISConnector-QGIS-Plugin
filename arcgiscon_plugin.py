@@ -20,18 +20,22 @@ A QGIS plugin
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
-from PyQt4.QtGui import * #QAction, QIcon, QApplication
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+from qgis.PyQt.QtCore import QTranslator, qVersion, QCoreApplication, QSettings
+from qgis.PyQt.QtWidgets import QAction, QApplication
+from qgis.PyQt.QtGui import QIcon #QAction, QIcon, QApplication
 import resources_rc
 
 from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsProject, QgsMessageLog
 
-from arcgiscon_service import NotificationHandler, EsriUpdateService,\
+from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
-from arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController, ConnectionSettingsController
-from arcgiscon_image_controller import ImageController
-from layer_dialog_controller import LayerDialogController
-from arcgiscon_model import EsriRasterLayer
+from .arcgiscon_controller import ArcGisConNewController, ArcGisConRefreshController, ConnectionSettingsController
+from .arcgiscon_image_controller import ImageController
+from .layer_dialog_controller import LayerDialogController
+from .arcgiscon_model import EsriRasterLayer
 from uuid import uuid4
 import os.path
 
@@ -39,11 +43,12 @@ import os.path
 # sys.path.append(r'/Applications/liclipse/plugins/org.python.pydev_3.9.2.201502042042/pysrc')
 # import pydevd
 
-class ArcGisConnector:
-#     pydevd.settrace()       
-    _iface = None    
+
+class ArcGisConnector(object):
+    # pydevd.settrace()
+    _iface = None
     _newLayerAction = None
-    _newLayerActionText = None    
+    _newLayerActionText = None
     _arcGisRefreshLayerAction = None
     _arcGisRefreshLayerWithNewExtentAction = None
     _arcGisTimePickerAction = None
@@ -53,7 +58,7 @@ class ArcGisConnector:
     _updateService = None
     _qSettings = None
 
- # Controllers
+# Controllers
     _settingsController = None
     _imageController = None
     _refreshController = None
@@ -148,11 +153,11 @@ class ArcGisConnector:
                 action.triggered.connect(self._refreshAllEsriLayers)
                 
     def _refreshAllEsriLayers(self): 
-        for layer in self._esriRasterLayers.values():
+        for layer in list(self._esriRasterLayers.values()):
             self._refreshController.updateLayer(self._updateService, layer)
 
     def _refreshAllVisibleLayers(self):
-        for layer in self._esriRasterLayers.values():
+        for layer in list(self._esriRasterLayers.values()):
             if QgsProject.instance().layerTreeRoot().findLayer(layer.qgsRasterLayer.id()).isVisible():
                 self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
                 
@@ -172,14 +177,14 @@ class ArcGisConnector:
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
         if  projectId != "-1":                                
             self._reconnectEsriLayers()
-            FileSystemService().removeDanglingFilesFromProjectDir([layer.connection.createSourceFileName() for layer in self._esriRasterLayers.values()], projectId)
+            FileSystemService().removeDanglingFilesFromProjectDir([layer.connection.createSourceFileName() for layer in list(self._esriRasterLayers.values())], projectId)
             self._updateService.updateProjectId(projectId)            
         
     def _onProjectInitialWrite(self):
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
         if projectId == "-1" and self._esriRasterLayers:
             projectId = uuid4().hex
-            for esriLayer in self._esriRasterLayers.values():                
+            for esriLayer in list(self._esriRasterLayers.values()):                
                 newSrcPath = FileSystemService().moveFileFromTmpToProjectDir(esriLayer.connection.createSourceFileName(), projectId)
                 if newSrcPath is not None:
                     esriLayer.qgsRasterLayer.setDataSource(newSrcPath, esriLayer.qgsRasterLayer.name(),"ogr")            
@@ -189,11 +194,11 @@ class ArcGisConnector:
     def _onProjectSaved(self):
         projectId = str(QgsProject.instance().readEntry("arcgiscon","projectid","-1")[0])
         if projectId != "-1":
-            FileSystemService().removeDanglingFilesFromProjectDir([layer.connection.createSourceFileName() for layer in self._esriRasterLayers.values()], projectId)
+            FileSystemService().removeDanglingFilesFromProjectDir([layer.connection.createSourceFileName() for layer in list(self._esriRasterLayers.values())], projectId)
                         
     def _reconnectEsriLayers(self):
         layers = QgsMapLayerRegistry.instance().mapLayers()                
-        for qgsLayer in layers.itervalues():            
+        for qgsLayer in list(layers.values()):            
             if qgsLayer.customProperty('arcgiscon_connection_url', ''):                
                 try:
                     esriLayer = EsriRasterLayer.restoreFromQgsLayer(qgsLayer)

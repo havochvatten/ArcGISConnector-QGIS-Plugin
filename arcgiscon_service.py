@@ -19,11 +19,17 @@ A QGIS plugin
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 
-from PyQt4 import QtCore, QtGui
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
+from qgis.PyQt import QtCore, QtGui
 from qgis.gui import QgsMessageBar
 from qgis.core import QgsMessageLog
-from arcgiscon_model import EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
+from .arcgiscon_model import EsriLayerMetaInformation, EsriImageServiceQueryFactory, ConnectionAuthType
 import time
 import multiprocessing
 import math
@@ -35,7 +41,7 @@ import shutil
 import requests
 import base64
 import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import sip
 
 
@@ -51,7 +57,7 @@ def downloadSource(args):
 # A class for managing downloads from different dates.
 # Currently uses the date closest to the high limit.
 # Update limHigh to an earlier time to query earlier dates.
-class ServerItemManager:
+class ServerItemManager(object):
     #Limits are stored in Epoch time.
     #A dictionary with 'names', 'dates', 'objectIDs'
     serverItems = None
@@ -91,7 +97,7 @@ class ServerItemManager:
             for x in result[u'features']:
                 item = x[u'attributes'][field]
                 items.append(item)
-            items = filter(lambda item: item is not None, items) 
+            items = [item for item in items if item is not None] 
             items.reverse()
             return items
         else:
@@ -156,12 +162,12 @@ class EsriUpdateWorker(QtCore.QObject):
             worker.onError.connect(onError)
         return worker
                 
-    onSuccess = QtCore.pyqtSignal(basestring)
-    onWarning = QtCore.pyqtSignal(basestring)
-    onError = QtCore.pyqtSignal(basestring)
+    onSuccess = QtCore.pyqtSignal(str)
+    onWarning = QtCore.pyqtSignal(str)
+    onError = QtCore.pyqtSignal(str)
 
-class EsriUpdateServiceState:
-    Down, Idle, Processing, TearingDown = range(4)
+class EsriUpdateServiceState(object):
+    Down, Idle, Processing, TearingDown = list(range(4))
 
 
 class EsriUpdateService(QtCore.QObject):   
@@ -305,7 +311,7 @@ class EsriUpdateService(QtCore.QObject):
    
     def createSourceURL(self, connection, query):
         url = connection.basicUrl + query.getUrlAddon() + "?"
-        params = urllib.urlencode(query.getParams())
+        params = urllib.parse.urlencode(query.getParams())
         url += params
         return url
 
@@ -341,7 +347,7 @@ class EsriUpdateService(QtCore.QObject):
             response = requests.get(href, auth = (connection.username, connection.password))
         else:
             response = requests.get(href)
-        connectionName_clean = filter(lambda ch: ch not in " ?.!/;:", connection.name)
+        connectionName_clean = [ch for ch in connection.name if ch not in " ?.!/;:"]
         fname = connectionName_clean + "_" + str(connection.conId)
         return dict(filename = fname, data = response.content)
     
@@ -412,7 +418,7 @@ class EsriUpdateService(QtCore.QObject):
     progress = QtCore.pyqtSignal(float)
     
     
-class FileSystemService:
+class FileSystemService(object):
     
     arcGisJsonSrc = os.path.join(os.path.dirname(__file__),"imageSrc")
     credentialsFile =  os.path.join(os.path.dirname(__file__),"credentials.json")
@@ -512,7 +518,7 @@ class FileSystemService:
             os.makedirs(folderPath)
 
 
-class NotificationHandler:
+class NotificationHandler(object):
     
     _iface = None
     _duration = 4

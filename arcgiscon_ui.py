@@ -20,12 +20,15 @@ A QGIS plugin
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 from qgis.core import QgsMessageLog
 import os
 import resources_rc
-from arcgiscon_service import FileSystemService
-from PyQt4 import QtGui, uic
-import PyQt4
+from .arcgiscon_service import FileSystemService
+from qgis.PyQt import QtGui, uic
+import qgis.PyQt
 
 FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'arcgiscon_dialog_new.ui'))
@@ -72,8 +75,8 @@ class ImageServerDashboard(QtGui.QMainWindow, DASHBOARD_WINDOW):
 
 
 class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
-    scrolledDown = PyQt4.QtCore.pyqtSignal([int])
-    closed = PyQt4.QtCore.pyqtSignal()
+    scrolledDown = qgis.PyQt.QtCore.pyqtSignal([int])
+    closed = qgis.PyQt.QtCore.pyqtSignal()
 
 
     def __init__(self, parent=None):        
@@ -89,7 +92,7 @@ class LayerDialog(QtGui.QDialog, LAYER_DIALOG):
 
 
     def clearLayout(self,layout):
-        for i in reversed(range(layout.count())): 
+        for i in reversed(list(range(layout.count()))): 
             widgetToRemove = layout.itemAt(i).widget()
             # remove it from the layout list
             layout.removeWidget(widgetToRemove)
@@ -124,7 +127,7 @@ class ImageItemWidget(QtGui.QWidget):
     imageDateLabel = None
     thumbnailLabel = None
     widgetSize = None
-    clicked = PyQt4.QtCore.pyqtSignal()
+    clicked = qgis.PyQt.QtCore.pyqtSignal()
 
     def __init__(self, parent, width, height):
         super(ImageItemWidget, self).__init__(parent)
@@ -156,7 +159,7 @@ class ImageItemWidget(QtGui.QWidget):
  
         self.setAutoFillBackground(True)
         self.setLayout(layout)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_StyledBackground)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_StyledBackground)
         self.styleFromFile(self, "gui/styleSheets/ImageItemWidget.qss")
         
         self.configureChildren()
@@ -177,9 +180,9 @@ class ImageItemWidget(QtGui.QWidget):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
 
-        thumbnailSize = PyQt4.QtCore.QSize(width, height)
-        labelSize = PyQt4.QtCore.QSize(width, 50)
-        widgetSize = PyQt4.QtCore.QSize(width + 4, height + labelSize.height())
+        thumbnailSize = qgis.PyQt.QtCore.QSize(width, height)
+        labelSize = qgis.PyQt.QtCore.QSize(width, 50)
+        widgetSize = qgis.PyQt.QtCore.QSize(width + 4, height + labelSize.height())
 
         self.thumbnailLabel.setFixedSize(thumbnailSize)
         self.thumbnailLabel.setSizeHint(thumbnailSize)

@@ -43,6 +43,7 @@ Original by:
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+from __future__ import absolute_import
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -52,5 +53,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from arcgiscon_plugin import ArcGisConnector
+    from .arcgiscon_plugin import ArcGisConnector
     return ArcGisConnector(iface)

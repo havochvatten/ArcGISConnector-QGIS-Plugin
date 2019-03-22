@@ -1,7 +1,8 @@
-from PyQt4 import QtGui
-from PyQt4.QtCore import QObject
+from __future__ import absolute_import
+from qgis.PyQt import QtGui
+from qgis.PyQt.QtCore import QObject
 from qgis.core import QgsMessageLog
-from arcgiscon_service import FileSystemService
+from .arcgiscon_service import FileSystemService
 import os.path
 
 class ImageController(QObject):
