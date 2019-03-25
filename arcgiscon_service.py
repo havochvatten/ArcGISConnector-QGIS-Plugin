@@ -5,12 +5,11 @@ from __future__ import absolute_import
 from PyQt5 import QtCore
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QProgressBar, QPushButton
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsMessageLog
 from future import standard_library
 from builtins import str
 from builtins import range
 from builtins import object
-from qgis.gui import QgsMessageBar
 from .arcgiscon_model import EsriImageServiceQueryFactory, ConnectionAuthType
 import multiprocessing
 import json
@@ -22,6 +21,7 @@ import requests
 import base64
 import urllib.request, urllib.parse, urllib.error
 import sip
+import re
 
 standard_library.install_aliases()
 
@@ -325,7 +325,7 @@ class EsriUpdateService(QtCore.QObject):
             response = requests.get(href, auth=(connection.username, connection.password))
         else:
             response = requests.get(href)
-        connectionName_clean = [ch for ch in connection.name if ch not in " ?.!/;:"]
+        connectionName_clean = re.sub('\W+','', connection.name)
         fname = connectionName_clean + "_" + str(connection.conId)
         return dict(filename=fname, data=response.content)
 
