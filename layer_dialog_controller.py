@@ -3,7 +3,7 @@ from builtins import range
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QMovie, QPixmap
-from PyQt5 import Qt
+from PyQt5.QtCore import Qt
 
 from .arcgiscon_model import EsriRasterLayer
 from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItemManager
@@ -273,7 +273,7 @@ class LayerDialogController(QObject):
         self.updateInfoMessage()
 
     def updateInfoMessage(self):
-        if self.grid.layout().isNull():
+        if self.grid.layout().isEmpty():
             #TODO: Make it function properly.
             pass
             #self.layerDialogUI.infoLabel.setText(self.EMPTY_GRID_MESSAGE)
