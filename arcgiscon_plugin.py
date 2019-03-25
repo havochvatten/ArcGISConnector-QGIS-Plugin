@@ -18,6 +18,7 @@ from .layer_dialog_controller import LayerDialogController
 from .arcgiscon_model import EsriRasterLayer
 from uuid import uuid4
 import os.path
+from . import resources_rc
 
 # import sys;
 # sys.path.append(r'/Applications/liclipse/plugins/org.python.pydev_3.9.2.201502042042/pysrc')
@@ -50,8 +51,7 @@ class ArcGisConnector(object):
         self.initControllers()
         self._pluginDir = os.path.dirname(__file__)
         self._qSettings = QSettings()
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(self._pluginDir,'i18n','arcgiscon_{}.qm'.format(locale))
+        locale_path = os.path.join(self._pluginDir,'i18n','arcgiscon_en.qm')
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -95,7 +95,7 @@ class ArcGisConnector(object):
 
     def initGui(self):
         newLayerActionIcon = QIcon(':/plugins/ImageServerConnector/icons/logo.png')
-        self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'arcgiscon')
+        self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'add arcgis imageserver layer..')
         self._newLayerAction = QAction(
             newLayerActionIcon,
             self._newLayerActionText,

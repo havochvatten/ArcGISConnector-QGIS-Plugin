@@ -13,6 +13,7 @@ from .event_handling import Event
 from .PIL import Image
 import os
 import threading
+from . import resources_rc
 
 class LayerDialogController(QObject):
     #Variables ---------------------
