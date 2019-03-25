@@ -31,8 +31,6 @@ LOCALES = arcgiscon_en
 # you have trouble compiling the translations, you may have to specify the full path to
 # lrelease
 LRELEASE = lrelease
-
-# translation
 SOURCES = \
     __init__.py \
     arcgiscon_plugin.py \
@@ -69,6 +67,9 @@ UI_FILES = \
 
 EXTRAS = metadata.txt
 
+LIB_DIRS = \
+	PIL
+
 EXTRA_DIRS = \
 	gui
 
@@ -92,19 +93,20 @@ QGISDIR=AppData/Roaming/QGIS/QGIS3/profiles/default
 default: compile
 
 compile: $(COMPILED_RESOURCE_FILES)
-
+QGISDIR=AppData/Roaming/QGIS/QGIS3/profiles/default
 %_rc.py : %.qrc
 	pyrcc5 -o $*_rc.py  $<
 
 %.qm : %.ts
-	$(LRELEASE) $<
+QGISDIR=AppData/Roaming/QGIS/QGIS3/profiles/default
 
 test: compile transcompile
+	pyrcc5 -o $*_rc.py  $<
 	@echo
 	@echo "----------------------"
 	@echo "Regression Test Suite"
 	@echo "----------------------"
-
+	pyrcc5 -o $*_rc.py  $<
 	@# Preceding dash means that make will continue in case of errors
 	@-export PYTHONPATH=`pwd`:$(PYTHONPATH); \
 		export QGIS_DEBUG=0; \
@@ -127,13 +129,14 @@ deploy: compile transcompile
 	# the Python plugin directory is located at:
 	# $HOME/$(QGISDIR)/python/plugins
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	@echo "Deploying plugin to your plugins directory."
 	cp -vf $(PY_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	@echo "Deploying plugin to your plugins directory."
 	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	#cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
@@ -143,7 +146,7 @@ dclean:
 	@echo
 	@echo "-----------------------------------"
 	@echo "Removing any compiled python files."
-	@echo "-----------------------------------"
+	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname "*.pyc" -delete
 	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname ".git" -prune -exec rm -Rf {} \;
 

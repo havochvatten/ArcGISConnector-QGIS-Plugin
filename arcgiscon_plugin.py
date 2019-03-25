@@ -110,17 +110,17 @@ class ArcGisConnector(object):
             self._iface.addToolBarIcon(self._newLayerAction)   
         self._iface.addPluginToRasterMenu(self._newLayerActionText, self._newLayerAction)
         self._iface.insertAddLayerAction(self._newLayerAction)
-        self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Refresh layer with current extent'), self._iface.legendInterface() )
-        self._arcGisSaveImageAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Save layer image as..'), self._iface.legendInterface() )
-        self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'), self._iface.legendInterface() )
-        self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS layer settings..'), self._iface.legendInterface() )
+        self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Refresh layer with current extent'))
+        self._arcGisSaveImageAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Save layer image as..') )
+        self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'))
+        self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS layer settings..'))
 
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id1", QgsMapLayer.RasterLayer, False )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id2", QgsMapLayer.RasterLayer, False )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id3", QgsMapLayer.RasterLayer, False )
-        self._iface.legendInterface().addLegendLayerAction(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), u"id4", QgsMapLayer.RasterLayer, False )
+        self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
 
-        self._iface.context().extentsChanged.connect(self._onExtentsChanged)
+        self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisSaveImageAction.triggered.connect(self._onLayerImageSave)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
         self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
@@ -142,7 +142,7 @@ class ArcGisConnector(object):
                 
     
     def _refreshEsriLayer(self, withCurrentExtent=False):
-        qgsLayers = self._iface.legendInterface().selectedLayers()
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:  
                 if withCurrentExtent:
@@ -182,27 +182,27 @@ class ArcGisConnector(object):
                 try:
                     esriLayer = EsriRasterLayer.restoreFromQgsLayer(qgsLayer)
                     self._esriRasterLayers[qgsLayer.id()] = esriLayer
-                    self._iface.legendInterface().addLegendLayerActionForLayer(self._arcGisRefreshLayerAction, qgsLayer)
-                    self._iface.legendInterface().addLegendLayerActionForLayer(self._arcGisRefreshLayerWithNewExtentAction, qgsLayer)
+                    self._iface.addCustomActionForLayer(self._arcGisRefreshLayerAction, qgsLayer)
+                    self._iface.addCustomActionForLayer(self._arcGisRefreshLayerWithNewExtentAction, qgsLayer)
                 except: 
                     raise
 
     def _onLayerImageSave(self):
-        qgsLayers = self._iface.legendInterface().selectedLayers()
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
                 self._imageController.saveImage(selectedLayer.qgsRasterLayer.dataProvider().dataSourceUri())
 
     def _chooseTimeExtent(self):
-        qgsLayers = self._iface.legendInterface().selectedLayers()
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
                 self._refreshController.showTimePicker(selectedLayer, lambda: self._refreshEsriLayer(True))
 
     def _showSettingsDialog(self):
-        qgsLayers = self._iface.legendInterface().selectedLayers()
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
             if layer.id() in self._esriRasterLayers:
                 selectedLayer = self._esriRasterLayers[layer.id()]
@@ -224,4 +224,4 @@ class ArcGisConnector(object):
             self._newLayerAction)
         self._iface.removePluginVectorMenu(self._newLayerActionText, self._newLayerAction)
         self._iface.removeToolBarIcon(self._newLayerAction)        
-        self._iface.legendInterface().removeLegendLayerAction(self._arcGisRefreshLayerAction)
+        self._iface.removeCustomActionForLayerType(self._arcGisRefreshLayerAction)

@@ -10,7 +10,7 @@ from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItem
 from qgis.core import QgsMessageLog, QgsProject
 from .arcgiscon_ui import LayerDialog, ImageItemWidget
 from .event_handling import Event
-from PIL import Image
+from .PIL import Image
 import os
 import threading
 
@@ -316,7 +316,7 @@ class LayerDialogController(QObject):
         #Remove thumbnails.
         rasterLayer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
         for action in self.legendActions:
-            self.iface.legendInterface().addLegendLayerActionForLayer(action, rasterLayer.qgsRasterLayer)
+            self.iface.addCustomActionForLayer(action, rasterLayer.qgsRasterLayer)
         QgsProject.instance().addMapLayer(rasterLayer.qgsRasterLayer)
         self.rasterLayers[rasterLayer.qgsRasterLayer.id()]=rasterLayer
         self.connection.renderLocked = True
