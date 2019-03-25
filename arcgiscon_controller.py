@@ -2,12 +2,12 @@
 from __future__ import absolute_import
 
 from PyQt5.QtCore import QDate, QTime, QCoreApplication
+from PyQt5.QtWidgets import QDialogButtonBox
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
 from qgis.core import QgsProject
-from qgis.PyQt import QtGui
 from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
 from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
@@ -136,7 +136,7 @@ class ArcGisConNewController(QObject):
         self._newDialog.connectionErrorLabel.setText("")
         self.canConnect = True
         if error:
-            self._newDialog.connectionErrorLabel.setText(str(error.message))
+            self._newDialog.connectionErrorLabel.setText(str(error))
             self.canConnect = False
 
     def _disableAuthSection(self):
@@ -234,8 +234,8 @@ class ArcGisConRefreshController(QObject):
 
         dialog.buttonBox.accepted.connect(lambda: self.updateLayerWithNewTimeExtent(layer, dialog))
         dialog.buttonBox.accepted.connect(updateCallBack)
-        dialog.buttonBox.button(QtGui.QDialogButtonBox.RestoreDefaults).clicked.connect(lambda: self.onTimePickerRestoreClick(layer, dialog))
-        dialog.buttonBox.button(QtGui.QDialogButtonBox.RestoreDefaults).clicked.connect(updateCallBack)
+        dialog.buttonBox.button(QDialogButtonBox.RestoreDefaults).clicked.connect(lambda: self.onTimePickerRestoreClick(layer, dialog))
+        dialog.buttonBox.button(QDialogButtonBox.RestoreDefaults).clicked.connect(updateCallBack)
 
         dialog.show()
         dialog.exec_()
@@ -330,8 +330,8 @@ class ConnectionSettingsController(QObject):
 
         self._settingsDialog.buttonBox.accepted.connect(self._updateSettings)
         self._settingsDialog.buttonBox.accepted.connect(updateCallBack)
-        self._settingsDialog.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self._updateSettings)
-        self._settingsDialog.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(updateCallBack)
+        self._settingsDialog.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self._updateSettings)
+        self._settingsDialog.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(updateCallBack)
 
         self._settingsDialog.show()
         self._settingsDialog.exec_()

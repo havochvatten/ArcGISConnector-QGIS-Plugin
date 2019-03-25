@@ -149,7 +149,7 @@ class ArcGisConnector(object):
                     self._refreshController.updateLayerWithNewExtent(self._updateService, self._esriRasterLayers[layer.id()])
 
     def _onExtentsChanged(self):
-        if self._iface.context().renderFlag():
+        if self._iface.mapCanvas().renderFlag():
             self._refreshAllVisibleLayers()
 
     def _onProjectLoad(self): 

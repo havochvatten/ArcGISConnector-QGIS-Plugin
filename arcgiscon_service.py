@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from PyQt5 import QtCore
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QProgressBar, QPushButton
+from qgis.core import Qgis
 from future import standard_library
 from builtins import str
 from builtins import range
@@ -375,7 +376,7 @@ class EsriUpdateService(QtCore.QObject):
         cancelButton.clicked.connect(self.kill)
         messageBar.layout().addWidget(progressBar)
         messageBar.layout().addWidget(cancelButton)
-        self._iface.messageBar().pushWidget(messageBar, self._iface.messageBar().INFO)
+        self._iface.messageBar().pushWidget(messageBar, Qgis.Info)
         self._messageBar = messageBar
         self._progressBar = progressBar
 
@@ -506,22 +507,22 @@ class NotificationHandler(object):
     @classmethod
     def pushError(cls, title, message, duration=None):
         cls._checkConfiguration()
-        cls._pushMessage(title, message, QgsMessageBar.CRITICAL, duration)
+        cls._pushMessage(title, message, Qgis.Critical, duration)
 
     @classmethod
     def pushWarning(cls, title, message, duration=None):
         cls._checkConfiguration()
-        cls._pushMessage(title, message, QgsMessageBar.WARNING, duration)
+        cls._pushMessage(title, message, Qgis.Warning, duration)
 
     @classmethod
     def pushSuccess(cls, title, message, duration=None):
         cls._checkConfiguration()
-        cls._pushMessage(title, message, QgsMessageBar.SUCCESS, duration)
+        cls._pushMessage(title, message, Qgis.Success, duration)
 
     @classmethod
     def pushInfo(cls, title, message, duration=None):
         cls._checkConfiguration()
-        cls._pushMessage(title, message, QgsMessageBar.INFO, duration)
+        cls._pushMessage(title, message, Qgis.Info, duration)
 
     @classmethod
     def _pushMessage(cls, title, message, messageLevel, duration=None):
