@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QMainWindow, QLabel, QWidget, \
     QVBoxLayout, QLayout, QSizePolicy
 from PyQt5.QtCore import QSize, pyqtSignal
 from PyQt5 import uic, QtCore
+from . import resources_rc
 
 FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'arcgiscon_dialog_new.ui'))
