@@ -95,7 +95,7 @@ class ArcGisConnector(object):
 
     def initGui(self):
         newLayerActionIcon = QIcon(':/plugins/ImageServerConnector/icons/logo.png')
-        self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'add arcgis imageserver layer..')
+        self._newLayerActionText = QCoreApplication.translate('ArcGisConnector', 'Add ArcGIS ImageServer Layer..')
         self._newLayerAction = QAction(
             newLayerActionIcon,
             self._newLayerActionText,
@@ -107,8 +107,10 @@ class ArcGisConnector(object):
         try:
             self._iface.layerToolBar().addAction(self._newLayerAction)
         except:
-            self._iface.addToolBarIcon(self._newLayerAction)   
-        self._iface.addPluginToRasterMenu(self._newLayerActionText, self._newLayerAction)
+            self._iface.addToolBarIcon(self._newLayerAction)
+        self._iface.dataSourceManagerToolBar().addSeparator()
+        self._iface.dataSourceManagerToolBar().addAction(newLayerActionIcon, self._newLayerActionText)
+        self._iface.addRasterToolBarIcon(self._newLayerAction)
         self._iface.insertAddLayerAction(self._newLayerAction)
         self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Refresh layer with current extent'))
         self._arcGisSaveImageAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Save layer image as..') )
@@ -222,6 +224,7 @@ class ArcGisConnector(object):
         self._iface.removePluginMenu(
             QCoreApplication.translate('ArcGisConnector', 'arcgiscon'),
             self._newLayerAction)
-        self._iface.removePluginVectorMenu(self._newLayerActionText, self._newLayerAction)
+        self._iface.removePluginRasterMenu(self._newLayerActionText, self._newLayerAction)
         self._iface.removeToolBarIcon(self._newLayerAction)        
         self._iface.removeCustomActionForLayerType(self._arcGisRefreshLayerAction)
+        self._iface.dataSourceManagerToolBar().removeAction(self._newLayerAction)
