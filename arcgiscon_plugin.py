@@ -109,7 +109,7 @@ class ArcGisConnector(object):
         except:
             self._iface.addToolBarIcon(self._newLayerAction)
         self._iface.dataSourceManagerToolBar().addSeparator()
-        self._iface.dataSourceManagerToolBar().addAction(newLayerActionIcon, self._newLayerActionText)
+        self._iface.dataSourceManagerToolBar().addAction(self._newLayerAction)
         self._iface.addRasterToolBarIcon(self._newLayerAction)
         self._iface.insertAddLayerAction(self._newLayerAction)
         self._arcGisRefreshLayerWithNewExtentAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Refresh layer with current extent'))
