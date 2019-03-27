@@ -117,10 +117,10 @@ class ArcGisConnector(object):
         self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'))
         self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS layer settings..'))
 
-        self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ArcGIS'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
 
         self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisSaveImageAction.triggered.connect(self._onLayerImageSave)

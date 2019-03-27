@@ -64,13 +64,6 @@ class LayerDialog(QDialog, LAYER_DIALOG):
         self.setupUi(self)  
         self.imageGridWidget.layout().setSpacing(50)
 
-
-    def wheelEvent(self, wheelEvent):
-        if wheelEvent.delta() < -1:        
-            self.scrolledDown.emit(wheelEvent.y)
-        wheelEvent.ignore()
-
-
     def clearLayout(self,layout):
         for i in reversed(list(range(layout.count()))): 
             widgetToRemove = layout.itemAt(i).widget()
@@ -95,12 +88,6 @@ class ImageLabel(QLabel):
 
     def setSizeHint(self, size):
         self.labelSize = size
- 
-    def sizeHint(self):
-        return self.labelSize
-
-    def minimumSizeHint(self):
-        return self.labelSize
 
 
 class ImageItemWidget(QWidget):
@@ -120,11 +107,6 @@ class ImageItemWidget(QWidget):
     def setSizeHint(self, size):
         self.widgetSize = size
 
-    def sizeHint(self):
-        return self.widgetSizeHint
-    
-    def minimumSizeHint(self):
-        return self.widgetSizeHint
 
     def initUI(self, width, height):
         layout = QVBoxLayout(self)
