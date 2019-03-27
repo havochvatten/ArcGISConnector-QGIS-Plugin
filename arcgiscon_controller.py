@@ -293,7 +293,7 @@ class ArcGisConRefreshController(QObject):
 
     def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
         esriLayer.qgsRasterLayer.triggerRepaint()
-        self._iface.layerTreeView().refreshLayerSymbology(esriLayer.qgsRasterLayer)
+        self._iface.layerTreeView().refreshLayerSymbology(esriLayer.qgsRasterLayer.id())
 
     def onWarning(self, connection, warningMessage):
         NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)

@@ -233,7 +233,7 @@ class EsriUpdateService(QtCore.QObject):
                     self.progress.emit(10)
                     extent = currentJob.imageSpec.metaInfo.extent
                     settings = currentJob.imageSpec.settings
-                    if 'skogsstyrelsen' in currentJob.connection.basicUrl and settings.renderingRule == None and settings.imageFormat != "png":  # Added ugly ugly code for PoC
+                    if 'skogsstyrelsen' in currentJob.connection.basicUrl and 'Swea/Sentinel2' in currentJob.connection.basicUrl and settings.renderingRule == None and settings.imageFormat != "png":  # Added ugly ugly code for PoC
                         # TODO: Delete this if statement
                         settings.renderingRule = json.dumps({"rasterFunction": "SKS SWIR"})
 
