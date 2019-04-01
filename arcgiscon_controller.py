@@ -7,7 +7,7 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsRasterLayer, QgsMessageLog
 from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
 from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
 from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
@@ -292,6 +292,12 @@ class ArcGisConRefreshController(QObject):
 
 
     def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
+        # Ugly reloading of layers because https://issues.qgis.org/issues/20536
+        esriLayer.isUpdating = True
+        QgsProject.instance().removeMapLayer(esriLayer.qgsRasterLayer)
+        esriLayer.updateQgsRasterLayer(newSrcPath)
+        QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
+        esriLayer.isUpdating = False
         esriLayer.qgsRasterLayer.triggerRepaint()
         self._iface.layerTreeView().refreshLayerSymbology(esriLayer.qgsRasterLayer.id())
 
