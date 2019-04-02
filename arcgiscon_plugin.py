@@ -7,7 +7,7 @@ from builtins import str
 from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QApplication
-from qgis.core import QgsMapLayer, QgsProject
+from qgis.core import QgsMapLayer, QgsProject, QgsMessageLog
 
 from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
@@ -38,6 +38,7 @@ class ArcGisConnector(object):
     _esriRasterLayers = None
     _updateService = None
     _qSettings = None
+    _legendActions = None
 
 # Controllers
     _settingsController = None
@@ -45,9 +46,9 @@ class ArcGisConnector(object):
     _refreshController = None
     _connectionController = None
     _layerDialogController = None
-    
-    def __init__(self, iface):            
-        self._iface = iface        
+
+    def __init__(self, iface):
+        self._iface = iface
         self.initControllers()
         self._pluginDir = os.path.dirname(__file__)
         self._qSettings = QSettings()
@@ -117,14 +118,14 @@ class ArcGisConnector(object):
         self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'))
         self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS layer settings..'))
 
-        self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
-        self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, False)
+        self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
+        self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
+        self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
+        self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
 
         self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisSaveImageAction.triggered.connect(self._onLayerImageSave)
-        self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer(True))
+        self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer())
         self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
         self._arcGisSettingsAction.triggered.connect(self._showSettingsDialog)
 
@@ -143,12 +144,12 @@ class ArcGisConnector(object):
                 self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
                 
     
-    def _refreshEsriLayer(self, withCurrentExtent=False):
+    def _refreshEsriLayer(self):
         qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
-            if layer.id() in self._esriRasterLayers:  
-                if withCurrentExtent:
-                    self._refreshController.updateLayerWithNewExtent(self._updateService, self._esriRasterLayers[layer.id()])
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.connection.conId:
+                    self._refreshController.updateLayerWithNewExtent(self._updateService, rasterLayer)
 
     def _onExtentsChanged(self):
         if self._iface.mapCanvas().renderFlag():
@@ -183,7 +184,7 @@ class ArcGisConnector(object):
             if qgsLayer.customProperty('arcgiscon_connection_url', ''):                
                 try:
                     esriLayer = EsriRasterLayer.restoreFromQgsLayer(qgsLayer)
-                    self._esriRasterLayers[qgsLayer.id()] = esriLayer
+                    self._esriRasterLayers[esriLayer.connection.conId] = esriLayer
                     self._iface.addCustomActionForLayer(self._arcGisRefreshLayerAction, qgsLayer)
                     self._iface.addCustomActionForLayer(self._arcGisRefreshLayerWithNewExtentAction, qgsLayer)
                 except: 
@@ -192,23 +193,23 @@ class ArcGisConnector(object):
     def _onLayerImageSave(self):
         qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
-            if layer.id() in self._esriRasterLayers:
-                selectedLayer = self._esriRasterLayers[layer.id()]
-                self._imageController.saveImage(selectedLayer.qgsRasterLayer.dataProvider().dataSourceUri())
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.qgsRasterLayer.id():
+                    self._imageController.saveImage(rasterLayer.qgsRasterLayer.dataProvider().dataSourceUri())
 
     def _chooseTimeExtent(self):
         qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
-            if layer.id() in self._esriRasterLayers:
-                selectedLayer = self._esriRasterLayers[layer.id()]
-                self._refreshController.showTimePicker(selectedLayer, lambda: self._refreshEsriLayer(True))
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.qgsRasterLayer.id():
+                    self._refreshController.showTimePicker(rasterLayer, lambda: self._refreshEsriLayer())
 
     def _showSettingsDialog(self):
         qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
-            if layer.id() in self._esriRasterLayers:
-                selectedLayer = self._esriRasterLayers[layer.id()]
-                self._settingsController.showSettingsDialog(selectedLayer, lambda: self._refreshEsriLayer(True))   
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.qgsRasterLayer.id():
+                    self._settingsController.showSettingsDialog(rasterLayer, lambda: self._refreshEsriLayer())
 
     def _updateServiceFinished(self):            
         self._updateService.tearDown()
@@ -216,8 +217,21 @@ class ArcGisConnector(object):
         self._updateService.moveToThread(QApplication.instance().thread())
 
     def _onLayerRemoved(self, layerId):
-        if layerId in self._esriRasterLayers and not self._esriRasterLayers[layerId].isUpdating:
-            del self._esriRasterLayers[layerId]
+        toDelete = None
+        for rasterLayer in self._esriRasterLayers.values():
+            try:
+                if layerId == rasterLayer.qgsRasterLayer.id() and not rasterLayer.isUpdating:
+                    # This code should not be reachable, but exists in case it does?
+                    toDelete = rasterLayer.connection.conId
+                    break
+
+            except RuntimeError:
+                # If we are here the layer has been deleted, weird side effect of remove map layer?
+                if not rasterLayer.isUpdating:
+                    toDelete = rasterLayer.connection.conId
+                    break
+        if toDelete is not None:
+            del self._esriRasterLayers[toDelete]
 
     def unload(self):
         FileSystemService().clearAllFilesFromTmpFolder()
