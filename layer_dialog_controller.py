@@ -32,6 +32,7 @@ class LayerDialogController(QObject):
     legendActions = None
     serverItemManager = None
     serverExtentNotRepresentative = False
+    defaultPixmapPath = ':/plugins/ImageServerConnector/icons/placeholderMapLight.png'
     lastScrollPos = 0
     imageCount = 0
     serverItemInfo = []
@@ -43,7 +44,7 @@ class LayerDialogController(QObject):
 
     def __init__(self, iface):
         QObject.__init__(self)
-        self.iface = iface				
+        self.iface = iface
 
     def _onSearchLineEditChanged(self, text):
         #TODO: Show filtered items in a good way. Almost done.
@@ -117,6 +118,7 @@ class LayerDialogController(QObject):
     def createAndConfigureImageItem(self, imageSpec, name):
         imageSpec.name = name
         loaderMovie = QMovie(':/plugins/ImageServerConnector/icons/loading.gif')
+
         item = ImageItemWidget(self.grid, imageSpec.width * self.IMAGE_SCALE, imageSpec.height * self.IMAGE_SCALE)
         item.imageDateLabel.setText(name) 
         item.thumbnailLabel.setMovie(loaderMovie)
@@ -355,23 +357,25 @@ class LayerDialogController(QObject):
         if self.fileIsHealthy(filePath):
             pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
             item.thumbnailLabel.setPixmap(pixmap)
-            colorSpan =  self.getColorSpan(filePath)
+            colorSpan = self.getColorSpan(filePath)
             emptyImage = True
             if colorSpan:
                 for x in colorSpan:
                     if x[0] != x[1]:
                         emptyImage = False
+
                 if emptyImage:
-                    self.removeImageItemWidget(item)
+                    default_pixmap = self.scaleImage(self.defaultPixmapPath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
+                    item.thumbnailLabel.setPixmap(default_pixmap)
         else:
             newWidth = 300
             newHeight = 300
             self.serverExtentNotRepresentative = True
-            item.configureFromDimensions(newWidth,newHeight)
+            item.configureFromDimensions(newWidth, newHeight)
             newSpec = imageSpec.copy() 
-            newSpec.setSize([newWidth,newHeight])
-            newSpec.setAspectRatio(newWidth,newHeight)
-            self.startImageScrapingJob(newSpec,item)
+            newSpec.setSize([newWidth, newHeight])
+            newSpec.setAspectRatio(newWidth, newHeight)
+            self.startImageScrapingJob(newSpec, item)
 
     def onWarning(self, warningMessage):
         NotificationHandler.pushWarning('['+self.connection.name+'] :', warningMessage, 5)
