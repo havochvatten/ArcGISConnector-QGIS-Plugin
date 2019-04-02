@@ -244,7 +244,6 @@ class ArcGisConRefreshController(QObject):
 
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
-            QgsMessageLog.logMessage('checking render lock: ' + str(esriLayer.connection.renderLocked))
             if esriLayer.connection.renderLocked:
                 esriLayer.connection.renderLocked = False
                 return
