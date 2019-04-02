@@ -148,10 +148,8 @@ class ArcGisConNewController(QObject):
 
     def onSuccess(self, srcPath, connection, imageSpec):
         esriLayer = EsriRasterLayer.create(connection, imageSpec, srcPath)
-        for action in self._legendActions:
-            self._iface.addCustomActionForLayer(action, esriLayer.qgsRasterLayer)
         QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
-        self._esriRasterLayers[esriLayer.qgsRasterLayer.id()]=esriLayer
+        self._esriRasterLayers[esriLayer.connection.conId]=esriLayer
         self._connection.srcPath = srcPath
         self._connection.renderLocked = True
 
