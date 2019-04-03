@@ -230,7 +230,7 @@ class EsriUpdateService(QtCore.QObject):
                     currentJob = self.connectionPool.pop()
                     del self.connectionPool[:]
 
-                    self.progress.emit(10)
+                    self.progress.emit(0)
                     extent = currentJob.imageSpec.metaInfo.extent
                     settings = currentJob.imageSpec.settings
                     if 'skogsstyrelsen' in currentJob.connection.basicUrl and 'Swea/Sentinel2' in currentJob.connection.basicUrl and settings.renderingRule == None and settings.imageFormat != "png":  # Added ugly ugly code for PoC
@@ -245,11 +245,9 @@ class EsriUpdateService(QtCore.QObject):
                     )
 
                     url = self.createSourceURL(currentJob.connection, query)
-                    self.progress.emit(90)
                     if url is not None and not self._isKilled:
                         filePath = self._processSources([url], currentJob.connection, settings.imageFormat)
                         currentJob.onSuccess.emit(filePath)
-                    self.progress.emit(100)
                     self.state = EsriUpdateServiceState.Idle
                     self._isKilled = False
 
@@ -322,12 +320,23 @@ class EsriUpdateService(QtCore.QObject):
         # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
         response = None
         if connection.authMethod == ConnectionAuthType.BasicAuthetication:
-            response = requests.get(href, auth=(connection.username, connection.password))
+            response = requests.get(href, auth=(connection.username, connection.password), stream=True)
         else:
-            response = requests.get(href)
+            response = requests.get(href, stream=True)
+
+        dl_length = 0
+        data_full = bytes()
+        total_length = response.headers.get('content-length')
+
+        for data_chunk in response.iter_content(chunk_size=4096):
+            data_full += data_chunk
+            dl_length += len(data_chunk)
+            completed = 100 * dl_length / int(total_length)
+            self.progress.emit(completed)
+
         connectionName_clean = re.sub('\W+','', connection.name)
         fname = connectionName_clean + "_" + str(connection.conId)
-        return dict(filename=fname, data=response.content)
+        return dict(filename=fname, data=data_full)
 
     def _processSources(self, sources, connection, imageFormat):
         combined = {}
