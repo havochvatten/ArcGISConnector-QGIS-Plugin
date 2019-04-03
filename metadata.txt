@@ -24,7 +24,7 @@ repository=https://github.com/havochvatten/ImageServerConnector-QGIS-Plugin/
 category=Plugins
 icon=gui/icons/logo.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
