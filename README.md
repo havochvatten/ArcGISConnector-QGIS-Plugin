@@ -1,5 +1,10 @@
 # ArcGIS™ Image Server Connector
 
+**_UPDATE:_**
+This plugin has been updated to work with QGIS 3!!
+*HOWEVER* there is a bug in QGIS 3 preventing the plugin from reloading raster files: https://issues.qgis.org/issues/20536. 
+Until this is fixed the plugin has to delete and add a new layer to show updated images. This has tons of unwanted side effects, some which have been fixed. Don't expect these layers to work well, especially with other plugins, for the time being.
+
 ## Summary
 
 **Welcome to this open source [QGIS](https://qgis.org/en/site/) plugin.**
@@ -13,7 +18,6 @@ The project was set in motion by the [*Swedish Agency for Marine and Water Manag
 
 ## Limitations
 
-* The plugin was developed for QGIS 2, and is currently not compatible with QGIS 3+. 
 * The plugin currently only supports logging in to image servers directly, meaning any image service url that ends with *'/ImageServer'*. 
 * There is currently no support for saving and loading a project with raster layers.
 
@@ -31,7 +35,7 @@ In your QGIS instance, you can download the latest version of the *ArcGIS Image 
 
 ## Development
 
-The plugin is developed using Python 2. It uses a version of the [*model-view-controller*](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) design pattern. The model aims to only contain data to be manipulated by the controller and not use any third party modules. Currently, we use a service module to tie the functionality together between view controllers and the model. The controllers handle the interaction between the model and the user interface, each controller handling a single such interface. The current architecture leaves a lot of space for improvement, and is, just as the plugin, in an alpha state.
+ It uses a version of the [*model-view-controller*](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) design pattern. The model aims to only contain data to be manipulated by the controller and not use any third party modules. Currently, we use a service module to tie the functionality together between view controllers and the model. The controllers handle the interaction between the model and the user interface, each controller handling a single such interface. The current architecture leaves a lot of space for improvement, and is, just as the plugin, in an alpha state.
 
 ## Backlog for Future Development 
 
@@ -41,7 +45,6 @@ For the future of this project we have composed a backlog for issues we recommen
 
 * Implement a test Suite for stability
 * Save and load project feature
-* QGIS 3 support, ie. upgrade to Python 3.
 * Add support for more server configurations. Currently quite experimental with the type of servers it supports.
 
 ### QGIS main view
