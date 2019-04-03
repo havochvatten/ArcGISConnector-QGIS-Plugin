@@ -14,7 +14,7 @@ from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystem
 from .event_handling import *
 from queue import Queue
 import datetime
-import time
+import tempfile
 
 
 import json
@@ -246,7 +246,6 @@ class ArcGisConRefreshController(QObject):
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
             if esriLayer.connection.renderLocked:
-                time.sleep(1) # TODO: This seems to be needed? Should be fixed anyway.
                 esriLayer.connection.renderLocked = False
                 return
 
@@ -292,10 +291,15 @@ class ArcGisConRefreshController(QObject):
 
     def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
         # Ugly reloading of layers because https://issues.qgis.org/issues/20536
+        # Has to save style in order to not lose anything.
         esriLayer.isUpdating = True
+        tf = tempfile.NamedTemporaryFile()
+        esriLayer.qgsRasterLayer.saveNamedStyle(tf.name)
         QgsProject.instance().removeMapLayer(esriLayer.qgsRasterLayer)
         esriLayer.updateQgsRasterLayer(newSrcPath)
         QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
+        esriLayer.qgsRasterLayer.loadNamedStyle(tf.name + '.qml')
+        tf.close()
         esriLayer.isUpdating = False
         esriLayer.qgsRasterLayer.triggerRepaint()
         self._iface.layerTreeView().refreshLayerSymbology(esriLayer.qgsRasterLayer.id())
