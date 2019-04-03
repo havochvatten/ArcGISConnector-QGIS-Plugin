@@ -14,6 +14,7 @@ from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystem
 from .event_handling import *
 from queue import Queue
 import datetime
+import time
 
 
 import json
@@ -245,6 +246,7 @@ class ArcGisConRefreshController(QObject):
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
             if esriLayer.connection.renderLocked:
+                time.sleep(1) # TODO: This seems to be needed? Should be fixed anyway.
                 esriLayer.connection.renderLocked = False
                 return
 
