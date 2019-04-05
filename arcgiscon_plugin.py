@@ -12,7 +12,7 @@ from qgis.core import QgsMapLayer, QgsProject, QgsMessageLog
 from .arcgiscon_service import NotificationHandler, EsriUpdateService,\
     FileSystemService
 from .arcgiscon_controller import ArcGisConNewController, \
-    ArcGisConRefreshController, ConnectionSettingsController
+    ArcGisConRefreshController, ConnectionSettingsController, QueryFeatureController
 from .arcgiscon_image_controller import ImageController
 from .layer_dialog_controller import LayerDialogController
 from .arcgiscon_model import EsriRasterLayer
@@ -46,6 +46,7 @@ class ArcGisConnector(object):
     _refreshController = None
     _connectionController = None
     _layerDialogController = None
+    _queryFeatureController = None
 
     def __init__(self, iface):
         self._iface = iface
@@ -77,6 +78,7 @@ class ArcGisConnector(object):
         self._refreshController = ArcGisConRefreshController(self._iface)
         self._connectionController = ArcGisConNewController(self._iface)
         self._layerDialogController = LayerDialogController(self._iface)
+        self._queryFeatureController = QueryFeatureController(self._iface)
 
         # Register handler to event
         self._connectionController.addEventHandler(self.handleLogin)
@@ -118,16 +120,31 @@ class ArcGisConnector(object):
         self._arcGisTimePickerAction = QAction( QCoreApplication.translate('ArcGisConnector', 'Choose layer time extent..'))
         self._arcGisSettingsAction = QAction( QCoreApplication.translate('ArcGisConnector', 'ArcGIS layer settings..'))
 
+        self._histogramDialogAction = QAction(QCoreApplication.translate('ArcGisConnector', 'Compute histogram from current extent..'))
+
         self._iface.addCustomActionForLayerType(self._arcGisSaveImageAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
         self._iface.addCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
         self._iface.addCustomActionForLayerType(self._arcGisTimePickerAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
         self._iface.addCustomActionForLayerType(self._arcGisSettingsAction, QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'), QgsMapLayer.RasterLayer, True)
+
+        self._iface.addCustomActionForLayerType(self._histogramDialogAction,
+                                                QCoreApplication.translate('ArcGisConnector', 'ImageServer Connector'),
+                                                QgsMapLayer.RasterLayer, True)
 
         self._iface.mapCanvas().extentsChanged.connect(self._onExtentsChanged)
         self._arcGisSaveImageAction.triggered.connect(self._onLayerImageSave)
         self._arcGisRefreshLayerWithNewExtentAction.triggered.connect(lambda: self._refreshEsriLayer())
         self._arcGisTimePickerAction.triggered.connect(self._chooseTimeExtent)
         self._arcGisSettingsAction.triggered.connect(self._showSettingsDialog)
+
+        self._histogramDialogAction.triggered.connect(self._showComputeHistogram)
+
+    def _getCurrentLayer(self):
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
+        for layer in qgsLayers:
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.connection.conId:
+                    return rasterLayer
 
     def _connectToRefreshAction(self):
         for action in self._iface.mapNavToolToolBar().actions():
@@ -142,7 +159,13 @@ class ArcGisConnector(object):
         for layer in list(self._esriRasterLayers.values()):
             if QgsProject.instance().layerTreeRoot().findLayer(layer.qgsRasterLayer.id()).isVisible():
                 self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
-                
+
+    def _showComputeHistogram(self):
+        qgsLayers = self._iface.layerTreeView().selectedLayers()
+        for layer in qgsLayers:
+            for rasterLayer in self._esriRasterLayers.values():
+                if layer.id() == rasterLayer.qgsRasterLayer.id():
+                    self._queryFeatureController.showHistogramDialog(rasterLayer)
     
     def _refreshEsriLayer(self):
         qgsLayers = self._iface.layerTreeView().selectedLayers()

@@ -539,3 +539,18 @@ class NotificationHandler(object):
     def _checkConfiguration(cls):
         if not cls._iface:
             raise RuntimeError("iface is not configured")
+
+class QueryFeatureService(object):
+
+    def computeHistogram(self, settings):
+        histogram_parameters = {
+            "geometryType": "esriGeometryEnvelope",
+            "geometry": "geometry=" + str(settings['envelope']),
+            "mosaicRule": settings['mosaic_rule'],
+            "renderingRule": settings['rendering_rule'],
+            "pixelSize": settings['pixel_size'],
+            "f": settings['format']
+        }
+        r = requests.get(settings['url'], params=histogram_parameters, auth=settings['auth'])
+        QgsMessageLog.logMessage(str(r.url))
+        return r.content

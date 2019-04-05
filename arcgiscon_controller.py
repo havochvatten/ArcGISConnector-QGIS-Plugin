@@ -8,9 +8,9 @@ standard_library.install_aliases()
 from builtins import str
 from builtins import range
 from qgis.core import QgsProject, QgsRasterLayer, QgsMessageLog
-from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
+from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog, HistogramDialog
 from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
-from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
+from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService, QueryFeatureService
 from .event_handling import *
 from queue import Queue
 import datetime
@@ -516,3 +516,55 @@ class ConnectionSettingsController(QObject):
     def _mosaicCheckBoxChanged(self, value):
         self._mosaicMode = bool(value)
         self._settingsDialog.mosaicTextEdit.setEnabled(value)
+
+class QueryFeatureController(QObject):
+    _iface = None
+    _histogramDialog = None
+    _histogramConfig = None
+    _rasterLayer = None
+
+    def __init__(self, iface):
+        QObject.__init__(self)
+        self._iface = iface
+
+
+    def showHistogramDialog(self, rasterLayer):
+        self._histogramDialog = HistogramDialog()
+        self._histogramDialog.setModal(True)
+        self._histogramDialog.formatComboBox.addItem("html")
+        self._histogramDialog.formatComboBox.addItem("json")
+        self._histogramDialog.buttonBox.button(QDialogButtonBox.Save).clicked.connect(self._saveHistogram)
+        self._histogramDialog.buttonBox.button(QDialogButtonBox.Open).clicked.connect(self._openHistogram)
+        self._rasterLayer = rasterLayer
+
+        self._histogramDialog.show()
+        self._histogramDialog.exec()
+
+    def _saveHistogram(self):
+        settings = self.getHistogramSettings()
+        settings['url'] = self._rasterLayer.connection.basicUrl + "/computeHistograms"
+        histogram = QueryFeatureService().computeHistogram(settings)
+        QgsMessageLog.logMessage("histogram: " + str(histogram))
+        pass
+
+    def _openHistogram(self):
+        pass
+
+    def getHistogramSettings(self):
+        canvas_extent = self._iface.mapCanvas().extent()
+        envelope = {
+            "xmin": canvas_extent.xMinimum(),
+            "ymin": canvas_extent.yMinimum(),
+            "xmax": canvas_extent.xMaximum(),
+            "ymax": canvas_extent.yMaximum()
+
+        }
+        settings = {
+            "mosaic_rule": self._histogramDialog.mosaicEdit.toPlainText(),
+            "rendering_rule": self._histogramDialog.renderingRuleEdit.text(),
+            "pixel_size": self._histogramDialog.pixelSizeEdit.text(),
+            "format": self._histogramDialog.formatComboBox.currentText(),
+            "envelope": envelope,
+            "auth": self._rasterLayer.connection.auth
+        }
+        return settings

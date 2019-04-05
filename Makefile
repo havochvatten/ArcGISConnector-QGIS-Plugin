@@ -63,7 +63,8 @@ UI_FILES = \
 	timeinput_dialog.ui \
 	settings.ui \
 	image_item.ui \
-	new_layer_dialog.ui
+	new_layer_dialog.ui \
+	histogram_dialog.ui
 
 EXTRAS = metadata.txt
 
