@@ -545,7 +545,7 @@ class QueryFeatureService(object):
     def computeHistogram(self, settings):
         histogram_parameters = {
             "geometryType": "esriGeometryEnvelope",
-            "geometry": "geometry=" + str(settings['envelope']),
+            "geometry": str(settings['envelope']),
             "mosaicRule": settings['mosaic_rule'],
             "renderingRule": settings['rendering_rule'],
             "pixelSize": settings['pixel_size'],
