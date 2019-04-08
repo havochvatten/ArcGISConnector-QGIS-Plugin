@@ -143,7 +143,7 @@ class ArcGisConnector(object):
         qgsLayers = self._iface.layerTreeView().selectedLayers()
         for layer in qgsLayers:
             for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.connection.conId:
+                if layer.id() == rasterLayer.qgsRasterLayer.id():
                     return rasterLayer
 
     def _connectToRefreshAction(self):
@@ -161,18 +161,12 @@ class ArcGisConnector(object):
                 self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
 
     def _showComputeHistogram(self):
-        qgsLayers = self._iface.layerTreeView().selectedLayers()
-        for layer in qgsLayers:
-            for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.qgsRasterLayer.id():
-                    self._queryFeatureController.showHistogramDialog(rasterLayer)
+        rasterLayer = self._getCurrentLayer()
+        self._queryFeatureController.showHistogramDialog(rasterLayer)
     
     def _refreshEsriLayer(self):
-        qgsLayers = self._iface.layerTreeView().selectedLayers()
-        for layer in qgsLayers:
-            for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.connection.conId:
-                    self._refreshController.updateLayerWithNewExtent(self._updateService, rasterLayer)
+        rasterLayer = self._getCurrentLayer()
+        self._refreshController.updateLayerWithNewExtent(self._updateService, rasterLayer)
 
     def _onExtentsChanged(self):
         if self._iface.mapCanvas().renderFlag():
@@ -214,25 +208,16 @@ class ArcGisConnector(object):
                     raise
 
     def _onLayerImageSave(self):
-        qgsLayers = self._iface.layerTreeView().selectedLayers()
-        for layer in qgsLayers:
-            for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.qgsRasterLayer.id():
-                    self._imageController.saveImage(rasterLayer.qgsRasterLayer.dataProvider().dataSourceUri())
+        rasterLayer = self._getCurrentLayer()
+        self._imageController.saveImage(rasterLayer.qgsRasterLayer.dataProvider().dataSourceUri())
 
     def _chooseTimeExtent(self):
-        qgsLayers = self._iface.layerTreeView().selectedLayers()
-        for layer in qgsLayers:
-            for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.qgsRasterLayer.id():
-                    self._refreshController.showTimePicker(rasterLayer, lambda: self._refreshEsriLayer())
+        rasterLayer = self._getCurrentLayer()
+        self._refreshController.showTimePicker(rasterLayer, lambda: self._refreshEsriLayer())
 
     def _showSettingsDialog(self):
-        qgsLayers = self._iface.layerTreeView().selectedLayers()
-        for layer in qgsLayers:
-            for rasterLayer in self._esriRasterLayers.values():
-                if layer.id() == rasterLayer.qgsRasterLayer.id():
-                    self._settingsController.showSettingsDialog(rasterLayer, lambda: self._refreshEsriLayer())
+        rasterLayer = self._getCurrentLayer()
+        self._settingsController.showSettingsDialog(rasterLayer, lambda: self._refreshEsriLayer())
 
     def _updateServiceFinished(self):            
         self._updateService.tearDown()
@@ -262,7 +247,8 @@ class ArcGisConnector(object):
             QCoreApplication.translate('ArcGisConnector', 'arcgiscon'),
             self._newLayerAction)
         self._iface.removePluginRasterMenu(self._newLayerActionText, self._newLayerAction)
-        self._iface.removeToolBarIcon(self._newLayerAction)        
+        self._iface.removeToolBarIcon(self._newLayerAction)
+        self._iface.layerToolBar().removeAction(self._newLayerAction)
         self._iface.removeCustomActionForLayerType(self._arcGisRefreshLayerAction)
         self._iface.removeCustomActionForLayerType(self._arcGisSaveImageAction)
         self._iface.removeCustomActionForLayerType(self._arcGisRefreshLayerWithNewExtentAction)
