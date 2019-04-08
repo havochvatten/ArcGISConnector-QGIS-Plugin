@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from PyQt5.QtCore import QDate, QTime, QCoreApplication
-from PyQt5.QtWidgets import QDialogButtonBox
+from PyQt5.QtCore import QDate, QTime, QCoreApplication, QSize
+from PyQt5.QtWidgets import QDialogButtonBox, QDialog, QTextBrowser, QFileDialog, QVBoxLayout
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
@@ -245,9 +245,6 @@ class ArcGisConRefreshController(QObject):
 
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
-            if esriLayer.connection.renderLocked:
-                esriLayer.connection.renderLocked = False
-                return
 
             mapCanvas = self._iface.mapCanvas()
             try:
@@ -530,9 +527,8 @@ class QueryFeatureController(QObject):
 
     def showHistogramDialog(self, rasterLayer):
         self._histogramDialog = HistogramDialog()
-        self._histogramDialog.setModal(True)
-        self._histogramDialog.formatComboBox.addItem("html")
         self._histogramDialog.formatComboBox.addItem("json")
+        self._histogramDialog.formatComboBox.addItem("html")
         self._histogramDialog.buttonBox.button(QDialogButtonBox.Save).clicked.connect(self._saveHistogram)
         self._histogramDialog.buttonBox.button(QDialogButtonBox.Open).clicked.connect(self._openHistogram)
         self._rasterLayer = rasterLayer
@@ -544,11 +540,31 @@ class QueryFeatureController(QObject):
         settings = self.getHistogramSettings()
         settings['url'] = self._rasterLayer.connection.basicUrl + "/computeHistograms"
         histogram = QueryFeatureService().computeHistogram(settings)
-        QgsMessageLog.logMessage("histogram: " + str(histogram))
-        pass
+        fname = QFileDialog.getSaveFileName(self._histogramDialog, 'Choose output file location', filter='*.' + settings['format'])
+        if fname is not None:
+            file = open(fname[0], 'w')
+            file.write(histogram.text)
+            file.close()
+
 
     def _openHistogram(self):
-        pass
+        settings = self.getHistogramSettings()
+        settings['url'] = self._rasterLayer.connection.basicUrl + "/computeHistograms"
+        histogram = QueryFeatureService().computeHistogram(settings)
+
+        d = QDialog(self._histogramDialog)
+        layout = QVBoxLayout(d)
+        browser = QTextBrowser()
+        if settings['format'] == 'json':
+            browser.setHtml(str(histogram.json()))
+        else:
+            browser.setHtml(histogram.text)
+        layout.addWidget(browser)
+        d.setWindowTitle('Histogram')
+        d.resize(QSize(500,500))
+        d.show()
+        d.exec()
+
 
     def getHistogramSettings(self):
         canvas_extent = self._iface.mapCanvas().extent()

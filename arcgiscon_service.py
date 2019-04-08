@@ -553,4 +553,4 @@ class QueryFeatureService(object):
         }
         r = requests.get(settings['url'], params=histogram_parameters, auth=settings['auth'])
         QgsMessageLog.logMessage(str(r.url))
-        return r.content
+        return r
