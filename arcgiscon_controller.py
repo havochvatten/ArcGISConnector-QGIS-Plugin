@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from PyQt5.QtCore import QDate, QTime, QCoreApplication
-from PyQt5.QtWidgets import QDialogButtonBox
+from PyQt5.QtCore import QDate, QTime, QCoreApplication, QSize
+from PyQt5.QtWidgets import QDialogButtonBox, QDialog, QTextBrowser, QFileDialog, QVBoxLayout
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
 from qgis.core import QgsProject, QgsRasterLayer, QgsMessageLog
-from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog
+from .arcgiscon_ui import ArcGisConDialogNew, TimePickerDialog, SettingsDialog, HistogramDialog
 from .arcgiscon_model import Connection, EsriRasterLayer, EsriConnectionJSONValidatorLayer, InvalidCrsIdException
-from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService
+from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, FileSystemService, QueryFeatureService
 from .event_handling import *
 from queue import Queue
 import datetime
@@ -245,10 +245,6 @@ class ArcGisConRefreshController(QObject):
 
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
-            if esriLayer.connection.renderLocked:
-                esriLayer.connection.renderLocked = False
-                return
-
             mapCanvas = self._iface.mapCanvas()
             try:
                 esriLayer.imageSpec.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
@@ -516,3 +512,76 @@ class ConnectionSettingsController(QObject):
     def _mosaicCheckBoxChanged(self, value):
         self._mosaicMode = bool(value)
         self._settingsDialog.mosaicTextEdit.setEnabled(value)
+
+class QueryFeatureController(QObject):
+    _iface = None
+    _histogramDialog = None
+    _histogramConfig = None
+    _rasterLayer = None
+
+    def __init__(self, iface):
+        QObject.__init__(self)
+        self._iface = iface
+
+
+    def showHistogramDialog(self, rasterLayer):
+        self._histogramDialog = HistogramDialog()
+        self._histogramDialog.typeComboBox.addItem("Histograms", "/computeHistograms")
+        self._histogramDialog.typeComboBox.addItem("Statistics histograms", "/computeStatisticsHistograms")
+        self._histogramDialog.formatComboBox.addItem("JSON")
+        self._histogramDialog.formatComboBox.addItem("HTML")
+        self._histogramDialog.buttonBox.button(QDialogButtonBox.Save).clicked.connect(self._saveHistogram)
+        self._histogramDialog.buttonBox.button(QDialogButtonBox.Open).clicked.connect(self._openHistogram)
+        self._rasterLayer = rasterLayer
+
+        self._histogramDialog.show()
+        self._histogramDialog.exec()
+
+    def _saveHistogram(self):
+        settings = self.getHistogramSettings()
+        settings['url'] = self._rasterLayer.connection.basicUrl + str(self._histogramDialog.typeComboBox.currentData())
+        histogram = QueryFeatureService().computeHistogram(settings)
+        fname = QFileDialog.getSaveFileName(self._histogramDialog, 'Choose output file location', filter='*.' + settings['format'])
+        if all(fname):
+            file = open(fname[0], 'w')
+            file.write(histogram.text)
+            file.close()
+
+
+    def _openHistogram(self):
+        settings = self.getHistogramSettings()
+        settings['url'] = self._rasterLayer.connection.basicUrl + str(self._histogramDialog.typeComboBox.currentData())
+        histogram = QueryFeatureService().computeHistogram(settings)
+
+        d = QDialog(self._histogramDialog)
+        layout = QVBoxLayout(d)
+        browser = QTextBrowser()
+        if settings['format'] == 'json':
+            browser.setHtml(str(histogram.json()))
+        else:
+            browser.setHtml(histogram.text)
+        layout.addWidget(browser)
+        d.setWindowTitle('Histogram')
+        d.resize(QSize(500, 500))
+        d.show()
+        d.exec()
+
+
+    def getHistogramSettings(self):
+        canvas_extent = self._iface.mapCanvas().extent()
+        envelope = {
+            "xmin": canvas_extent.xMinimum(),
+            "ymin": canvas_extent.yMinimum(),
+            "xmax": canvas_extent.xMaximum(),
+            "ymax": canvas_extent.yMaximum()
+
+        }
+        settings = {
+            "mosaic_rule": self._histogramDialog.mosaicEdit.toPlainText(),
+            "rendering_rule": self._histogramDialog.renderingRuleEdit.text(),
+            "pixel_size": self._histogramDialog.pixelSizeEdit.text(),
+            "format": self._histogramDialog.formatComboBox.currentText(),
+            "envelope": envelope,
+            "auth": self._rasterLayer.connection.auth
+        }
+        return settings

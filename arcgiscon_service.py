@@ -18,7 +18,6 @@ import time
 import sys
 import shutil
 import requests
-import base64
 import urllib.request, urllib.parse, urllib.error
 import sip
 import re
@@ -473,7 +472,6 @@ class FileSystemService(object):
             cred = None
             try:
                 cred = json.loads(open(self.credentialsFile).read())
-                cred['password'] = base64.b64decode(cred['password'])
             except:
                 pass
             return cred
@@ -484,7 +482,6 @@ class FileSystemService(object):
 
     def saveCredentials(self, credentials):
         with open(self.credentialsFile, 'w+') as outfile:
-            credentials['password'] = base64.b64encode(credentials['password'])
             json.dump(credentials, outfile)
 
     def saveImageAs(self, srcPath, dstPath):
@@ -542,3 +539,18 @@ class NotificationHandler(object):
     def _checkConfiguration(cls):
         if not cls._iface:
             raise RuntimeError("iface is not configured")
+
+class QueryFeatureService(object):
+
+    def computeHistogram(self, settings):
+        histogram_parameters = {
+            "geometryType": "esriGeometryEnvelope",
+            "geometry": str(settings['envelope']),
+            "mosaicRule": settings['mosaic_rule'],
+            "renderingRule": settings['rendering_rule'],
+            "pixelSize": settings['pixel_size'],
+            "f": settings['format']
+        }
+        r = requests.get(settings['url'], params=histogram_parameters, auth=settings['auth'])
+        QgsMessageLog.logMessage(str(r.url))
+        return r

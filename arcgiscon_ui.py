@@ -15,9 +15,11 @@ FORM_CLASS_NEW, _ = uic.loadUiType(os.path.join(
 
 TIME_FORM, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'timeinput_dialog.ui'))
-
 SETTINGS_FORM, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'settings.ui'))
+HISTOGRAM_FORM, _ = uic.loadUiType(os.path.join(
+    os.path.dirname(__file__), 'histogram_dialog.ui'))
+
 DASHBOARD_WINDOW, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'image_server_dashboard.ui'))
 
@@ -51,6 +53,12 @@ class SettingsDialog(QDialog, SETTINGS_FORM):
 class ImageServerDashboard(QMainWindow, DASHBOARD_WINDOW):
     def __init__(self, parent=None):        
         super(ImageServerDashboard, self).__init__(parent)        
+        self.setupUi(self)
+
+
+class HistogramDialog(QDialog, HISTOGRAM_FORM):
+    def __init__(self, parent=None):
+        super(HistogramDialog, self).__init__(parent)
         self.setupUi(self)
 
 
