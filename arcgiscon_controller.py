@@ -245,7 +245,6 @@ class ArcGisConRefreshController(QObject):
 
     def updateLayerWithNewExtent(self, updateService, esriLayer):
         if esriLayer.connection is not None:
-
             mapCanvas = self._iface.mapCanvas()
             try:
                 esriLayer.imageSpec.updateBoundingBoxByRectangle(mapCanvas.extent(), mapCanvas.mapSettings().destinationCrs().authid())
@@ -527,8 +526,10 @@ class QueryFeatureController(QObject):
 
     def showHistogramDialog(self, rasterLayer):
         self._histogramDialog = HistogramDialog()
-        self._histogramDialog.formatComboBox.addItem("json")
-        self._histogramDialog.formatComboBox.addItem("html")
+        self._histogramDialog.typeComboBox.addItem("Histograms", "/computeHistograms")
+        self._histogramDialog.typeComboBox.addItem("Statistics histograms", "/computeStatisticsHistograms")
+        self._histogramDialog.formatComboBox.addItem("JSON")
+        self._histogramDialog.formatComboBox.addItem("HTML")
         self._histogramDialog.buttonBox.button(QDialogButtonBox.Save).clicked.connect(self._saveHistogram)
         self._histogramDialog.buttonBox.button(QDialogButtonBox.Open).clicked.connect(self._openHistogram)
         self._rasterLayer = rasterLayer
@@ -538,10 +539,10 @@ class QueryFeatureController(QObject):
 
     def _saveHistogram(self):
         settings = self.getHistogramSettings()
-        settings['url'] = self._rasterLayer.connection.basicUrl + "/computeHistograms"
+        settings['url'] = self._rasterLayer.connection.basicUrl + str(self._histogramDialog.typeComboBox.currentData())
         histogram = QueryFeatureService().computeHistogram(settings)
         fname = QFileDialog.getSaveFileName(self._histogramDialog, 'Choose output file location', filter='*.' + settings['format'])
-        if fname is not None:
+        if all(fname):
             file = open(fname[0], 'w')
             file.write(histogram.text)
             file.close()
@@ -549,7 +550,7 @@ class QueryFeatureController(QObject):
 
     def _openHistogram(self):
         settings = self.getHistogramSettings()
-        settings['url'] = self._rasterLayer.connection.basicUrl + "/computeHistograms"
+        settings['url'] = self._rasterLayer.connection.basicUrl + str(self._histogramDialog.typeComboBox.currentData())
         histogram = QueryFeatureService().computeHistogram(settings)
 
         d = QDialog(self._histogramDialog)
@@ -561,7 +562,7 @@ class QueryFeatureController(QObject):
             browser.setHtml(histogram.text)
         layout.addWidget(browser)
         d.setWindowTitle('Histogram')
-        d.resize(QSize(500,500))
+        d.resize(QSize(500, 500))
         d.show()
         d.exec()
 
