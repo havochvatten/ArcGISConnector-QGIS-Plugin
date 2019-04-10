@@ -68,9 +68,6 @@ UI_FILES = \
 
 EXTRAS = metadata.txt
 
-LIB_DIRS = \
-	PIL
-
 EXTRA_DIRS = \
 	gui
 
@@ -137,7 +134,7 @@ deploy: compile transcompile
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	@echo "Deploying plugin to your plugins directory."
 	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+#	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 #	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 
@@ -147,7 +144,7 @@ dclean:
 	@echo
 	@echo "-----------------------------------"
 	@echo "Removing any compiled python files."
-	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+#	cp -vfr $(LIB_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname "*.pyc" -delete
 	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname ".git" -prune -exec rm -Rf {} \;
 
