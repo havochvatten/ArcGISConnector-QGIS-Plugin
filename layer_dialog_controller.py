@@ -10,7 +10,6 @@ from .arcgiscon_service import NotificationHandler, EsriUpdateWorker, ServerItem
 from qgis.core import QgsMessageLog, QgsProject
 from .arcgiscon_ui import LayerDialog, ImageItemWidget
 from .event_handling import Event
-from .PIL import Image
 import os
 import threading
 from . import resources_rc
@@ -250,17 +249,7 @@ class LayerDialogController(QObject):
         pix = QPixmap(filePath)
         pix = pix.scaled(width * scalar, height * scalar, Qt.KeepAspectRatio)
         return pix
-    
-    def getColorSpan(self, filePath):
-        try:
-            img = Image.open(filePath)
-            imageRGB = img.convert('RGB')
-            colorSpan = imageRGB.getextrema()
-            return colorSpan
-        except:
-            QgsMessageLog.logMessage("IOException, unsupported format / corrupted file.")
-            return None
-        
+
 
     def updateGrid(self):
         layout = self.grid.layout()
@@ -335,8 +324,8 @@ class LayerDialogController(QObject):
     
     def fileIsHealthy(self, filePath):
         try:
-            img = Image.open(filePath)
-            return True
+            s = QPixmap(filePath).toImage().width()
+            return s > 0
         except:
             os.remove(filePath)
             return False
@@ -357,16 +346,10 @@ class LayerDialogController(QObject):
         if self.fileIsHealthy(filePath):
             pixmap = self.scaleImage(filePath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
             item.thumbnailLabel.setPixmap(pixmap)
-            colorSpan = self.getColorSpan(filePath)
-            emptyImage = True
-            if colorSpan:
-                for x in colorSpan:
-                    if x[0] != x[1]:
-                        emptyImage = False
 
-                if emptyImage:
-                    default_pixmap = self.scaleImage(self.defaultPixmapPath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
-                    item.thumbnailLabel.setPixmap(default_pixmap)
+            if pixmap.toImage().isNull():
+                default_pixmap = self.scaleImage(self.defaultPixmapPath, imageSpec.width, imageSpec.height, self.IMAGE_SCALE)
+                item.thumbnailLabel.setPixmap(default_pixmap)
         else:
             newWidth = 300
             newHeight = 300
