@@ -668,7 +668,6 @@ class EsriRasterLayer(object):
     qgsRasterLayer = None        
     connection = None
     imageSpec = None
-    isUpdating = False
     
     @staticmethod
     def create(connection, imageSpec, srcPath):
