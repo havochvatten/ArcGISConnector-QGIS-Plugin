@@ -151,14 +151,15 @@ class ArcGisConnector(object):
             if action.objectName() == "mActionDraw":
                 action.triggered.connect(self._refreshAllEsriLayers)
                 
-    def _refreshAllEsriLayers(self): 
+    def _refreshAllEsriLayers(self):
+
         for layer in list(self._esriRasterLayers.values()):
+
             self._refreshController.updateLayer(self._updateService, layer)
 
     def _refreshAllVisibleLayers(self):
         for layer in list(self._esriRasterLayers.values()):
-            if QgsProject.instance().layerTreeRoot().findLayer(layer.qgsRasterLayer.id()).isVisible():
-                self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
+            self._refreshController.updateLayerWithNewExtent(self._updateService, layer)
 
     def _showComputeHistogram(self):
         rasterLayer = self._getCurrentLayer()
@@ -201,7 +202,7 @@ class ArcGisConnector(object):
             if qgsLayer.customProperty('arcgiscon_connection_url', ''):                
                 try:
                     esriLayer = EsriRasterLayer.restoreFromQgsLayer(qgsLayer)
-                    self._esriRasterLayers[esriLayer.connection.conId] = esriLayer
+                    self._esriRasterLayers[esriLayer.qgsRasterLayer.id()] = esriLayer
                     self._iface.addCustomActionForLayer(self._arcGisRefreshLayerAction, qgsLayer)
                     self._iface.addCustomActionForLayer(self._arcGisRefreshLayerWithNewExtentAction, qgsLayer)
                 except: 
@@ -224,22 +225,10 @@ class ArcGisConnector(object):
         # move back to main GUI thread
         self._updateService.moveToThread(QApplication.instance().thread())
 
-    def _onLayerRemoved(self, layerId):
-        toDelete = None
-        for rasterLayer in self._esriRasterLayers.values():
-            try:
-                if layerId == rasterLayer.qgsRasterLayer.id() and not rasterLayer.isUpdating:
-                    # This code should not be reachable, but exists in case it does?
-                    toDelete = rasterLayer.connection.conId
-                    break
-
-            except RuntimeError:
-                # If we are here the layer has been deleted, weird side effect of remove map layer?
-                if not rasterLayer.isUpdating:
-                    toDelete = rasterLayer.connection.conId
-                    break
-        if toDelete is not None:
-            del self._esriRasterLayers[toDelete]
+    def _onLayerRemoved(self, layer_id):
+        if layer_id in self._esriRasterLayers:
+            QgsMessageLog.logMessage("Deleting raster layer")
+            del self._esriRasterLayers[layer_id]
 
     def unload(self):
         FileSystemService().clearAllFilesFromTmpFolder()

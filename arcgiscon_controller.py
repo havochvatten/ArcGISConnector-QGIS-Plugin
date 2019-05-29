@@ -148,9 +148,9 @@ class ArcGisConNewController(QObject):
         self._newDialog.rememberCheckbox.setDisabled(True)
 
     def onSuccess(self, srcPath, connection, imageSpec):
-        esriLayer = EsriRasterLayer.create(connection, imageSpec, srcPath)
-        QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
-        self._esriRasterLayers[esriLayer.connection.conId]=esriLayer
+        esri_layer = EsriRasterLayer.create(connection, imageSpec, srcPath)
+        QgsProject.instance().addMapLayer(esri_layer.qgsRasterLayer)
+        self._esriRasterLayers[esri_layer.qgsRasterLayer.id()] = esri_layer
         self._connection.srcPath = srcPath
         self._connection.renderLocked = True
 
@@ -252,7 +252,7 @@ class ArcGisConRefreshController(QObject):
                 worker = EsriUpdateWorker.create(
                     esriLayer.connection,
                     esriLayer.imageSpec,
-                    onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(newSrcPath, esriLayer, mapCanvas.extent()),
+                    onSuccess=lambda newSrcPath: self.onUpdateLayerWithNewExtentSuccess(esriLayer),
                     onWarning=lambda warningMsg: self.onWarning(esriLayer.connection, warningMsg),
                     onError=lambda errorMsg: self.onError(esriLayer.connection, errorMsg))
                 updateService.update(worker)
@@ -285,20 +285,14 @@ class ArcGisConRefreshController(QObject):
         layer.imageSpec.settings.timeExtent = timeExtent
 
 
-    def onUpdateLayerWithNewExtentSuccess(self, newSrcPath, esriLayer, extent):
-        # Ugly reloading of layers because https://issues.qgis.org/issues/20536
-        # Has to save style in order to not lose anything.
-        esriLayer.isUpdating = True
-        tf = tempfile.NamedTemporaryFile()
-        esriLayer.qgsRasterLayer.saveNamedStyle(tf.name)
-        QgsProject.instance().removeMapLayer(esriLayer.qgsRasterLayer)
-        esriLayer.updateQgsRasterLayer(newSrcPath)
-        QgsProject.instance().addMapLayer(esriLayer.qgsRasterLayer)
-        esriLayer.qgsRasterLayer.loadNamedStyle(tf.name + '.qml')
-        tf.close()
-        esriLayer.isUpdating = False
-        esriLayer.qgsRasterLayer.triggerRepaint()
-        self._iface.layerTreeView().refreshLayerSymbology(esriLayer.qgsRasterLayer.id())
+    def onUpdateLayerWithNewExtentSuccess(self, esriLayer):
+        self.forceReload(esriLayer.qgsRasterLayer)
+
+    def forceReload(self, rasterLayer):
+        rasterLayer.dataProvider().reloadData()
+        rasterLayer.triggerRepaint()
+        self._iface.mapCanvas().refresh()
+        self._iface.layerTreeView().refreshLayerSymbology(rasterLayer.id())
 
     def onWarning(self, connection, warningMessage):
         NotificationHandler.pushWarning('['+connection.name+'] :', warningMessage, 5)

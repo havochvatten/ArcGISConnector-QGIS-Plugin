@@ -306,9 +306,9 @@ class LayerDialogController(QObject):
 
     def onSuccess(self, srcPath, imageSpec):
         #Remove thumbnails.
-        rasterLayer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
-        QgsProject.instance().addMapLayer(rasterLayer.qgsRasterLayer)
-        self.rasterLayers[rasterLayer.connection.conId]=rasterLayer
+        raster_layer = EsriRasterLayer.create(self.connection, imageSpec, srcPath)
+        QgsProject.instance().addMapLayer(raster_layer.qgsRasterLayer)
+        self.rasterLayers[raster_layer.qgsRasterLayer.id()] = raster_layer
         self.connection.renderLocked = True
 
     def removeImageItemWidget(self, widget):

@@ -316,7 +316,6 @@ class EsriUpdateService(QtCore.QObject):
         return FileSystemService().storeBinaryInTmpFolder(download['data'], filename, imageFormat)
 
     def _downloadRaster(self, href, connection, params=None):
-        # Simple PoC implementation of downloading a raster, could probably be done more efficiently.
         response = None
         if connection.authMethod == ConnectionAuthType.BasicAuthetication:
             response = requests.get(href, auth=(connection.username, connection.password), stream=True)
@@ -539,6 +538,7 @@ class NotificationHandler(object):
     def _checkConfiguration(cls):
         if not cls._iface:
             raise RuntimeError("iface is not configured")
+
 
 class QueryFeatureService(object):
 
