@@ -100,7 +100,7 @@ class EsriImageServiceQueryFactory(object):
             'bandIds']
 
         for setting in SETTINGS_LIST:
-            if setting in settings and settings[setting] != None:
+            if setting in settings and settings[setting] is not None:
                 query.update({setting: settings[setting]})
         return query 
 
