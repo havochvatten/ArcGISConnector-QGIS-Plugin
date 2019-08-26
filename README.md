@@ -1,10 +1,7 @@
 # ArcGIS™ Image Server Connector
 
 **_UPDATE:_**
-This plugin has been updated to work with QGIS 3!!
-*HOWEVER* there is a bug in QGIS 3 preventing the plugin from reloading raster files: https://issues.qgis.org/issues/20536. 
-Until this is fixed the plugin has to delete and add a new layer to show updated images. This has tons of unwanted side effects, some which have been fixed. Don't expect these layers to work well, especially with other plugins, for the time being.
-It is a known issue that the first time you load an image server for the session that the crs gets messed up, panning or zooming should fix it however.
+This plugin has been updated to work with QGIS 3!! QGIS 3.6.2 is required due to a bug existing in earlier versions of QGIS 3.
 
 ## Summary
 
