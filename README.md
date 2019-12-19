@@ -1,7 +1,7 @@
 # ArcGIS™ Image Server Connector
 
-**_UPDATE:_**
-This plugin has been updated to work with QGIS 3!! QGIS 3.6.2 is required due to a bug existing in earlier versions of QGIS 3.
+
+## This plugin is no longer under any active development and is no longer maintained. It will hopefully continue working for some time as of 2019-12-19.
 
 ## Summary
 
